@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web AAC</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        margin: 0;
+        padding: 0;
+    }
+    header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #333;
+        color: white;
+        padding: 10px 20px;
+    }
+    header h1 { margin: 0; }
+    header button { padding: 5px 10px; }
+    #settings { cursor: pointer; }
+    #profile-section, #message-section { padding: 10px 20px; }
+    #word-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-top: 10px; }
+    .word-btn { padding: 10px; font-size: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    #message { width: 100%; font-size: 18px; padding: 8px; margin-top: 10px; }
+    #predictions { margin-top: 5px; list-style: none; padding: 0; }
+    #predictions li { cursor: pointer; padding: 4px; }
+    #predictions li:hover { background: #ddd; }
+</style>
+</head>
+<body>
+<header>
+    <h1>Web AAC</h1>
+    <div>
+        <button id="settings">⚙️</button>
+        <select id="voiceSelect"></select>
+    </div>
+</header>
+
+<section id="profile-section">
+    <label>Profile:
+        <select id="profileSelect"></select>
+        <button id="addProfile">Add</button>
+        <button id="delProfile">Delete</button>
+    </label>
+    <input type="color" id="bgColorPicker" value="#f0f0f0">
+</section>
+
+<section id="message-section">
+    <textarea id="message" rows="3" placeholder="Type your message..."></textarea>
+    <ul id="predictions"></ul>
+    <button id="speakBtn">Speak</button>
+    <div id="word-grid"></div>
+</section>
+
+<script>
+// ==================== WORD DATA ====================
+const CATEGORIES = {
+    "Core": { "I":"👤","You":"🫵","We":"👥","They":"👥","Go":"🏃","Stop":"✋","Hello":"👋","Goodbye":"👋","Yes":"✅","No":"❌","Help":"🆘","Eat":"🍽️","Drink":"🥤","Want":"🤲","Need":"🤲","Love":"❤️","Like":"👍","Hate":"👎","Think":"🤔","Know":"🧠","See":"👀","Hear":"👂","Feel":"🤗","Wait":"⏳","Come":"👐","Leave":"🚪","Play":"🎮","Work":"💼","Read":"📖","Write":"✏️"},
+    "Food": { "Apple":"🍎","Banana":"🍌","Bread":"🍞","Milk":"🥛","Water":"💧","Juice":"🧃","Rice":"🍚","Meat":"🥩","Cheese":"🧀","Egg":"🥚","Soup":"🥣","Cake":"🍰","Chocolate":"🍫","Cookie":"🍪","Pizza":"🍕","Burger":"🍔","Fries":"🍟","Fish":"🐟","Vegetables":"🥦","Fruit":"🍎","Snack":"🍿"},
+    "Feelings": { "Happy":"😊","Sad":"😢","Angry":"😡","Excited":"🤩","Tired":"😴","Scared":"😱","Confused":"😕","Surprised":"😲","Bored":"😐","Love":"❤️","Like":"👍","Dislike":"👎","Proud":"😌","Shy":"😳","Worried":"😟","Calm":"😌","Relaxed":"😎","Hungry":"🤤","Thirsty":"😋"},
+    "Places": { "Home":"🏠","School":"🏫","Park":"🏞️","Bathroom":"🚽","Kitchen":"🍳","Bedroom":"🛏️","Store":"🏪","Office":"🏢","Hospital":"🏥","Library":"📚","Playground":"🛝","Garden":"🌳","Beach":"🏖️","Mountain":"⛰️","City":"🏙️","Village":"🏘️","Market":"🛒","Restaurant":"🍴","Cafe":"☕","Theater":"🎭"},
+    "Activities": { "Run":"🏃","Walk":"🚶","Jump":"🤾","Swim":"🏊","Dance":"💃","Sing":"🎤","Draw":"🖌️","Paint":"🎨","Cook":"🍳","Read":"📖","Write":"✏️","Study":"📚","Sleep":"😴","Play":"🎮","Exercise":"🏋️","Travel":"✈️","Shop":"🛍️","Drive":"🚗","Watch":"👀","Listen":"👂"},
+    "Animals": { "Dog":"🐶","Cat":"🐱","Bird":"🐦","Fish":"🐟","Horse":"🐴","Cow":"🐄","Pig":"🐖","Sheep":"🐑","Rabbit":"🐇","Monkey":"🐒","Lion":"🦁","Tiger":"🐅","Elephant":"🐘","Bear":"🐻","Wolf":"🐺","Frog":"🐸","Snake":"🐍","Fox":"🦊","Deer":"🦌","Whale":"🐋"},
+};
+
+// ==================== STATE ====================
+let profiles = JSON.parse(localStorage.getItem('profiles')||'{}');
+let currentProfile = null;
+let allWords = [];
+for (let cat in CATEGORIES) allWords.push(...Object.keys(CATEGORIES[cat]));
+
+// ==================== PROFILE FUNCTIONS ====================
+function refreshProfiles() {
+    const sel = document.getElementById('profileSelect');
+    sel.innerHTML = '';
+    Object.keys(profiles).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p; opt.textContent = p;
+        sel.appendChild(opt);
+    });
+    if (!currentProfile && Object.keys(profiles).length) currentProfile = Object.keys(profiles)[0];
+    sel.value = currentProfile;
+}
+function addProfile() {
+    const name = prompt("Profile Name?");
+    if (!name) return;
+    profiles[name] = { words:{} };
+    currentProfile = name;
+    localStorage.setItem('profiles', JSON.stringify(profiles));
+    refreshProfiles(); buildGrid();
+}
+function delProfile() {
+    if (!currentProfile) return;
+    delete profiles[currentProfile];
+    currentProfile = Object.keys(profiles)[0] || null;
+    localStorage.setItem('profiles', JSON.stringify(profiles));
+    refreshProfiles(); buildGrid();
+}
+
+// ==================== GRID ====================
+function buildGrid() {
+    const grid = document.getElementById('word-grid');
+    grid.innerHTML = '';
+    let words = {};
+    Object.assign(words, ...Object.values(CATEGORIES));
+    for (let w in words) {
+        const btn = document.createElement('button');
+        btn.className = 'word-btn';
+        btn.innerHTML = `${w}<br>${words[w]}`;
+        btn.onclick = () => addWordToMessage(w);
+        grid.appendChild(btn);
+    }
+}
+
+// ==================== MESSAGE & PREDICTION ====================
+function addWordToMessage(word) {
+    const msg = document.getElementById('message');
+    msg.value = msg.value ? msg.value + ' ' + word : word;
+    predict();
+}
+
+function predict() {
+    const msg = document.getElementById('message').value.trim();
+    const last = msg.split(' ').pop().toLowerCase();
+    const list = document.getElementById('predictions');
+    list.innerHTML = '';
+    if (!last) return;
+    const matches = allWords.filter(w => w.toLowerCase().startsWith(last) && w.toLowerCase()!==last).slice(0,6);
+    matches.forEach(m => {
+        const li = document.createElement('li');
+        li.textContent = m;
+        li.onclick = ()=> { addWordToMessage(m); list.innerHTML=''; };
+        list.appendChild(li);
+    });
+}
+
+// ==================== TTS ====================
+function speakMessage() {
+    const msg = document.getElementById('message').value.trim();
+    if (!msg) return;
+    const utter = new SpeechSynthesisUtterance(msg);
+    const voiceSel = document.getElementById('voiceSelect');
+    const voiceId = voiceSel.value;
+    if (voiceId) utter.voice = speechSynthesis.getVoices().find(v=>v.name===voiceId);
+    speechSynthesis.speak(utter);
+}
+
+// ==================== INIT ====================
+document.getElementById('addProfile').onclick = addProfile;
+document.getElementById('delProfile').onclick = delProfile;
+document.getElementById('speakBtn').onclick = speakMessage;
+document.getElementById('message').addEventListener('input', predict);
+document.getElementById('profileSelect').addEventListener('change', e=>{ currentProfile=e.target.value; buildGrid(); });
+
+document.getElementById('bgColorPicker').addEventListener('input', e=>{
+    document.body.style.backgroundColor = e.target.value;
+});
+
+// Load voices
+function loadVoices() {
+    const voices = speechSynthesis.getVoices();
+    const sel = document.getElementById('voiceSelect');
+    sel.innerHTML = '';
+    voices.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.name; opt.textContent = v.name;
+        sel.appendChild(opt);
+    });
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+
+// Initial load
+refreshProfiles(); buildGrid();
+</script>
+</body>
+</html>
