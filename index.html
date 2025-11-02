@@ -95,7 +95,6 @@
 
   footer{padding:18px;text-align:center;color:#777;font-size:13px}
 
-  /* small */
   @media (max-width:720px){
     .panel{flex-direction:column}
     .right{order:2}
@@ -115,16 +114,13 @@
 </header>
 
 <main>
-  <!-- profiles + controls -->
   <div class="profile-row">
     <label style="display:flex;align-items:center;gap:8px">
       Profile:
       <select id="profileSelect"></select>
     </label>
-
     <button id="addProfile" class="btn ghost">Add Profile</button>
     <button id="delProfile" class="btn ghost">Delete</button>
-
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
       <button id="exportBtn" class="btn ghost">Export Save Code</button>
       <button id="importBtn" class="btn">Import Save Code</button>
@@ -132,11 +128,10 @@
   </div>
 
   <div class="controls">
-    <div class="categories card" id="categoryBar" style="display:flex;gap:8px;padding:8px">
-      <!-- category buttons inserted here -->
-    </div>
+    <div class="categories card" id="categoryBar" style="display:flex;gap:8px;padding:8px"></div>
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
       <button id="addWordBtn" class="btn">Add Word</button>
+      <button id="addCategoryBtn" class="btn">Add Category</button>
       <button id="clearBtn" class="btn ghost">Clear Message</button>
     </div>
   </div>
@@ -171,27 +166,22 @@
   </div>
 </main>
 
-<!-- Settings Menu -->
 <div id="settingsMenu">
   <label>Choose Voice
     <select id="settingsVoice"></select>
   </label>
-
   <label>Background color
     <input type="color" id="bgColorPicker" value="#f3f4f6">
   </label>
-
   <label>Export / Import Save Code
     <div style="display:flex;gap:8px">
       <button id="doExport" class="btn ghost" style="flex:1">Generate code</button>
       <button id="doImport" class="btn" style="flex:1">Apply code</button>
     </div>
   </label>
-
   <label style="margin-top:8px">Paste Save Code to import:
     <textarea id="importArea" placeholder="Paste exported code here" style="min-height:80px;padding:8px;border-radius:6px;border:1px solid #e6e6e6"></textarea>
   </label>
-
   <div style="display:flex;gap:8px;margin-top:10px">
     <button id="closeSettings" class="btn ghost" style="flex:1">Close</button>
   </div>
@@ -200,19 +190,19 @@
 <footer>Works offline. Export code to move your data between devices.</footer>
 
 <script>
-/* ===== Data: 200+ words across categories ===== */
+/* =================== Words & Categories =================== */
 const CATEGORIES = {
-  "Core": {"I":"👤","You":"🫵","We":"👥","They":"👥","Go":"🏃","Stop":"✋","Hello":"👋","Goodbye":"👋","Yes":"✅","No":"❌","Help":"🆘","Eat":"🍽️","Drink":"🥤","Want":"🤲","Need":"🤲","Love":"❤️","Like":"👍","Hate":"👎","Think":"🤔","Know":"🧠","See":"👀","Hear":"👂","Feel":"🤗","Wait":"⏳","Come":"👐","Leave":"🚪","Play":"🎮","Work":"💼","Read":"📖","Write":"✏️","More":"➕","Less":"➖","Again":"🔁","Now":"🕑","Later":"⏳"},
-  "Food": {"Apple":"🍎","Banana":"🍌","Bread":"🍞","Milk":"🥛","Water":"💧","Juice":"🧃","Rice":"🍚","Meat":"🥩","Cheese":"🧀","Egg":"🥚","Soup":"🥣","Cake":"🍰","Chocolate":"🍫","Cookie":"🍪","Pizza":"🍕","Burger":"🍔","Fries":"🍟","Fish":"🐟","Vegetables":"🥦","Fruit":"🍎","Snack":"🍿","Yogurt":"🧴","Pasta":"🍝","Salad":"🥗","Honey":"🍯","Butter":"🧈"},
-  "Feelings": {"Happy":"😊","Sad":"😢","Angry":"😡","Excited":"🤩","Tired":"😴","Scared":"😱","Confused":"😕","Surprised":"😲","Bored":"😐","Love":"❤️","Like":"👍","Dislike":"👎","Proud":"😌","Shy":"😳","Worried":"😟","Calm":"😌","Relaxed":"😎","Hungry":"🤤","Thirsty":"😋","Sick":"🤒"},
-  "Places": {"Home":"🏠","School":"🏫","Park":"🏞️","Bathroom":"🚽","Kitchen":"🍳","Bedroom":"🛏️","Store":"🏪","Office":"🏢","Hospital":"🏥","Library":"📚","Playground":"🛝","Garden":"🌳","Beach":"🏖️","Mountain":"⛰️","City":"🏙️","Village":"🏘️","Market":"🛒","Restaurant":"🍴","Cafe":"☕","Theater":"🎭"},
-  "Activities": {"Run":"🏃","Walk":"🚶","Jump":"🤾","Swim":"🏊","Dance":"💃","Sing":"🎤","Draw":"🖌️","Paint":"🎨","Cook":"🍳","Read":"📖","Write":"✏️","Study":"📚","Sleep":"😴","Play":"🎮","Exercise":"🏋️","Travel":"✈️","Shop":"🛍️","Drive":"🚗","Watch":"👀","Listen":"🎧"},
-  "Animals": {"Dog":"🐶","Cat":"🐱","Bird":"🐦","Fish":"🐟","Horse":"🐴","Cow":"🐄","Pig":"🐖","Sheep":"🐑","Rabbit":"🐇","Monkey":"🐒","Lion":"🦁","Tiger":"🐅","Elephant":"🐘","Bear":"🐻","Wolf":"🐺","Frog":"🐸","Snake":"🐍","Fox":"🦊","Deer":"🦌","Whale":"🐋"}
+  "Core": {"I":"👤","You":"🫵","We":"👥","They":"👥","Go":"🏃","Stop":"✋","Hello":"👋","Goodbye":"👋","Yes":"✅","No":"❌","Help":"🆘","Eat":"🍽️","Drink":"🥤","Want":"🤲","Need":"🤲","Love":"❤️","Like":"👍","Hate":"👎","Think":"🤔","Know":"🧠","See":"👀","Hear":"👂","Feel":"🤗","Wait":"⏳","Come":"👐","Leave":"🚪","Play":"🎮","Work":"💼","Read":"📖","Write":"✏️","More":"➕","Less":"➖","Again":"🔁","Now":"🕑","Later":"⏳","Fast":"⚡","Slow":"🐢","Big":"🟦","Small":"🟩","Hot":"🔥","Cold":"❄️","YesPlease":"🙏","NoThanks":"🙅‍♂️","StopIt":"✋"},
+  "Food": {"Apple":"🍎","Banana":"🍌","Bread":"🍞","Milk":"🥛","Water":"💧","Juice":"🧃","Rice":"🍚","Meat":"🥩","Cheese":"🧀","Egg":"🥚","Soup":"🥣","Cake":"🍰","Chocolate":"🍫","Cookie":"🍪","Pizza":"🍕","Burger":"🍔","Fries":"🍟","Fish":"🐟","Vegetables":"🥦","Fruit":"🍎","Snack":"🍿","Yogurt":"🧴","Pasta":"🍝","Salad":"🥗","Honey":"🍯","Butter":"🧈","Steak":"🥩","Sushi":"🍣","Noodles":"🍜","Cereal":"🥣","Coffee":"☕","Tea":"🍵","Popcorn":"🍿","IceCream":"🍨"},
+  "Feelings": {"Happy":"😊","Sad":"😢","Angry":"😡","Excited":"🤩","Tired":"😴","Scared":"😱","Confused":"😕","Surprised":"😲","Bored":"😐","Love":"❤️","Like":"👍","Dislike":"👎","Proud":"😌","Shy":"😳","Worried":"😟","Calm":"😌","Relaxed":"😎","Hungry":"🤤","Thirsty":"😋","Sick":"🤒","Lonely":"😔","Joyful":"😁","Excited":"🤩","Frustrated":"😤"},
+  "Places": {"Home":"🏠","School":"🏫","Park":"🏞️","Bathroom":"🚽","Kitchen":"🍳","Bedroom":"🛏️","Store":"🏪","Office":"🏢","Hospital":"🏥","Library":"📚","Playground":"🛝","Garden":"🌳","Beach":"🏖️","Mountain":"⛰️","City":"🏙️","Village":"🏘️","Market":"🛒","Restaurant":"🍴","Cafe":"☕","Theater":"🎭","Bus":"🚌","Train":"🚆","Airport":"✈️"},
+  "Activities": {"Run":"🏃","Walk":"🚶","Jump":"🤾","Swim":"🏊","Dance":"💃","Sing":"🎤","Draw":"🖌️","Paint":"🎨","Cook":"🍳","Read":"📖","Write":"✏️","Study":"📚","Sleep":"😴","Play":"🎮","Exercise":"🏋️","Travel":"✈️","Shop":"🛍️","Drive":"🚗","Watch":"👀","Listen":"🎧","Ride":"🚴","Climb":"🧗"},
+  "Animals": {"Dog":"🐶","Cat":"🐱","Bird":"🐦","Fish":"🐟","Horse":"🐴","Cow":"🐄","Pig":"🐖","Sheep":"🐑","Rabbit":"🐇","Monkey":"🐒","Lion":"🦁","Tiger":"🐅","Elephant":"🐘","Bear":"🐻","Wolf":"🐺","Frog":"🐸","Snake":"🐍","Fox":"🦊","Deer":"🦌","Whale":"🐋","Dolphin":"🐬","Eagle":"🦅","Owl":"🦉","Penguin":"🐧","Chicken":"🐔","Goat":"🐐"}
 };
 
-/* ======================== State & storage ======================== */
-const STORAGE_KEY = 'halo_aac_data_v1';
-let data = loadStorage(); // { profiles: {name: {words:{}, bg:'#fff'} }, currentProfile: name }
+/* =================== Storage & State =================== */
+const STORAGE_KEY = 'halo_aac_data_v2';
+let data = loadStorage();
 let currentCategory = 'Core';
 
 function loadStorage(){
@@ -225,22 +215,10 @@ function loadStorage(){
 function saveStorage(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
-
-/* initialize data if empty */
 if(!data.profiles) data.profiles = {};
 if(!data.currentProfile) data.currentProfile = Object.keys(data.profiles)[0] || null;
 
-/* flatten all words for predictions */
-function getAllWords(){
-  const s = new Set();
-  Object.values(CATEGORIES).forEach(cat => Object.keys(cat).forEach(w=>s.add(w)));
-  Object.values(data.profiles || {}).forEach(p=>{
-    if(p.words) Object.keys(p.words).forEach(w=>s.add(w));
-  });
-  return Array.from(s);
-}
-
-/* ==================== UI references ==================== */
+/* =================== UI References =================== */
 const profileSelect = document.getElementById('profileSelect');
 const addProfileBtn = document.getElementById('addProfile');
 const delProfileBtn = document.getElementById('delProfile');
@@ -250,6 +228,7 @@ const predictions = document.getElementById('predictions');
 const speakBtn = document.getElementById('speakBtn');
 const stopBtn = document.getElementById('stopBtn');
 const addWordBtn = document.getElementById('addWordBtn');
+const addCategoryBtn = document.getElementById('addCategoryBtn');
 const clearBtn = document.getElementById('clearBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsMenu = document.getElementById('settingsMenu');
@@ -264,16 +243,20 @@ const importArea = document.getElementById('importArea');
 const doExport = document.getElementById('doExport');
 const doImport = document.getElementById('doImport');
 const closeSettings = document.getElementById('closeSettings');
-
-/* ==================== Category bar build ==================== */
 const catBar = document.getElementById('categoryBar');
+
+/* =================== Category & Custom Category =================== */
 function buildCategoryButtons(){
   catBar.innerHTML = '';
-  Object.keys(CATEGORIES).forEach(cat=>{
+  const allCats = Object.keys(CATEGORIES);
+  if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].customCategories){
+    allCats.push(...Object.keys(data.profiles[data.currentProfile].customCategories));
+  }
+  allCats.forEach(cat=>{
     const b = document.createElement('button');
-    b.className = 'cat-btn';
-    b.textContent = cat;
-    b.onclick = ()=>{ currentCategory = cat; updateGrid(); updateCategoryActive(); };
+    b.className='cat-btn';
+    b.textContent=cat;
+    b.onclick=()=>{ currentCategory=cat; updateGrid(); updateCategoryActive(); };
     catBar.appendChild(b);
   });
 }
@@ -283,263 +266,208 @@ function updateCategoryActive(){
   });
 }
 
-/* ==================== Profile UI ==================== */
+/* =================== Profiles =================== */
 function refreshProfileSelect(){
-  profileSelect.innerHTML = '';
+  profileSelect.innerHTML='';
   Object.keys(data.profiles).forEach(name=>{
-    const o = document.createElement('option'); o.value=name; o.textContent=name;
+    const o=document.createElement('option'); o.value=name; o.textContent=name;
     profileSelect.appendChild(o);
   });
-  if(data.currentProfile && data.profiles[data.currentProfile]) profileSelect.value = data.currentProfile;
+  if(data.currentProfile && data.profiles[data.currentProfile]) profileSelect.value=data.currentProfile;
   else {
-    data.currentProfile = Object.keys(data.profiles)[0] || null;
-    if(data.currentProfile) profileSelect.value = data.currentProfile;
+    data.currentProfile=Object.keys(data.profiles)[0]||null;
+    if(data.currentProfile) profileSelect.value=data.currentProfile;
   }
   updateProfilePanel();
 }
 
-addProfileBtn.onclick = ()=>{
-  const name = prompt('New profile name:');
+addProfileBtn.onclick=()=>{
+  const name=prompt('New profile name:');
   if(!name) return;
-  data.profiles[name] = { words:{}, bg: '#f3f4f6' };
-  data.currentProfile = name;
+  data.profiles[name]={words:{}, bg:'#f3f4f6', customCategories:{}};
+  data.currentProfile=name;
   saveStorage(); refreshProfileSelect(); updateGrid();
 };
 
-delProfileBtn.onclick = ()=>{
+delProfileBtn.onclick=()=>{
   if(!data.currentProfile) return alert('No profile selected');
   if(!confirm('Delete profile "'+data.currentProfile+'"?')) return;
   delete data.profiles[data.currentProfile];
-  data.currentProfile = Object.keys(data.profiles)[0] || null;
+  data.currentProfile=Object.keys(data.profiles)[0]||null;
   saveStorage(); refreshProfileSelect(); updateGrid();
 };
 
-profileSelect.onchange = (e)=>{
-  data.currentProfile = e.target.value;
+profileSelect.onchange=(e)=>{
+  data.currentProfile=e.target.value;
   saveStorage(); updateGrid(); updateProfilePanel();
 };
 
-/* ==================== Grid / Words ==================== */
+/* =================== Grid & Words =================== */
 function mergedWordsForCategory(cat){
-  const out = {};
-  // default category words
-  Object.assign(out, CATEGORIES[cat] || {});
-  // add profile custom words if any
-  if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].words){
-    Object.entries(data.profiles[data.currentProfile].words).forEach(([w,emoji])=>{
-      // if same word exists, profile overrides
-      out[w] = emoji;
-    });
+  const out={};
+  Object.assign(out, CATEGORIES[cat]||{});
+  if(data.currentProfile && data.profiles[data.currentProfile]){
+    const prof=data.profiles[data.currentProfile];
+    if(prof.words) Object.entries(prof.words).forEach(([w,e])=>out[w]=e);
+    if(prof.customCategories && prof.customCategories[cat]){
+      Object.entries(prof.customCategories[cat]).forEach(([w,e])=>out[w]=e);
+    }
   }
   return out;
 }
 
 function updateGrid(){
-  gridTitle.textContent = currentCategory + ' — Words';
-  wordGrid.innerHTML = '';
-  const words = mergedWordsForCategory(currentCategory);
-  Object.entries(words).forEach(([w,emoji])=>{
-    const b = document.createElement('button');
-    b.className = 'word-btn';
-    b.innerHTML = `<div class="word-emoji">${emoji||''}</div><div class="word-text">${w}</div>`;
-    b.onclick = ()=> addWordToMessage(w);
+  gridTitle.textContent=currentCategory+' — Words';
+  wordGrid.innerHTML='';
+  const words=mergedWordsForCategory(currentCategory);
+  Object.entries(words).forEach(([w,e])=>{
+    const b=document.createElement('button');
+    b.className='word-btn';
+    b.innerHTML=`<div class="word-emoji">${e||''}</div><div class="word-text">${w}</div>`;
+    b.onclick=()=>addWordToMessage(w);
     wordGrid.appendChild(b);
   });
   updateCategoryActive();
 }
 
 function addWordToMessage(word){
-  // append with space
-  msgBox.value = msgBox.value ? (msgBox.value + ' ' + word) : word;
+  msgBox.value=msgBox.value?(msgBox.value+' '+word):word;
   msgBox.focus();
   predict();
 }
 
-/* ==================== Add custom word (choose category) ==================== */
-addWordBtn.onclick = ()=>{
+/* =================== Add Word =================== */
+addWordBtn.onclick=()=>{
   if(!data.currentProfile) return alert('Select or create a profile first');
-  const word = prompt('Enter new word (text):');
-  if(!word) return;
-  // choose category
-  const cats = Object.keys(CATEGORIES).concat(['Custom']);
-  let cat = prompt('Category? Type one of:\n' + cats.join(', '), currentCategory || 'Custom');
-  if(!cat) cat = 'Custom';
-  if(!Object.keys(CATEGORIES).includes(cat)) cat = 'Custom';
-  const emoji = prompt('Emoji for display (optional):', '❓') || '';
-  // store into profile under a dedicated slot: profile.words[word] = emoji
-  data.profiles[data.currentProfile].words[word] = emoji;
-  saveStorage();
-  updateGrid();
-  refreshProfileDisplay();
+  const word=prompt('Enter new word (text):'); if(!word) return;
+  const cats=Object.keys(CATEGORIES).concat(Object.keys(data.profiles[data.currentProfile].customCategories||{}),'Custom');
+  let cat=prompt('Category? Type one of:\n'+cats.join(', '), currentCategory||'Custom'); if(!cat) cat='Custom';
+  const emoji=prompt('Emoji for display (optional):','❓')||'';
+  if(!data.profiles[data.currentProfile].customCategories) data.profiles[data.currentProfile].customCategories={};
+  if(!Object.keys(CATEGORIES).includes(cat)){
+    if(!data.profiles[data.currentProfile].customCategories[cat]) data.profiles[data.currentProfile].customCategories[cat]={};
+    data.profiles[data.currentProfile].customCategories[cat][word]=emoji;
+  } else {
+    data.profiles[data.currentProfile].words[word]=emoji;
+  }
+  saveStorage(); updateGrid(); refreshProfileDisplay(); buildCategoryButtons();
 };
 
-/* ==================== Prediction ==================== */
+/* =================== Add Category =================== */
+addCategoryBtn.onclick=()=>{
+  if(!data.currentProfile) return alert('Select or create a profile first');
+  const name=prompt('Enter new category name:'); if(!name) return;
+  if(!data.profiles[data.currentProfile].customCategories) data.profiles[data.currentProfile].customCategories={};
+  if(!data.profiles[data.currentProfile].customCategories[name]) data.profiles[data.currentProfile].customCategories[name]={};
+  saveStorage(); buildCategoryButtons();
+};
+
+/* =================== Prediction =================== */
+function getAllWords(){
+  const s=new Set();
+  Object.values(CATEGORIES).forEach(cat=>Object.keys(cat).forEach(w=>s.add(w)));
+  Object.values(data.profiles||{}).forEach(p=>{
+    if(p.words) Object.keys(p.words).forEach(w=>s.add(w));
+    if(p.customCategories) Object.values(p.customCategories).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
+  });
+  return Array.from(s);
+}
+
 function predict(){
-  const text = msgBox.value.trim();
-  const list = predictions;
-  list.innerHTML = '';
+  const text=msgBox.value.trim();
+  predictions.innerHTML='';
   if(!text) return;
-  const last = text.split(/\s+/).pop().toLowerCase();
+  const last=text.split(/\s+/).pop().toLowerCase();
   if(!last) return;
-  const all = getAllWords();
-  const matches = all.filter(w=>w.toLowerCase().startsWith(last) && w.toLowerCase()!==last).slice(0,8);
+  const all=getAllWords();
+  const matches=all.filter(w=>w.toLowerCase().startsWith(last)&&w.toLowerCase()!==last).slice(0,8);
   matches.forEach(m=>{
-    const li = document.createElement('li');
-    li.textContent = m;
-    li.onclick = ()=>{ // replace last token
-      const arr = msgBox.value.trim().split(/\s+/);
-      arr[arr.length-1] = m;
-      msgBox.value = arr.join(' ');
-      list.innerHTML = '';
+    const li=document.createElement('li'); li.textContent=m;
+    li.onclick=()=>{
+      const arr=msgBox.value.trim().split(/\s+/);
+      arr[arr.length-1]=m;
+      msgBox.value=arr.join(' ');
+      predictions.innerHTML='';
     };
-    list.appendChild(li);
+    predictions.appendChild(li);
   });
 }
 
-/* ==================== TTS (ignores emoji) ==================== */
+/* =================== TTS =================== */
 function stripEmojiAndSymbols(s){
-  // Remove emoji and other pictographs (basic Unicode ranges), leaving letters, numbers, punctuation, spaces.
-  return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d]/gu, '').replace(/\s+/g,' ').trim();
+  return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d]/gu,'').replace(/\s+/g,' ').trim();
 }
-
-let currentUtter = null;
-speakBtn.onclick = ()=>{
-  const raw = msgBox.value.trim();
-  if(!raw) return;
-  const speakText = stripEmojiAndSymbols(raw) || raw; // fallback if stripping empties it
-  currentUtter = new SpeechSynthesisUtterance(speakText);
-  // choose settings voice from UI
-  const vname = voiceSelect.value;
-  const v = speechSynthesis.getVoices().find(x=>x.name===vname);
-  if(v) currentUtter.voice = v;
-  currentUtter.rate = 1;
+let currentUtter=null;
+speakBtn.onclick=()=>{
+  const raw=msgBox.value.trim(); if(!raw) return;
+  const speakText=stripEmojiAndSymbols(raw)||raw;
+  currentUtter=new SpeechSynthesisUtterance(speakText);
+  const v=speechSynthesis.getVoices().find(x=>x.name===voiceSelect.value);
+  if(v) currentUtter.voice=v;
+  currentUtter.rate=1;
   speechSynthesis.speak(currentUtter);
 };
-stopBtn.onclick = ()=> speechSynthesis.cancel();
+stopBtn.onclick=()=>speechSynthesis.cancel();
 
-/* ==================== Settings UI & export/import ==================== */
-settingsBtn.onclick = ()=> settingsMenu.style.display = settingsMenu.style.display==='block'?'none':'block';
-closeSettings.onclick = ()=> settingsMenu.style.display='none';
-
-// bg color change applies to page and saves into profile if set
-bgColorPicker.oninput = (e)=>{
-  document.body.style.background = e.target.value;
-  if(data.currentProfile && data.profiles[data.currentProfile]) {
-    data.profiles[data.currentProfile].bg = e.target.value;
-    saveStorage();
-  }
+/* =================== Settings =================== */
+settingsBtn.onclick=()=>settingsMenu.style.display=settingsMenu.style.display==='block'?'none':'block';
+closeSettings.onclick=()=>settingsMenu.style.display='none';
+bgColorPicker.oninput=(e)=>{
+  document.body.style.background=e.target.value;
+  if(data.currentProfile && data.profiles[data.currentProfile]) data.profiles[data.currentProfile].bg=e.target.value;
+  saveStorage();
 };
 
+/* =================== Profile Display =================== */
+function updateProfilePanel(){ refreshProfileDisplay(); }
 function refreshProfileDisplay(){
-  if(!data.currentProfile){ profileData.textContent = 'No profile selected'; return; }
-  const p = data.profiles[data.currentProfile];
-  profileData.innerHTML = `<div><strong>${data.currentProfile}</strong></div>
+  if(!data.currentProfile){ profileData.textContent='No profile selected'; return; }
+  const p=data.profiles[data.currentProfile];
+  profileData.innerHTML=`<div><strong>${data.currentProfile}</strong></div>
     <div style="margin-top:6px;color:var(--muted)">Words: ${Object.keys(p.words||{}).length}</div>
+    <div style="margin-top:6px;color:var(--muted)">Custom Categories: ${Object.keys(p.customCategories||{}).length}</div>
     <div style="margin-top:6px;color:var(--muted)">BG: <span style="display:inline-block;width:16px;height:12px;background:${p.bg||'#fff'};border-radius:4px;border:1px solid #ddd;margin-left:6px;vertical-align:middle"></span></div>`;
 }
 
-// Export: generate small base64-coded JSON of data for easy copy/paste
-doExport.onclick = ()=>{
-  try{
-    const payload = JSON.stringify(data);
-    const code = btoa(unescape(encodeURIComponent(payload)));
-    importArea.value = code;
-    alert('Save code generated. Copy the code (the big text) and paste it on another device to import.');
-  }catch(e){ alert('Export failed: '+e.message); }
+/* =================== Export / Import =================== */
+doExport.onclick=()=>{
+  try{ importArea.value=btoa(unescape(encodeURIComponent(JSON.stringify(data)))); alert('Save code generated.'); }
+  catch(e){ alert('Export failed: '+e.message); }
 };
-
-// Apply import from textarea
-doImport.onclick = ()=>{
-  const txt = importArea.value.trim();
-  if(!txt) return alert('Paste a Save Code first.');
+doImport.onclick=()=>{
   try{
-    const json = decodeURIComponent(escape(atob(txt)));
-    const parsed = JSON.parse(json);
-    if(parsed && parsed.profiles){
-      // merge with existing profiles, prefer imported
-      data.profiles = Object.assign({}, data.profiles || {}, parsed.profiles);
-      // if import has currentProfile, set it
-      data.currentProfile = parsed.currentProfile || data.currentProfile;
-      saveStorage();
-      refreshProfileSelect();
-      updateGrid();
-      refreshProfileDisplay();
-      alert('Imported successfully.');
-    } else alert('Invalid Save Code.');
+    const txt=importArea.value.trim(); if(!txt) return alert('Paste Save Code first.');
+    const parsed=JSON.parse(decodeURIComponent(escape(atob(txt))));
+    if(parsed && parsed.profiles){ data.profiles=Object.assign({}, data.profiles||{}, parsed.profiles); data.currentProfile=parsed.currentProfile||data.currentProfile; saveStorage(); refreshProfileSelect(); updateGrid(); refreshProfileDisplay(); alert('Imported successfully.'); }
+    else alert('Invalid Save Code.');
   }catch(e){ alert('Invalid code or corrupted.'); }
 };
+exportBtn.onclick=()=>doExport.click();
+importBtn.onclick=()=>{ const code=prompt('Paste Save Code here:'); if(!code) return; importArea.value=code; doImport.click(); };
 
-// quick import button (open prompt)
-importBtn.onclick = ()=> {
-  const code = prompt('Paste Save Code here:');
-  if(!code) return;
-  importArea.value = code;
-  doImport.click();
-};
-
-// small export quick button
-exportBtn.onclick = ()=> doExport.click();
-
-/* ==================== Voice loading & settings voice sync ================ */
+/* =================== Voice Handling =================== */
 function loadVoices(){
-  const voices = speechSynthesis.getVoices();
-  voiceSelect.innerHTML = '';
-  settingsVoice.innerHTML = '';
+  const voices=speechSynthesis.getVoices();
+  voiceSelect.innerHTML=''; settingsVoice.innerHTML='';
   voices.forEach(v=>{
-    const opt1 = document.createElement('option'); opt1.value=v.name; opt1.textContent=v.name;
-    voiceSelect.appendChild(opt1);
-    const opt2 = opt1.cloneNode(true);
-    settingsVoice.appendChild(opt2);
+    const opt1=document.createElement('option'); opt1.value=v.name; opt1.textContent=v.name; voiceSelect.appendChild(opt1);
+    const opt2=opt1.cloneNode(true); settingsVoice.appendChild(opt2);
   });
-  // try to select last used
-  const last = data.lastVoice;
-  if(last && voices.find(v=>v.name===last)) { voiceSelect.value = last; settingsVoice.value = last; }
+  const last=data.lastVoice; if(last && voices.find(v=>v.name===last)) { voiceSelect.value=last; settingsVoice.value=last; }
 }
-speechSynthesis.onvoiceschanged = loadVoices;
-loadVoices();
+speechSynthesis.onvoiceschanged=loadVoices; loadVoices();
+voiceSelect.onchange=settingsVoice.onchange=(e)=>{ data.lastVoice=e.target.value; saveStorage(); settingsVoice.value=e.target.value; voiceSelect.value=e.target.value; };
 
-// sync voice changes
-voiceSelect.onchange = settingsVoice.onchange = (e)=>{
-  data.lastVoice = e.target.value;
-  saveStorage();
-};
-
-// when settings voice changed, update both selectors
-settingsVoice.onchange = (e)=>{
-  voiceSelect.value = e.target.value;
-  data.lastVoice = e.target.value;
-  saveStorage();
-};
-
-// close settings with close button
-closeSettings.onclick = ()=> settingsMenu.style.display = 'none';
-
-/* ==================== Misc initializations ==================== */
-profileSelect.addEventListener('change', ()=>{ data.currentProfile = profileSelect.value; saveStorage(); updateGrid(); refreshProfileDisplay(); });
-// message prediction
+/* =================== Misc =================== */
 msgBox.addEventListener('input', predict);
-// clear
-clearBtn.onclick = ()=> { msgBox.value=''; predictions.innerHTML=''; };
-// add custom word via top addWordBtn (duplicate behavior)
-addWordBtn.addEventListener('click', ()=>{
-  // reuse function above
-  document.getElementById('addWordBtn').onclick();
-});
+clearBtn.onclick=()=>{ msgBox.value=''; predictions.innerHTML=''; };
+addWordBtn.addEventListener('click', ()=>{ document.getElementById('addWordBtn').onclick(); });
 
-// initial render
-buildCategoryButtons();
-refreshProfileSelect();
-updateGrid();
-refreshProfileDisplay();
-// apply profile bg if present
+buildCategoryButtons(); refreshProfileSelect(); updateGrid(); refreshProfileDisplay();
 if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].bg){
-  document.body.style.background = data.profiles[data.currentProfile].bg;
-  bgColorPicker.value = data.profiles[data.currentProfile].bg;
+  document.body.style.background=data.profiles[data.currentProfile].bg; bgColorPicker.value=data.profiles[data.currentProfile].bg;
 }
-
-// small helper to expose export quick instruction
-exportBtn.title = 'Generate Save Code to copy (paste on other devices to import)';
-
+exportBtn.title='Generate Save Code to copy (paste on other devices to import)';
 </script>
 </body>
 </html>
