@@ -35,7 +35,7 @@ select, button, input, textarea { font-family:inherit; }
 .card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; }
 #word-grid { display:grid; gap:8px; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); }
 .word-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; height:86px; font-size:15px; border:1px solid #eee; border-radius:10px; background:#fff; cursor:pointer; }
-.word-emoji { font-size:22px; margin-bottom:6px; }
+.word-emoji { font-size:26px; margin-bottom:6px; }
 textarea#message { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; min-height:56px; font-size:16px; resize:none; }
 ul#predictions { list-style:none; margin:8px 0 0; padding:0; max-height:140px; overflow:auto; border-radius:6px; }
 #predictions li { padding:8px; border-bottom:1px solid #f0f0f0; cursor:pointer; }
@@ -130,13 +130,13 @@ Offline AAC. Export code to save data. Thanks Kaelynn Partlow.
 
 <script>
 // ====== DATA ======
-const STORAGE_KEY = 'halo_aac_data_v5';
+const STORAGE_KEY = 'halo_aac_data_v6';
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"profiles":{},"currentProfile":null,"lastVoice":""}');
 const CATEGORIES = {
-  'Default': ['Hello','Yes','No','Thank you','Please','Water','Eat','Bathroom'],
-  'Food': ['🍎 Apple','🍔 Burger','🍕 Pizza','🍌 Banana','🥗 Salad'],
-  'Home': ['🏠 House','🛏️ Bed','🛁 Bath','🚪 Door','🪑 Chair'],
-  'Places': ['🏫 School','🏥 Hospital','🏖️ Beach','🏛️ Museum','🛒 Store']
+  'Default': [{emoji:'💬', text:'Hello'}, {emoji:'✅', text:'Yes'}, {emoji:'❌', text:'No'}, {emoji:'🙏', text:'Thank you'}],
+  'Food': [{emoji:'🍎', text:'Apple'}, {emoji:'🍔', text:'Burger'}, {emoji:'🍕', text:'Pizza'}, {emoji:'🍌', text:'Banana'}, {emoji:'🥗', text:'Salad'}],
+  'Home': [{emoji:'🏠', text:'House'}, {emoji:'🛏️', text:'Bed'}, {emoji:'🛁', text:'Bath'}, {emoji:'🚪', text:'Door'}, {emoji:'🪑', text:'Chair'}],
+  'Places': [{emoji:'🏫', text:'School'}, {emoji:'🏥', text:'Hospital'}, {emoji:'🏖️', text:'Beach'}, {emoji:'🏛️', text:'Museum'}, {emoji:'🛒', text:'Store'}]
 };
 
 // ====== VOICES ======
@@ -198,7 +198,7 @@ function speakMessage(){
 function stopSpeaking(){ speechSynthesis.cancel(); }
 function updatePredictions(lastWord){
   predictionsList.innerHTML='';
-  const words = Object.values(CATEGORIES).flat();
+  const words = Object.values(CATEGORIES).flat().map(w=>w.text);
   const preds = words.filter(w=>w.toLowerCase().startsWith(lastWord.toLowerCase()) && w!==lastWord).slice(0,5);
   preds.forEach(p=>{
     const li=document.createElement('li'); li.textContent=p; li.onclick=()=>appendWord(p);
@@ -210,8 +210,8 @@ function populateWords(category){
   const words = CATEGORIES[category]||[];
   words.forEach(w=>{
     const btn=document.createElement('div'); btn.className='word-btn';
-    btn.innerHTML=`<div class="word-emoji">${w.includes(' ') ? w.split(' ')[0] : ''}</div><div>${w.includes(' ') ? w.split(' ').slice(1).join(' ') : w}</div>`;
-    btn.onclick=()=>appendWord(w.includes(' ') ? w.split(' ').slice(1).join(' ') : w);
+    btn.innerHTML=`<div class="word-emoji">${w.emoji}</div><div>${w.text}</div>`;
+    btn.onclick=()=>appendWord(w.text);
     wordGrid.appendChild(btn);
   });
 }
@@ -246,8 +246,9 @@ document.getElementById('doImport').onclick=()=>{
 document.getElementById('addWordBtn').onclick=()=>{
   const w=prompt('New word:'); if(!w) return;
   const cat = prompt('Category (leave blank for Default):')||'Default';
+  const e = prompt('Emoji for this word:')||'💬';
   if(!CATEGORIES[cat]) CATEGORIES[cat]=[];
-  CATEGORIES[cat].push(w);
+  CATEGORIES[cat].push({emoji:e,text:w});
   populateCategories();
 };
 document.getElementById('addCategoryBtn').onclick=()=>{
@@ -261,3 +262,4 @@ populateCategories();
 
 </body>
 </html>
+
