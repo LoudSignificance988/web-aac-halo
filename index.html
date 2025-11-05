@@ -37,7 +37,7 @@ select, button, input, textarea { font-family:inherit; }
 .card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; }
 #word-grid { display:grid; gap:8px; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); }
 .word-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; height:86px; font-size:15px; border:1px solid #eee; border-radius:10px; background:#fff; cursor:pointer; }
-.word-emoji { font-size:22px; margin-bottom:6px; }
+.word-emoji { font-size:24px; margin-bottom:6px; display:block; }
 textarea#message { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; min-height:56px; font-size:16px; resize:none; }
 ul#predictions { list-style:none; margin:8px 0 0; padding:0; max-height:140px; overflow:auto; border-radius:6px; }
 #predictions li { padding:8px; border-bottom:1px solid #f0f0f0; cursor:pointer; }
@@ -135,28 +135,16 @@ Offline AAC. Export code to save data. Thanks Kaelynn Partlow.
 const STORAGE_KEY = 'halo_aac_data_v5';
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"profiles":{},"currentProfile":null,"lastVoice":""}');
 const CATEGORIES = {
-  'Default': [
-    'Hello 💬','Yes ✅','No ❌','Thank you 🙏','Please 🙏','Water 💧','Eat 🍎','Bathroom 🚽',
-    'Good morning 🌅','Good night 🌙','Sleep 🛌','Play 🏀','Run 🏃‍♂️','Walk 🚶‍♂️','Sit 🪑','Stand 🧍‍♂️',
-    'Happy 😀','Sad 😢','Angry 😡','Surprised 😲','Love ❤️','Like 👍','Dislike 👎','Friend 🤝','Family 👪','School 🏫',
-    'Book 📖','Pen 🖊️','Music 🎵','Dance 💃','Sing 🎤','Car 🚗','Bus 🚌','Bike 🚲','Phone 📱','Computer 💻',
-    'TV 📺','Movie 🎬','Game 🎮','Food 🍔','Drink 🥤','Ice cream 🍦','Cake 🎂','Cookie 🍪','Fruit 🍓','Vegetable 🥦',
-    'Dog 🐶','Cat 🐱','Bird 🐦','Fish 🐟','Animal 🐾','Tree 🌳','Flower 🌸','Sun ☀️','Moon 🌙','Star ⭐',
-    'Rain 🌧️','Snow ❄️','Wind 🌬️','Fire 🔥','Earth 🌍','Air 💨','Home 🏠','Store 🏬','Help 🆘','Stop ✋',
-    'Go 🟢','Wait ⏳','Now ⏰','Later 🕒','Hot 🌡️','Cold ❄️','Big 🏔️','Small 🐜','Fast 🏎️','Slow 🐢',
-    'Up ⬆️','Down ⬇️','Left ⬅️','Right ➡️','Open 🔓','Close 🔒','Inside 🏠','Outside 🌳','Clean 🧹','Dirty 🧼',
-    'Wash 🧽','Eat 🍽️','Drink 🥛','Wake up ⏰','Play ⚽','Read 📚','Write ✍️','Listen 👂','See 👀','Touch ✋',
-    'Smell 👃','Taste 👅','Think 🤔','Maybe 🤷‍♂️','Sorry 😔','Excited 🤩','Tired 😴','Scared 😱','Hate 💔',
-    'Morning 🌅','Afternoon 🌇','Evening 🌆','Night 🌃','Today 📅','Tomorrow 📆','Yesterday 📅','Soon ⏱️','Apple 🍎','Banana 🍌',
-    'Orange 🍊','Grapes 🍇','Strawberry 🍓','Cherry 🍒','Watermelon 🍉','Peach 🍑','Pear 🍐','Lemon 🍋','Bread 🍞','Milk 🥛',
-    'Cheese 🧀','Egg 🥚','Butter 🧈','Rice 🍚','Pasta 🍝','Pizza 🍕','Burger 🍔','Fries 🍟','Coffee ☕','Tea 🍵',
-    'Juice 🧃','Soda 🥤','Ball ⚽','Doll 🪆','Toy 🚂','Puzzle 🧩','Draw 🎨','Think 🤔','Sing 🎤','Dance 💃',
-    'Phone 📱','Computer 💻','TV 📺','Music 🎵','Movie 🎬','Game 🎮','Car 🚗','Bus 🚌','Bike 🚲','Train 🚆',
-    'Plane ✈️','Boat 🚤','House 🏠','Apartment 🏢','Tree 🌳','Flower 🌺','Grass 🌱','Sun 🌞','Moon 🌙','Star ⭐',
-    'Cloud ☁️','Rain 🌧️','Snow ❄️','Wind 🌬️','Dog 🐕','Cat 🐈','Bird 🐦','Fish 🐟','Horse 🐎','Cow 🐄',
-    'Chicken 🐓','Pig 🐖','Sheep 🐑','Goat 🐐','Apple 🍎','Banana 🍌','Orange 🍊','Grapes 🍇','Strawberry 🍓','Cherry 🍒',
-    'Watermelon 🍉','Peach 🍑','Pear 🍐','Lemon 🍋','Bread 🍞','Milk 🥛','Cheese 🧀','Egg 🥚','Butter 🧈','Rice 🍚'
-  ]
+  'Food': ['🍎 Apple','🍌 Banana','🍕 Pizza','🍔 Burger','🌭 Hotdog','🥗 Salad','🍩 Donut','🍪 Cookie','🍫 Chocolate','🥛 Milk','🍳 Egg','🍞 Bread','🍤 Shrimp','🍣 Sushi','🥓 Bacon','🧀 Cheese','🥐 Croissant','🍟 Fries','🥔 Potato','🥕 Carrot'],
+  'Places': ['🏠 Home','🏢 Office','🏫 School','🏥 Hospital','🏰 Castle','🕌 Mosque','⛪ Church','🏖️ Beach','🏞️ Park','🗽 Statue','🏟️ Stadium','🛤️ Train','✈️ Airport','🚂 Train','🛳️ Ship','⛵ Boat','🚗 Car','🚕 Taxi','🚌 Bus'],
+  'Home': ['🛋️ Sofa','🛏️ Bed','🚪 Door','🪑 Chair','🛁 Bathtub','🚿 Shower','🖼️ Picture','🪟 Window','🪠 Plunger','🧹 Broom','🪣 Bucket','🛎️ Bell','🛒 Cart','🧺 Basket','🧻 Toilet Paper','🕯️ Candle','🛍️ Bag','📺 TV','💡 Light','🗑️ Trash'],
+  'Animals': ['🐶 Dog','🐱 Cat','🐭 Mouse','🐹 Hamster','🐰 Rabbit','🦊 Fox','🐻 Bear','🐼 Panda','🐨 Koala','🐯 Tiger','🦁 Lion','🐮 Cow','🐷 Pig','🐸 Frog','🐵 Monkey','🐔 Chicken','🦆 Duck','🦉 Owl','🐴 Horse','🦄 Unicorn'],
+  'Colors': ['🔴 Red','🟠 Orange','🟡 Yellow','🟢 Green','🔵 Blue','🟣 Purple','⚫ Black','⚪ White','🟤 Brown','🩵 Light Blue','🩷 Pink','🟢 Lime','🟡 Gold','🟣 Violet','🟤 Tan','🟠 Peach','🩶 Gray','🟥 Maroon','🟧 Coral','🟦 Navy'],
+  'Emotions': ['😀 Happy','😢 Sad','😡 Angry','😱 Scared','😴 Sleepy','🤯 Shocked','😎 Cool','😍 Love','😤 Frustrated','🤔 Thinking','🥳 Party','😇 Innocent','🤪 Silly','😐 Neutral','😕 Confused','😭 Crying','🤬 Raging','😶 Speechless','😌 Relaxed','🤩 Excited'],
+  'Clothing': ['👕 Shirt','👖 Pants','👗 Dress','🩳 Shorts','🧥 Coat','🧢 Hat','🥿 Shoes','👟 Sneakers','🧦 Socks','🩱 Swimsuit','🧤 Gloves','🧣 Scarf','👔 Tie','🩴 Sandals','🥾 Boots','👒 Bonnet','👑 Crown','👘 Kimono','🥻 Sari','🩰 Ballet Shoes'],
+  'Transport': ['🚗 Car','🚕 Taxi','🚙 SUV','🚌 Bus','🚎 Trolley','🏎️ Race Car','🚓 Police Car','🚑 Ambulance','🚒 Fire Truck','🚐 Van','🛵 Scooter','🏍️ Motorcycle','✈️ Plane','🚁 Helicopter','🚂 Train','🛳️ Ship','⛵ Sailboat','🚤 Speedboat','🚊 Tram','🚜 Tractor'],
+  'Sports': ['⚽ Soccer','🏀 Basketball','🏈 Football','⚾ Baseball','🎾 Tennis','🏐 Volleyball','🏉 Rugby','🥏 Disc','🏓 Ping Pong','🏸 Badminton','🥊 Boxing','🥋 Karate','⛳ Golf','🏌️ Golfing','🏹 Archery','🎿 Skiing','⛷️ Snow Ski','🏂 Snowboard','🤽 Water Polo'],
+  'Nature': ['🌲 Tree','🌳 Forest','🌴 Palm','🌵 Cactus','🌾 Wheat','🌿 Herb','☘️ Clover','🍀 Four Leaf','🌻 Sunflower','🌼 Daisy','🌹 Rose','🥀 Wilted','🌷 Tulip','🌸 Cherry Blossom','💐 Bouquet','🌺 Hibiscus','🍁 Maple','🍂 Leaves','🌊 Wave','⛰️ Mountain']
 };
 
 // ========== VOICES ==========
@@ -188,9 +176,7 @@ const categoryBar = document.getElementById('categoryBar');
 const predictionsList = document.getElementById('predictions');
 
 // ========== FUNCTIONS ==========
-function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
+function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
 function populateProfiles(){
   profileSelect.innerHTML = '';
   for(const prof in data.profiles){
@@ -206,27 +192,10 @@ function updateProfileData(){
     info.textContent = JSON.stringify(data.profiles[data.currentProfile],null,2);
   } else info.textContent = 'No profile selected';
 }
-function addProfile(name){
-  if(!name) return;
-  data.profiles[name] = {words:{},categories:{}};
-  data.currentProfile = name;
-  populateProfiles(); saveData();
-}
-function deleteProfile(name){
-  if(!name) return;
-  delete data.profiles[name];
-  data.currentProfile = Object.keys(data.profiles)[0]||null;
-  populateProfiles(); saveData();
-}
+function addProfile(name){ if(!name) return; data.profiles[name] = {words:{},categories:{}}; data.currentProfile = name; populateProfiles(); saveData(); }
+function deleteProfile(name){ if(!name) return; delete data.profiles[name]; data.currentProfile = Object.keys(data.profiles)[0]||null; populateProfiles(); saveData(); }
 function appendWord(word){ messageArea.value += word+' '; updatePredictions(word); }
-function speakMessage(){
-  if(!messageArea.value) return;
-  const utter = new SpeechSynthesisUtterance(messageArea.value);
-  utter.voice = voices.find(v=>v.name===document.getElementById('voiceSelect').value)||null;
-  speechSynthesis.speak(utter);
-  data.lastVoice = utter.voice?.name||'';
-  saveData();
-}
+function speakMessage(){ if(!messageArea.value) return; const utter = new SpeechSynthesisUtterance(messageArea.value); utter.voice = voices.find(v=>v.name===document.getElementById('voiceSelect').value)||null; speechSynthesis.speak(utter); data.lastVoice = utter.voice?.name||''; saveData(); }
 function stopSpeaking(){ speechSynthesis.cancel(); }
 function updatePredictions(lastWord){
   predictionsList.innerHTML = '';
@@ -242,9 +211,11 @@ function populateWords(category){
   wordGrid.innerHTML = '';
   const words = CATEGORIES[category]||[];
   words.forEach(w=>{
+    const [emoji, ...rest] = w.split(' ');
+    const word = rest.join(' ');
     const btn = document.createElement('div'); btn.className='word-btn';
-    btn.innerHTML=`<div class="word-emoji">💬</div><div>${w}</div>`;
-    btn.onclick=()=>appendWord(w);
+    btn.innerHTML=`<div class="word-emoji">${emoji}</div><div>${word}</div>`;
+    btn.onclick=()=>appendWord(word);
     wordGrid.appendChild(btn);
   });
 }
