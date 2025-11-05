@@ -1,296 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Web AAC — Offline</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Halo AAC — Offline</title>
 <link rel="icon" href="data:," />
 <style>
-  :root{
-    --accent:#2c7be5;
-    --bg:#f3f4f6;
-    --card:#ffffff;
-    --muted:#666;
-    --radius:10px;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background:var(--bg);
-    color:#111;
-    -webkit-font-smoothing:antialiased;
-  }
+:root {
+  --accent: #2c7be5;
+  --bg: #f3f4f6;
+  --card: #ffffff;
+  --muted: #666;
+  --radius: 10px;
+}
 
-  header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:12px 18px;
-    background:linear-gradient(90deg,#0b63d6,#2c7be5);
-    color:#fff;
-  }
-  header h1{margin:0;font-size:20px;letter-spacing:0.2px}
-  .top-controls{display:flex;gap:8px;align-items:center}
-  .icon-btn{
-    background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:6px;border-radius:6px;
-  }
-  .icon-btn:hover{background:rgba(255,255,255,0.06)}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: #000;
+}
 
-  main{padding:16px;max-width:1100px;margin:18px auto}
+header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: var(--card);
+  border-bottom: 1px solid #ccc;
+}
 
-  .profile-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
-  select,button,input,textarea{font-family:inherit}
-  .btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
-  .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(44,123,229,0.12)}
-  .btn.warn{background:#e04b4b}
+header img {
+  height: 40px;
+  margin-right: 10px;
+}
 
-  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
-  .categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-  .cat-btn{background:var(--card);border:1px solid #e6e6e6;padding:8px 12px;border-radius:999px;cursor:pointer}
-  .cat-btn.active{background:var(--accent);color:#fff;border-color:transparent}
+h1 { margin: 0; }
 
-  .panel{
-    display:flex;gap:16px;align-items:flex-start;
-    flex-wrap:wrap;
-  }
+.container {
+  padding: 20px;
+}
 
-  .left{
-    flex:1 1 360px;
-    min-width:280px;
-  }
-  .right{
-    flex:2 1 620px;
-    min-width:320px;
-  }
+textarea {
+  width: 100%;
+  height: 100px;
+  border-radius: var(--radius);
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+}
 
-  .card{
-    background:var(--card);
-    border-radius:var(--radius);
-    padding:12px;
-    box-shadow:0 6px 18px rgba(15,15,15,0.04);
-    margin-bottom:12px;
-  }
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
 
-  #word-grid{
-    display:grid;
-    gap:8px;
-    grid-template-columns: repeat(auto-fill,minmax(110px,1fr));
-  }
-  .word-btn{
-    background:#fff;border:1px solid #eee;padding:8px;border-radius:10px;cursor:pointer;display:flex;
-    flex-direction:column;align-items:center;justify-content:center;height:86px;font-size:15px;
-  }
-  .word-emoji{font-size:22px;margin-bottom:6px}
+button:hover { opacity: 0.9; }
 
-  textarea#message{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;min-height:56px;font-size:16px}
-  ul#predictions{list-style:none;margin:8px 0 0;padding:0;max-height:140px;overflow:auto;border-radius:6px}
-  #predictions li{padding:8px;border-bottom:1px solid #f0f0f0;cursor:pointer}
-  #predictions li:hover{background:#f5f7fb}
+.category-section {
+  margin-top: 20px;
+}
 
-  /* Settings menu */
-  #settingsMenu{display:none;position:fixed;right:18px;top:64px;background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,0.12);width:320px;z-index:999}
-  #settingsMenu label{display:block;margin-bottom:8px;font-size:13px;color:var(--muted)}
-  #settingsMenu select,input{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #e6e6e6}
-
-  footer{padding:18px;text-align:center;color:#777;font-size:13px}
-
-  @media (max-width:720px){
-    .panel{flex-direction:column}
-    .right{order:2}
-    .left{order:1}
-    .cat-btn{font-size:14px;padding:6px 10px}
-  }
+.category-section input {
+  padding: 5px;
+  margin-right: 5px;
+}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>Halo AAC — Offline Web</h1>
-  <div class="top-controls">
-    <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
-    <select id="voiceSelect" aria-label="Voice selector"></select>
-  </div>
+  <img src="logo.png" alt="Halo AAC Logo">
+  <h1>Halo AAC</h1>
 </header>
 
-<main>
-  <div class="profile-row">
-    <label style="display:flex;align-items:center;gap:8px">
-      Profile:
-      <select id="profileSelect"></select>
-    </label>
-    <button id="addProfile" class="btn ghost">Add Profile</button>
-    <button id="delProfile" class="btn ghost">Delete</button>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <button id="exportBtn" class="btn ghost">Export Save Code</button>
-      <button id="importBtn" class="btn">Import Save Code</button>
-    </div>
+<div class="container">
+
+  <h2>Words</h2>
+  <textarea id="userWords" placeholder="Add your words here..."></textarea>
+  <div>
+    <button onclick="saveWords()">Save Words</button>
+    <button onclick="exportProfile()">Export Profile</button>
+    <button onclick="importProfile()">Import Profile</button>
   </div>
 
-  <div class="controls">
-    <div class="categories card" id="categoryBar" style="display:flex;gap:8px;padding:8px"></div>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <button id="addWordBtn" class="btn">Add Word</button>
-      <button id="addCategoryBtn" class="btn">Add Category</button>
-      <button id="clearBtn" class="btn ghost">Clear Message</button>
-    </div>
+  <div class="category-section">
+    <h2>Categories</h2>
+    <input type="text" id="newCategory" placeholder="New category name">
+    <button onclick="addCategory()">Add Category</button>
+    <ul id="categoriesList"></ul>
   </div>
 
-  <div class="panel">
-    <div class="left">
-      <div class="card">
-        <label for="message">Message</label>
-        <textarea id="message" placeholder="Type or click words..."></textarea>
-        <ul id="predictions"></ul>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="speakBtn" class="btn">Speak</button>
-          <button id="stopBtn" class="btn ghost">Stop</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <strong>Active Profile Data</strong>
-        <div id="profileData" style="margin-top:8px;color:#444;font-size:14px">No profile selected</div>
-      </div>
-    </div>
-
-    <div class="right">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong id="gridTitle">All Words</strong>
-          <div style="color:var(--muted);font-size:13px">Tap a word to append</div>
-        </div>
-        <div id="word-grid" style="margin-top:12px"></div>
-      </div>
-    </div>
-  </div>
-</main>
-
-<div id="settingsMenu">
-  <label>Choose Voice
-    <select id="settingsVoice"></select>
-  </label>
-  <label>Background color
-    <input type="color" id="bgColorPicker" value="#f3f4f6">
-  </label>
-  <label>Export / Import Save Code
-    <div style="display:flex;gap:8px">
-      <button id="doExport" class="btn ghost" style="flex:1">Generate code</button>
-      <button id="doImport" class="btn" style="flex:1">Apply code</button>
-    </div>
-  </label>
-  <label style="margin-top:8px">Paste Save Code to import:
-    <textarea id="importArea" placeholder="Paste exported code here" style="min-height:80px;padding:8px;border-radius:6px;border:1px solid #e6e6e6"></textarea>
-  </label>
-  <div style="display:flex;gap:8px;margin-top:10px">
-    <button id="closeSettings" class="btn ghost" style="flex:1">Close</button>
-  </div>
 </div>
 
-<footer>Works offline. Export code to move your data between devices.</footer>
-
 <script>
-/* =================== Words & Categories =================== */
-const CATEGORIES = { /* same as before, omitted for brevity */ };
+// Load saved words
+document.addEventListener("DOMContentLoaded", () => {
+  const saved = localStorage.getItem("haloWords");
+  if (saved) document.getElementById("userWords").value = saved;
 
-/* =================== Storage & State =================== */
-const STORAGE_KEY = 'halo_aac_data_v2';
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"profiles":{},"currentProfile":null}');
-let currentCategory = 'Core';
+  const savedCats = JSON.parse(localStorage.getItem("haloCategories") || "[]");
+  savedCats.forEach(cat => addCategoryToList(cat));
+});
 
-/* =================== UI References =================== */
-const profileSelect = document.getElementById('profileSelect');
-const addProfileBtn = document.getElementById('addProfile');
-const delProfileBtn = document.getElementById('delProfile');
-const wordGrid = document.getElementById('word-grid');
-const msgBox = document.getElementById('message');
-const predictions = document.getElementById('predictions');
-const speakBtn = document.getElementById('speakBtn');
-const stopBtn = document.getElementById('stopBtn');
-const addWordBtn = document.getElementById('addWordBtn');
-const addCategoryBtn = document.getElementById('addCategoryBtn');
-const clearBtn = document.getElementById('clearBtn');
-const settingsBtn = document.getElementById('settingsBtn');
-const settingsMenu = document.getElementById('settingsMenu');
-const bgColorPicker = document.getElementById('bgColorPicker');
-const settingsVoice = document.getElementById('settingsVoice');
-const voiceSelect = document.getElementById('voiceSelect');
-const gridTitle = document.getElementById('gridTitle');
-const profileData = document.getElementById('profileData');
-const exportBtn = document.getElementById('exportBtn');
-const importBtn = document.getElementById('importBtn');
-const importArea = document.getElementById('importArea');
-const doExport = document.getElementById('doExport');
-const doImport = document.getElementById('doImport');
-const closeSettings = document.getElementById('closeSettings');
-const catBar = document.getElementById('categoryBar');
-
-/* =================== Grid & Words =================== */
-function mergedWordsForCategory(cat){
-  const out={};
-  Object.assign(out, CATEGORIES[cat]||{});
-  if(data.currentProfile && data.profiles[data.currentProfile]){
-    const prof=data.profiles[data.currentProfile];
-    if(prof.words) Object.entries(prof.words).forEach(([w,e])=>out[w]=e);
-    if(prof.customCategories && prof.customCategories[cat]){
-      Object.entries(prof.customCategories[cat]).forEach(([w,e])=>out[w]=e);
-    }
-  }
-  return out;
+// Save words
+function saveWords() {
+  const words = document.getElementById("userWords").value;
+  localStorage.setItem("haloWords", words);
+  alert("Words saved!");
 }
 
-function updateGrid(){
-  gridTitle.textContent=currentCategory+' — Words';
-  wordGrid.innerHTML='';
-  const words=mergedWordsForCategory(currentCategory);
-  Object.entries(words).forEach(([w,e])=>{
-    const b=document.createElement('button');
-    b.className='word-btn';
-    b.innerHTML=`<div class="word-emoji">${e||''}</div><div class="word-text">${w}</div>`;
-    b.onclick=()=>addWordToMessage(w);
-    wordGrid.appendChild(b);
-  });
-  updateCategoryActive();
+// Export profile
+function exportProfile() {
+  const data = {
+    words: document.getElementById("userWords").value,
+    categories: JSON.parse(localStorage.getItem("haloCategories") || "[]")
+  };
+  const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "halo_profile.json";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
-/* =================== Add Word without triggering keyboard =================== */
-function addWordToMessage(word){
-  msgBox.value = msgBox.value ? (msgBox.value + ' ' + word) : word;
-  // removed msgBox.focus() to prevent keyboard popup
-  predict();
-}
-
-/* =================== Prediction =================== */
-function predict(){
-  const text=msgBox.value.trim();
-  predictions.innerHTML='';
-  if(!text) return;
-  const last=text.split(/\s+/).pop().toLowerCase();
-  if(!last) return;
-  const all=getAllWords();
-  const matches=all.filter(w=>w.toLowerCase().startsWith(last)&&w.toLowerCase()!==last).slice(0,8);
-  matches.forEach(m=>{
-    const li=document.createElement('li'); li.textContent=m;
-    li.onclick=()=>{
-      const arr=msgBox.value.trim().split(/\s+/);
-      arr[arr.length-1]=m;
-      msgBox.value=arr.join(' ');
-      predictions.innerHTML='';
+// Import profile
+function importProfile() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (data.words !== undefined) {
+          document.getElementById("userWords").value = data.words;
+          localStorage.setItem("haloWords", data.words);
+        }
+        if (data.categories !== undefined) {
+          localStorage.setItem("haloCategories", JSON.stringify(data.categories));
+          refreshCategories(data.categories);
+        }
+        alert("Profile imported!");
+      } catch {
+        alert("Error reading profile file.");
+      }
     };
-    predictions.appendChild(li);
-  });
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
-/* =================== Initialization =================== */
-buildCategoryButtons();
-refreshProfileSelect();
-updateGrid();
-refreshProfileDisplay();
-if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].bg){
-  document.body.style.background=data.profiles[data.currentProfile].bg; bgColorPicker.value=data.profiles[data.currentProfile].bg;
+// Categories
+function addCategory() {
+  const input = document.getElementById("newCategory");
+  const name = input.value.trim();
+  if (!name) return;
+  addCategoryToList(name);
+  input.value = "";
+
+  const cats = JSON.parse(localStorage.getItem("haloCategories") || "[]");
+  cats.push(name);
+  localStorage.setItem("haloCategories", JSON.stringify(cats));
 }
 
+function addCategoryToList(name) {
+  const li = document.createElement("li");
+  li.textContent = name;
+  document.getElementById("categoriesList").appendChild(li);
+}
+
+function refreshCategories(list) {
+  const ul = document.getElementById("categoriesList");
+  ul.innerHTML = "";
+  list.forEach(addCategoryToList);
+}
 </script>
+
 </body>
 </html>
-
