@@ -451,12 +451,7 @@ function loadVoices(){
   const last=data.lastVoice; if(last && voices.find(v=>v.name===last)) { voiceSelect.value=last; settingsVoice.value=last; }
 }
 speechSynthesis.onvoiceschanged=loadVoices; loadVoices();
-voiceSelect.onchange=settingsVoice.onchange=(e)=>{ data.lastVoice=e.target.value; saveStorage(); settingsVoice.value=e.target.value; voiceSelect.value=e.target.value; };
-
-/* =================== Misc =================== */
-msgBox.addEventListener('input', predict);
-clearBtn.onclick=()=>{ msgBox.value=''; predictions.innerHTML=''; };
-addWordBtn.addEventListener('click', ()=>{ document.getElementById('addWordBtn').onclick(); });
+voiceSelect.onchange=settingsVoice.onchange=(e)=>{ data.lastVoice=e.target.value; saveStorage(); settingsVoice.value=e.target.value; voiceSelect.value=
 
 buildCategoryButtons(); refreshProfileSelect(); updateGrid(); refreshProfileDisplay();
 if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].bg){
@@ -466,6 +461,7 @@ exportBtn.title='Generate Save Code to copy (paste on other devices to import)';
 </script>
 </body>
 </html>
+
 
 
 
