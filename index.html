@@ -14,7 +14,9 @@
   --radius: 10px;
 }
 * { box-sizing: border-box; }
-body { margin:0; font-family:"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:#111; -webkit-font-smoothing:antialiased; }
+body {
+  margin:0; font-family:"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:#111; -webkit-font-smoothing:antialiased;
+}
 header { display:flex; justify-content:space-between; align-items:center; padding:12px 18px; background:linear-gradient(90deg,#0b63d6,#2c7be5); color:#fff; }
 header h1 { margin:0; font-size:20px; }
 header .subtitle { font-size:12px; opacity:0.8; }
@@ -130,40 +132,51 @@ Offline AAC. Export code to save data. Thanks Kaelynn Partlow.
 
 <script>
 // ========== DATA ==========
-const STORAGE_KEY = 'halo_aac_v6';
+const STORAGE_KEY = 'halo_aac_data_v5';
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"profiles":{},"currentProfile":null,"lastVoice":""}');
-
-// Default categories
 const CATEGORIES = {
-  "Default": ["Hello","Yes","No","Thank you","Please","Water","Eat","Bathroom"],
-  "Actions": ["Run","Jump","Sleep","Play","Read","Write","Draw","Sing"]
+  'Default': [
+    'Hello 💬','Yes ✅','No ❌','Thank you 🙏','Please 🙏','Water 💧','Eat 🍎','Bathroom 🚽',
+    'Good morning 🌅','Good night 🌙','Sleep 🛌','Play 🏀','Run 🏃‍♂️','Walk 🚶‍♂️','Sit 🪑','Stand 🧍‍♂️',
+    'Happy 😀','Sad 😢','Angry 😡','Surprised 😲','Love ❤️','Like 👍','Dislike 👎','Friend 🤝','Family 👪','School 🏫',
+    'Book 📖','Pen 🖊️','Music 🎵','Dance 💃','Sing 🎤','Car 🚗','Bus 🚌','Bike 🚲','Phone 📱','Computer 💻',
+    'TV 📺','Movie 🎬','Game 🎮','Food 🍔','Drink 🥤','Ice cream 🍦','Cake 🎂','Cookie 🍪','Fruit 🍓','Vegetable 🥦',
+    'Dog 🐶','Cat 🐱','Bird 🐦','Fish 🐟','Animal 🐾','Tree 🌳','Flower 🌸','Sun ☀️','Moon 🌙','Star ⭐',
+    'Rain 🌧️','Snow ❄️','Wind 🌬️','Fire 🔥','Earth 🌍','Air 💨','Home 🏠','Store 🏬','Help 🆘','Stop ✋',
+    'Go 🟢','Wait ⏳','Now ⏰','Later 🕒','Hot 🌡️','Cold ❄️','Big 🏔️','Small 🐜','Fast 🏎️','Slow 🐢',
+    'Up ⬆️','Down ⬇️','Left ⬅️','Right ➡️','Open 🔓','Close 🔒','Inside 🏠','Outside 🌳','Clean 🧹','Dirty 🧼',
+    'Wash 🧽','Eat 🍽️','Drink 🥛','Wake up ⏰','Play ⚽','Read 📚','Write ✍️','Listen 👂','See 👀','Touch ✋',
+    'Smell 👃','Taste 👅','Think 🤔','Maybe 🤷‍♂️','Sorry 😔','Excited 🤩','Tired 😴','Scared 😱','Hate 💔',
+    'Morning 🌅','Afternoon 🌇','Evening 🌆','Night 🌃','Today 📅','Tomorrow 📆','Yesterday 📅','Soon ⏱️','Apple 🍎','Banana 🍌',
+    'Orange 🍊','Grapes 🍇','Strawberry 🍓','Cherry 🍒','Watermelon 🍉','Peach 🍑','Pear 🍐','Lemon 🍋','Bread 🍞','Milk 🥛',
+    'Cheese 🧀','Egg 🥚','Butter 🧈','Rice 🍚','Pasta 🍝','Pizza 🍕','Burger 🍔','Fries 🍟','Coffee ☕','Tea 🍵',
+    'Juice 🧃','Soda 🥤','Ball ⚽','Doll 🪆','Toy 🚂','Puzzle 🧩','Draw 🎨','Think 🤔','Sing 🎤','Dance 💃',
+    'Phone 📱','Computer 💻','TV 📺','Music 🎵','Movie 🎬','Game 🎮','Car 🚗','Bus 🚌','Bike 🚲','Train 🚆',
+    'Plane ✈️','Boat 🚤','House 🏠','Apartment 🏢','Tree 🌳','Flower 🌺','Grass 🌱','Sun 🌞','Moon 🌙','Star ⭐',
+    'Cloud ☁️','Rain 🌧️','Snow ❄️','Wind 🌬️','Dog 🐕','Cat 🐈','Bird 🐦','Fish 🐟','Horse 🐎','Cow 🐄',
+    'Chicken 🐓','Pig 🐖','Sheep 🐑','Goat 🐐','Apple 🍎','Banana 🍌','Orange 🍊','Grapes 🍇','Strawberry 🍓','Cherry 🍒',
+    'Watermelon 🍉','Peach 🍑','Pear 🍐','Lemon 🍋','Bread 🍞','Milk 🥛','Cheese 🧀','Egg 🥚','Butter 🧈','Rice 🍚'
+  ]
 };
-
-// Emoji mapping
-const EMOJIS = {
-  "hello":"👋","yes":"✅","no":"❌","thank you":"🙏","please":"🙏",
-  "water":"💧","eat":"🍎","bathroom":"🚽","run":"🏃","jump":"🤾","sleep":"😴","play":"🏀","read":"📖",
-  "write":"✍️","draw":"🎨","sing":"🎵"
-};
-
-// ========== UTILITY ==========
-const saveData = ()=>localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-const getEmoji = word => EMOJIS[word.toLowerCase()]||"💬";
 
 // ========== VOICES ==========
 let voices = [];
-const loadVoices = ()=>{
+function loadVoices(){
   voices = speechSynthesis.getVoices();
   const select = document.getElementById('voiceSelect');
   const settingsSelect = document.getElementById('settingsVoice');
   select.innerHTML = settingsSelect.innerHTML = '';
   voices.forEach(v=>{
-    const o = document.createElement('option'); o.value=v.name; o.textContent=`${v.name} (${v.lang})`;
-    select.appendChild(o); settingsSelect.appendChild(o.cloneNode(true));
+    const option = document.createElement('option');
+    option.value = v.name; option.textContent = `${v.name} (${v.lang})`;
+    select.appendChild(option);
+    settingsSelect.appendChild(option.cloneNode(true));
   });
   const last = data.lastVoice;
-  if(last && voices.find(v=>v.name===last)){ select.value = settingsSelect.value = last; }
-};
+  if(last && voices.find(v=>v.name===last)){
+    select.value = last; settingsSelect.value = last;
+  }
+}
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
 
@@ -175,57 +188,62 @@ const categoryBar = document.getElementById('categoryBar');
 const predictionsList = document.getElementById('predictions');
 
 // ========== FUNCTIONS ==========
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 function populateProfiles(){
-  profileSelect.innerHTML='';
-  Object.keys(data.profiles).forEach(p=>{
-    const o=document.createElement('option'); o.value=o.textContent=p; profileSelect.appendChild(o);
-  });
-  profileSelect.value=data.currentProfile||'';
+  profileSelect.innerHTML = '';
+  for(const prof in data.profiles){
+    const opt = document.createElement('option'); opt.value=prof; opt.textContent=prof;
+    profileSelect.appendChild(opt);
+  }
+  profileSelect.value = data.currentProfile || '';
   updateProfileData();
 }
 function updateProfileData(){
-  const info=document.getElementById('profileData');
-  if(data.currentProfile && data.profiles[data.currentProfile]) info.textContent = JSON.stringify(data.profiles[data.currentProfile],null,2);
-  else info.textContent='No profile selected';
+  const info = document.getElementById('profileData');
+  if(data.currentProfile && data.profiles[data.currentProfile]){
+    info.textContent = JSON.stringify(data.profiles[data.currentProfile],null,2);
+  } else info.textContent = 'No profile selected';
 }
 function addProfile(name){
   if(!name) return;
-  data.profiles[name]={words:{},categories:{}};
-  data.currentProfile=name; populateProfiles(); saveData();
+  data.profiles[name] = {words:{},categories:{}};
+  data.currentProfile = name;
+  populateProfiles(); saveData();
 }
 function deleteProfile(name){
   if(!name) return;
   delete data.profiles[name];
-  data.currentProfile=Object.keys(data.profiles)[0]||null;
+  data.currentProfile = Object.keys(data.profiles)[0]||null;
   populateProfiles(); saveData();
 }
-function appendWord(word){
-  messageArea.value += word+' ';
-  updatePredictions(word);
-}
+function appendWord(word){ messageArea.value += word+' '; updatePredictions(word); }
 function speakMessage(){
   if(!messageArea.value) return;
-  const utter=new SpeechSynthesisUtterance(messageArea.value);
+  const utter = new SpeechSynthesisUtterance(messageArea.value);
   utter.voice = voices.find(v=>v.name===document.getElementById('voiceSelect').value)||null;
   speechSynthesis.speak(utter);
-  data.lastVoice=utter.voice?.name||'';
+  data.lastVoice = utter.voice?.name||'';
   saveData();
 }
 function stopSpeaking(){ speechSynthesis.cancel(); }
 function updatePredictions(lastWord){
-  predictionsList.innerHTML='';
-  const words=Object.values(CATEGORIES).flat().filter(w=>w.toLowerCase().startsWith(lastWord.toLowerCase()) && w!==lastWord).slice(0,5);
-  words.forEach(w=>{
-    const li=document.createElement('li'); li.textContent=w;
-    li.onclick=()=>appendWord(w);
+  predictionsList.innerHTML = '';
+  const words = Object.keys(CATEGORIES).flatMap(cat=>CATEGORIES[cat]);
+  const preds = words.filter(w=>w.toLowerCase().startsWith(lastWord.toLowerCase()) && w!==lastWord).slice(0,5);
+  preds.forEach(p=>{
+    const li = document.createElement('li'); li.textContent = p;
+    li.onclick=()=>appendWord(p);
     predictionsList.appendChild(li);
   });
 }
 function populateWords(category){
-  wordGrid.innerHTML='';
-  (CATEGORIES[category]||[]).forEach(w=>{
-    const btn=document.createElement('div'); btn.className='word-btn';
-    btn.innerHTML=`<div class="word-emoji">${getEmoji(w)}</div><div>${w}</div>`;
+  wordGrid.innerHTML = '';
+  const words = CATEGORIES[category]||[];
+  words.forEach(w=>{
+    const btn = document.createElement('div'); btn.className='word-btn';
+    btn.innerHTML=`<div class="word-emoji">💬</div><div>${w}</div>`;
     btn.onclick=()=>appendWord(w);
     wordGrid.appendChild(btn);
   });
@@ -233,8 +251,8 @@ function populateWords(category){
 function populateCategories(){
   categoryBar.innerHTML='';
   Object.keys(CATEGORIES).forEach(cat=>{
-    const btn=document.createElement('button'); btn.className='cat-btn'; btn.textContent=cat;
-    btn.onclick=()=>{ populateWords(cat); document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); };
+    const btn = document.createElement('button'); btn.className='cat-btn'; btn.textContent=cat;
+    btn.onclick=()=>{populateWords(cat); document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');};
     categoryBar.appendChild(btn);
   });
   document.querySelector('.cat-btn')?.click();
@@ -252,24 +270,27 @@ document.getElementById('closeSettings').onclick=()=>{ document.getElementById('
 document.getElementById('bgColorPicker').oninput=e=>{ document.body.style.background=e.target.value; };
 document.getElementById('doExport').onclick=()=>{ document.getElementById('importArea').value = JSON.stringify(data); };
 document.getElementById('doImport').onclick=()=>{
-  try{ const imported=JSON.parse(document.getElementById('importArea').value); data=imported; populateProfiles(); populateCategories(); saveData(); alert('Import successful'); }
-  catch{ alert('Invalid JSON'); }
+  try{
+    const imported = JSON.parse(document.getElementById('importArea').value);
+    data = imported; populateProfiles(); populateCategories(); saveData();
+    alert('Import successful');
+  }catch{ alert('Invalid JSON'); }
 };
 document.getElementById('addWordBtn').onclick=()=>{
   const w=prompt('New word:'); if(!w) return;
-  const cat=prompt('Category (leave blank for Default):')||'Default';
+  const cat = prompt('Category (leave blank for Default):')||'Default';
   if(!CATEGORIES[cat]) CATEGORIES[cat]=[];
   CATEGORIES[cat].push(w);
   populateCategories();
 };
 document.getElementById('addCategoryBtn').onclick=()=>{
-  const c=prompt('Category name:'); if(!c) return; if(!CATEGORIES[c]) CATEGORIES[c]=[]; populateCategories();
+  const c=prompt('Category name:'); if(!c) return; if(!CATEGORIES[c]) CATEGORIES[c]=[]; populateCategories(); 
 };
 
 // ========== INIT ==========
 populateProfiles();
 populateCategories();
-
 </script>
+
 </body>
 </html>
