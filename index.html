@@ -1,125 +1,630 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Halo AAC — Offline</title>
 <link rel="icon" href="data:," />
 <style>
 :root {
-  --accent:#2c7be5;
-  --bg:#f3f4f6;
-  --card:#ffffff;
-  --muted:#666;
-  --radius:10px;
+  --accent: #2c7be5;
+  --bg: #f3f4f6;
+  --card: #ffffff;
+  --muted: #666;
+  --radius: 10px;
 }
-* { box-sizing:border-box; }
-body {
+*{box-sizing:border-box}
+body{
   margin:0;
-  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: var(--bg);
-  color: #000;
+  font-family:"Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background:var(--bg);
+  color:#111;
+  -webkit-font-smoothing:antialiased;
 }
-header {
-  display:flex;
-  align-items:center;
-  padding:10px;
-  background: var(--card);
-  border-bottom: 1px solid #ccc;
-}
-header img {
-  height:40px;
-  margin-right:10px;
-}
-button {
-  padding:10px 15px;
-  margin:5px;
-  border:none;
-  border-radius: var(--radius);
-  background: var(--accent);
-  color:#fff;
-  cursor:pointer;
-}
-button:hover { opacity:0.9; }
-.container {
-  padding:20px;
-}
-textarea {
-  width:100%;
-  height:100px;
-  border-radius: var(--radius);
-  border:1px solid #ccc;
-  padding:10px;
-  margin-bottom:10px;
-}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:linear-gradient(90deg,#0b63d6,#2c7be5);color:#fff}
+header h1{margin:0;font-size:20px}
+header .subtitle{font-size:12px;opacity:0.8;margin-top:2px}
+.icon-btn{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:6px;border-radius:6px}
+.icon-btn:hover{background:rgba(255,255,255,0.06)}
+main{max-width:1100px;margin:18px auto;padding:16px}
+.profile-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+select,button,input,textarea{font-family:inherit}
+.btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(44,123,229,0.12)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.categories{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.cat-btn{background:var(--card);border:1px solid #e6e6e6;padding:8px 12px;border-radius:999px;cursor:pointer}
+.cat-btn.active{background:var(--accent);color:#fff;border-color:transparent}
+.panel{display:flex;gap:16px;flex-wrap:wrap}
+.left{flex:1 1 360px;min-width:280px}
+.right{flex:2 1 620px;min-width:320px}
+.card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 6px 18px rgba(15,15,15,0.04);margin-bottom:12px}
+#word-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+.word-btn{background:#fff;border:1px solid #eee;padding:8px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;height:86px;font-size:15px;position:relative;user-select:none;-webkit-user-select:none}
+.word-emoji{font-size:22px;margin-bottom:6px}
+textarea#message{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;min-height:56px;font-size:16px;resize:none}
+ul#predictions{list-style:none;margin:8px 0 0;padding:0;max-height:140px;overflow:auto;border-radius:6px}
+#predictions li{padding:8px;border-bottom:1px solid #f0f0f0;cursor:pointer}
+#predictions li:hover{background:#f5f7fb}
+#settingsMenu{display:none;position:fixed;right:18px;top:64px;background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,0.12);width:320px;z-index:999}
+#settingsMenu label{display:block;margin-bottom:8px;font-size:13px;color:var(--muted)}
+#settingsMenu select,input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #e6e6e6}
+.small-note{font-size:12px;color:var(--muted);margin-top:6px}
+.word-actions{position:absolute;right:6px;top:6px;background:rgba(0,0,0,0.06);padding:6px;border-radius:6px;display:none}
+.word-btn.show-actions .word-actions{display:block}
+@media(max-width:720px){.panel{flex-direction:column}.right{order:2}.left{order:1}.cat-btn{font-size:14px;padding:6px 10px}}
 </style>
 </head>
 <body>
+
 <header>
-  <img src="logo.png" alt="Halo AAC Logo">
-  <h1>Halo AAC</h1>
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="logo.png" alt="Halo Logo" style="height:32px;">
+    <div>
+      <h1>Halo AAC — Offline</h1>
+      <div class="subtitle">Thanks Kaelynn Partlow</div>
+    </div>
+  </div>
+  <div class="top-controls">
+    <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+    <select id="voiceSelect" aria-label="Voice selector"></select>
+  </div>
 </header>
 
-<div class="container">
-  <textarea id="userWords" placeholder="Add your words here..."></textarea>
-  <div>
-    <button onclick="saveWords()">Save Words</button>
-    <button onclick="exportProfile()">Export Profile</button>
-    <button onclick="importProfile()">Import Profile</button>
+<main>
+  <div class="profile-row">
+    <label style="display:flex;align-items:center;gap:8px">Profile:
+      <select id="profileSelect"></select>
+    </label>
+    <button id="addProfile" class="btn ghost">Add Profile</button>
+    <button id="delProfile" class="btn ghost">Delete</button>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <button id="exportBtn" class="btn ghost">Export</button>
+      <button id="importBtn" class="btn">Import</button>
+    </div>
   </div>
+
+  <div class="controls">
+    <div class="categories card" id="categoryBar" style="display:flex;gap:8px;padding:8px"></div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <button id="addWordBtn" class="btn">Add Word</button>
+      <button id="addCategoryBtn" class="btn">Add Category</button>
+      <button id="clearBtn" class="btn ghost">Clear</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="left">
+      <div class="card">
+        <label for="message">Message</label>
+        <!-- readonly prevents mobile keyboard from appearing when tapping word buttons -->
+        <textarea id="message" readonly placeholder="Click words to add..."></textarea>
+        <ul id="predictions"></ul>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="speakBtn" class="btn">Speak</button>
+          <button id="stopBtn" class="btn ghost">Stop</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <strong>Profile Data</strong>
+        <div id="profileData" style="margin-top:8px;color:#444;font-size:14px">No profile selected</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong id="gridTitle">All Words</strong>
+          <div style="color:var(--muted);font-size:13px">Tap a word to append</div>
+        </div>
+        <div id="word-grid" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="settingsMenu">
+  <label>Choose Voice
+    <select id="settingsVoice"></select>
+  </label>
+
+  <label>Background color
+    <input type="color" id="bgColorPicker" value="#f3f4f6">
+  </label>
+
+  <label>Export / Import
+    <div style="display:flex;gap:8px">
+      <button id="doExport" class="btn ghost" style="flex:1">Generate JSON</button>
+      <button id="downloadExport" class="btn" style="flex:1">Download .json</button>
+    </div>
+  </label>
+
+  <label style="margin-top:8px">Paste Save JSON to import:
+    <textarea id="importArea" placeholder="Paste exported JSON here" style="min-height:80px;padding:8px;border-radius:6px;border:1px solid #e6e6e6"></textarea>
+  </label>
+
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button id="doImport" class="btn">Apply JSON</button>
+    <button id="closeSettings" class="btn ghost" style="flex:1">Close</button>
+  </div>
+
+  <div class="small-note">Tip: Use Export → Download to move to another device, then Import to restore.</div>
 </div>
 
-<script>
-// Load saved words
-document.addEventListener("DOMContentLoaded", () => {
-  const saved = localStorage.getItem("haloWords");
-  if (saved) document.getElementById("userWords").value = saved;
-});
+<footer style="padding:18px;text-align:center;color:#777;font-size:13px">
+  Offline AAC. Export JSON to move data between devices. Thanks Kaelynn Partlow.
+</footer>
 
-function saveWords() {
-  const words = document.getElementById("userWords").value;
-  localStorage.setItem("haloWords", words);
-  alert("Words saved!");
+<script>
+/*
+ Rewritten logic (Ivan): profiles, categories, words, import/export, voices, TTS.
+ Storage: localStorage key 'halo_aac_v5'
+*/
+
+const STORAGE_KEY = 'halo_aac_v5';
+
+// ---------- Default data ----------
+const DEFAULT_CATEGORIES = {
+  "Core": {"I":"👤","You":"🫵","We":"👥","They":"👥","Go":"🏃","Stop":"✋","Hello":"👋","Goodbye":"👋","Yes":"✅","No":"❌","Help":"🆘","Eat":"🍽️","Drink":"🥤","Want":"🤲","Need":"🤲","Love":"❤️","Like":"👍","NoThanks":"🙅‍♂️","StopIt":"✋"},
+  "Food": {"Apple":"🍎","Banana":"🍌","Bread":"🍞","Milk":"🥛","Water":"💧","Juice":"🧃","Pizza":"🍕","Burger":"🍔","Fries":"🍟","Noodles":"🍜","Coffee":"☕"},
+  "Feelings": {"Happy":"😊","Sad":"😢","Angry":"😡","Tired":"😴","Excited":"🤩"},
+  "Places": {"Home":"🏠","School":"🏫","Park":"🏞️","Bathroom":"🚽","Kitchen":"🍳"},
+  "Activities": {"Run":"🏃","Walk":"🚶","Swim":"🏊","Play":"🎮","Read":"📖"},
+  "Animals": {"Dog":"🐶","Cat":"🐱","Bird":"🐦"}
+};
+
+// ---------- App state ----------
+let store = loadStore();
+if(!store) {
+  store = {
+    profiles: {},        // profileName -> { words: {word:emoji}, customCategories: {cat:{word:emoji}}, bg:'#...' }
+    currentProfile: null,
+    categories: DEFAULT_CATEGORIES, // merged base categories (editable per-profile via customCategories)
+    lastVoice: ''
+  };
+  saveStore();
 }
 
-// Export profile
-function exportProfile() {
-  const data = { words: document.getElementById("userWords").value };
-  const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+// ---------- DOM refs ----------
+const profileSelect = document.getElementById('profileSelect');
+const addProfileBtn = document.getElementById('addProfile');
+const delProfileBtn = document.getElementById('delProfile');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+
+const categoryBar = document.getElementById('categoryBar');
+const wordGrid = document.getElementById('word-grid');
+const gridTitle = document.getElementById('gridTitle');
+
+const messageArea = document.getElementById('message');
+const predictions = document.getElementById('predictions');
+const speakBtn = document.getElementById('speakBtn');
+const stopBtn = document.getElementById('stopBtn');
+
+const addWordBtn = document.getElementById('addWordBtn');
+const addCategoryBtn = document.getElementById('addCategoryBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsMenu = document.getElementById('settingsMenu');
+const closeSettings = document.getElementById('closeSettings');
+const doExport = document.getElementById('doExport');
+const doImport = document.getElementById('doImport');
+const downloadExport = document.getElementById('downloadExport');
+const importArea = document.getElementById('importArea');
+const bgColorPicker = document.getElementById('bgColorPicker');
+
+const voiceSelect = document.getElementById('voiceSelect');
+const settingsVoice = document.getElementById('settingsVoice');
+
+const profileData = document.getElementById('profileData');
+
+// ---------- Voices ----------
+let voices = [];
+function loadVoices(){
+  voices = speechSynthesis.getVoices();
+  voiceSelect.innerHTML = '';
+  settingsVoice.innerHTML = '';
+  voices.forEach(v=>{
+    const opt = document.createElement('option');
+    opt.value = v.name;
+    opt.textContent = `${v.name} (${v.lang || 'unknown'})`;
+    voiceSelect.appendChild(opt);
+    settingsVoice.appendChild(opt.cloneNode(true));
+  });
+  if(store.lastVoice && voices.find(v=>v.name===store.lastVoice)){
+    voiceSelect.value = store.lastVoice;
+    settingsVoice.value = store.lastVoice;
+  }
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+voiceSelect.onchange = e=>{
+  store.lastVoice = e.target.value;
+  saveStore();
+  settingsVoice.value = e.target.value;
+};
+
+// ---------- Helper: storage ----------
+function loadStore(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch(e){ console.warn('load error', e); return null; }
+}
+function saveStore(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+}
+
+// ---------- Profiles ----------
+function refreshProfileSelect(){
+  profileSelect.innerHTML = '';
+  Object.keys(store.profiles).forEach(name=>{
+    const o = document.createElement('option'); o.value = name; o.textContent = name;
+    profileSelect.appendChild(o);
+  });
+  if(store.currentProfile && store.profiles[store.currentProfile]) profileSelect.value = store.currentProfile;
+  else {
+    store.currentProfile = Object.keys(store.profiles)[0] || null;
+    if(store.currentProfile) profileSelect.value = store.currentProfile;
+  }
+  updateProfilePanel();
+}
+
+addProfileBtn.onclick = ()=>{
+  const name = prompt('New profile name:');
+  if(!name) return;
+  if(store.profiles[name]) return alert('Profile exists');
+  store.profiles[name] = { words:{}, customCategories:{}, bg:'#f3f4f6' };
+  store.currentProfile = name;
+  saveStore();
+  refreshProfileSelect();
+  buildCategoryButtons();
+  updateGrid();
+};
+
+delProfileBtn.onclick = ()=>{
+  if(!store.currentProfile) return alert('No profile selected');
+  if(!confirm(`Delete profile "${store.currentProfile}"? This cannot be undone.`)) return;
+  delete store.profiles[store.currentProfile];
+  store.currentProfile = Object.keys(store.profiles)[0] || null;
+  saveStore();
+  refreshProfileSelect();
+  buildCategoryButtons();
+  updateGrid();
+};
+
+profileSelect.onchange = e=>{
+  store.currentProfile = e.target.value;
+  saveStore();
+  refreshProfileSelect();
+  buildCategoryButtons();
+  updateGrid();
+};
+
+// ---------- Categories & Grid ----------
+let currentCategory = Object.keys(store.categories)[0] || 'Core';
+
+function buildCategoryButtons(){
+  categoryBar.innerHTML = '';
+  const baseCats = Object.keys(store.categories);
+  // include profile custom categories
+  const prof = store.profiles[store.currentProfile] || {};
+  const customCats = prof.customCategories ? Object.keys(prof.customCategories) : [];
+  const all = [...baseCats, ...customCats.filter(c=>!baseCats.includes(c))];
+  all.forEach(cat=>{
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.textContent = cat;
+    btn.onclick = ()=>{
+      currentCategory = cat;
+      updateGrid();
+      updateCategoryActive();
+    };
+    categoryBar.appendChild(btn);
+  });
+  updateCategoryActive();
+}
+
+function updateCategoryActive(){
+  Array.from(categoryBar.children).forEach(b=> b.classList.toggle('active', b.textContent === currentCategory));
+}
+
+function mergedWordsForCategory(cat){
+  const out = {};
+  // base categories
+  if(store.categories[cat]) Object.entries(store.categories[cat]).forEach(([w,e])=>out[w]=e);
+  // profile-level words (words stored directly in profile.words)
+  const prof = store.profiles[store.currentProfile];
+  if(prof){
+    if(prof.words) Object.entries(prof.words).forEach(([w,e])=>out[w]=e);
+    if(prof.customCategories && prof.customCategories[cat]) Object.entries(prof.customCategories[cat]).forEach(([w,e])=>out[w]=e);
+  }
+  return out;
+}
+
+function updateGrid(){
+  gridTitle.textContent = `${currentCategory} — Words`;
+  wordGrid.innerHTML = '';
+  const words = mergedWordsForCategory(currentCategory);
+  Object.entries(words).forEach(([w, e])=>{
+    const b = document.createElement('button');
+    b.className = 'word-btn';
+    b.innerHTML = `<div class="word-emoji">${e||''}</div><div class="word-text">${w}</div>
+                   <div class="word-actions" aria-hidden="true">
+                     <button data-action="edit" title="Edit">✏️</button>
+                     <button data-action="delete" title="Delete">🗑️</button>
+                   </div>`;
+    // append word without focusing the textarea (so keyboard won't appear)
+    b.addEventListener('click', (ev)=>{
+      // Ignore clicks on action buttons (handled below)
+      if(ev.target.closest('.word-actions')) return;
+      appendWordToMessage(w);
+    });
+    // action buttons (edit/delete)
+    b.querySelectorAll('.word-actions button').forEach(btn=>{
+      btn.addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        const action = btn.dataset.action;
+        if(action === 'edit') editWordPrompt(w, currentCategory);
+        else if(action === 'delete') deleteWordConfirm(w, currentCategory);
+      });
+    });
+    // long-press on touch to show actions visually
+    let pressTimer = null;
+    b.addEventListener('touchstart', ()=>{
+      pressTimer = setTimeout(()=> b.classList.add('show-actions'), 600);
+    });
+    b.addEventListener('touchend', ()=>{ clearTimeout(pressTimer); setTimeout(()=> b.classList.remove('show-actions'), 300); });
+    b.addEventListener('contextmenu', (ev)=>{ ev.preventDefault(); b.classList.toggle('show-actions'); });
+    wordGrid.appendChild(b);
+  });
+  updateCategoryActive();
+}
+
+// ---------- Message / Predictions ----------
+function appendWordToMessage(word){
+  // Append with a space; do not focus (prevents keyboard)
+  messageArea.value = messageArea.value ? (messageArea.value + ' ' + word) : word;
+  updatePredictions();
+}
+function updatePredictions(){
+  predictions.innerHTML = '';
+  const text = messageArea.value.trim().toLowerCase();
+  if(!text) return;
+  const last = text.split(/\s+/).pop();
+  if(!last) return;
+  const all = getAllWords();
+  const matches = all.filter(w=>w.toLowerCase().startsWith(last) && w.toLowerCase() !== last).slice(0,7);
+  matches.forEach(m=>{
+    const li = document.createElement('li'); li.textContent = m;
+    li.onclick = ()=> {
+      const arr = messageArea.value.trim().split(/\s+/);
+      arr[arr.length-1] = m;
+      messageArea.value = arr.join(' ');
+      predictions.innerHTML = '';
+    };
+    predictions.appendChild(li);
+  });
+}
+
+function getAllWords(){
+  const s = new Set();
+  Object.values(store.categories).forEach(cat=>Object.keys(cat).forEach(w=>s.add(w)));
+  Object.values(store.profiles||{}).forEach(p=>{
+    if(p.words) Object.keys(p.words).forEach(w=>s.add(w));
+    if(p.customCategories) Object.values(p.customCategories).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
+  });
+  return Array.from(s);
+}
+messageArea.addEventListener('input', updatePredictions);
+
+// ---------- TTS ----------
+speakBtn.onclick = ()=>{
+  const raw = messageArea.value.trim();
+  if(!raw) return;
+  const speakText = stripEmoji(raw) || raw;
+  const u = new SpeechSynthesisUtterance(speakText);
+  const selected = speechSynthesis.getVoices().find(v => v.name === voiceSelect.value);
+  if(selected) u.voice = selected;
+  u.rate = 1.0;
+  speechSynthesis.speak(u);
+  store.lastVoice = u.voice?.name || '';
+  saveStore();
+};
+stopBtn.onclick = ()=> speechSynthesis.cancel();
+function stripEmoji(s){ return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d]/gu,'').replace(/\s+/g,' ').trim(); }
+
+// ---------- Add / Edit / Delete words & categories ----------
+addWordBtn.onclick = ()=>{
+  if(!store.currentProfile) return alert('Select or create a profile first');
+  const word = prompt('Word or phrase (text):');
+  if(!word) return;
+  const emoji = prompt('Emoji for display (optional):','') || '';
+  // ask which category (default currentCategory)
+  let cat = prompt('Category to add to (existing or new). Leave empty for current:','') || currentCategory;
+  if(!cat) cat = currentCategory;
+  // if cat is a base category -> add to profile.words (so it shows for profile)
+  if(!store.profiles[store.currentProfile].customCategories) store.profiles[store.currentProfile].customCategories = {};
+  // add word into profile.customCategories[cat] if not base or if user requested custom
+  if(store.categories[cat]) {
+    // insert into profile words (profile-level quick words) to avoid editing base categories
+    if(!store.profiles[store.currentProfile].words) store.profiles[store.currentProfile].words = {};
+    store.profiles[store.currentProfile].words[word] = emoji;
+  } else {
+    if(!store.profiles[store.currentProfile].customCategories[cat]) store.profiles[store.currentProfile].customCategories[cat] = {};
+    store.profiles[store.currentProfile].customCategories[cat][word] = emoji;
+  }
+  saveStore();
+  buildCategoryButtons();
+  updateGrid();
+};
+
+function editWordPrompt(word, cat){
+  // Determine where the word lives and show prompts
+  if(!store.currentProfile) return;
+  const prof = store.profiles[store.currentProfile];
+  // locate word in profile words, profile custom category, or base category
+  let location = null; // 'profile', 'profileCat', 'base'
+  if(prof.words && prof.words[word] !== undefined) location = 'profile';
+  else if(prof.customCategories && prof.customCategories[cat] && prof.customCategories[cat][word] !== undefined) location = 'profileCat';
+  else if(store.categories[cat] && store.categories[cat][word] !== undefined) location = 'base';
+  const newWord = prompt('Edit word text:', word);
+  if(!newWord) return;
+  const newEmoji = prompt('Edit emoji (optional):', (location === 'profile' ? prof.words[word] : (location === 'profileCat' ? prof.customCategories[cat][word] : store.categories[cat][word] || ''))) || '';
+  // If base and user edits, we'll add to profile.words so base stays untouched
+  if(location === 'base') {
+    if(!prof.words) prof.words = {};
+    delete store.categories[cat][word]; // optional: remove from base? safer to leave base unchanged; instead just add to profile words
+    prof.words[newWord] = newEmoji;
+  } else if(location === 'profile') {
+    delete prof.words[word];
+    prof.words[newWord] = newEmoji;
+  } else if(location === 'profileCat') {
+    delete prof.customCategories[cat][word];
+    prof.customCategories[cat][newWord] = newEmoji;
+  } else {
+    // not found - just add to profile
+    if(!prof.words) prof.words = {};
+    prof.words[newWord] = newEmoji;
+  }
+  saveStore(); updateGrid();
+}
+
+function deleteWordConfirm(word, cat){
+  if(!confirm(`Delete "${word}" from category "${cat}"?`)) return;
+  const prof = store.profiles[store.currentProfile];
+  if(prof && prof.words && prof.words[word] !== undefined) { delete prof.words[word]; }
+  if(prof && prof.customCategories && prof.customCategories[cat] && prof.customCategories[cat][word] !== undefined) { delete prof.customCategories[cat][word]; }
+  // do NOT delete from base categories to keep default intact
+  saveStore(); updateGrid();
+}
+
+addCategoryBtn.onclick = ()=>{
+  if(!store.currentProfile) return alert('Select or create a profile first');
+  const name = prompt('New category name:');
+  if(!name) return;
+  // create as profile custom category
+  const prof = store.profiles[store.currentProfile];
+  if(!prof.customCategories) prof.customCategories = {};
+  if(prof.customCategories[name]) return alert('Category exists for this profile');
+  prof.customCategories[name] = {};
+  saveStore();
+  buildCategoryButtons();
+};
+
+function deleteCategoryConfirm(cat){
+  if(!confirm(`Delete custom category "${cat}" for current profile?`)) return;
+  const prof = store.profiles[store.currentProfile];
+  if(prof && prof.customCategories && prof.customCategories[cat]) {
+    delete prof.customCategories[cat];
+    saveStore(); buildCategoryButtons(); updateGrid();
+  }
+}
+
+// ---------- Export / Import ----------
+doExport.onclick = ()=>{
+  const json = JSON.stringify(store, null, 2);
+  importArea.value = json;
+  alert('JSON generated in the box. You can copy it or click Download .json.');
+};
+downloadExport.onclick = ()=>{
+  const json = JSON.stringify(store, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
-  a.download = "halo_profile.json";
+  a.download = 'halo_aac_export.json';
   a.click();
   URL.revokeObjectURL(url);
+};
+doImport.onclick = ()=>{
+  const raw = importArea.value.trim();
+  if(!raw) return alert('Paste JSON first');
+  try {
+    const parsed = JSON.parse(raw);
+    // minimal validation
+    if(!parsed.profiles || typeof parsed.categories === 'undefined') {
+      if(!confirm('JSON does not look like a full export. Overwrite anyway?')) return;
+    }
+    store = parsed;
+    saveStore();
+    refreshProfileSelect();
+    buildCategoryButtons();
+    updateGrid();
+    alert('Import applied.');
+  } catch(e) {
+    alert('Invalid JSON: ' + e.message);
+  }
+};
+
+// quick Import button in top bar triggers open settings
+importBtn.onclick = ()=> { settingsMenu.style.display = 'block'; };
+
+// Export top button: same as open settings
+exportBtn.onclick = ()=> { settingsMenu.style.display = 'block'; doExport.click(); };
+
+// ---------- UI actions ----------
+settingsBtn.onclick = ()=> settingsMenu.style.display = (settingsMenu.style.display === 'block' ? 'none' : 'block');
+closeSettings.onclick = ()=> settingsMenu.style.display = 'none';
+bgColorPicker.oninput = e=> { document.body.style.background = e.target.value; if(store.currentProfile) { store.profiles[store.currentProfile].bg = e.target.value; saveStore(); } };
+
+// Add a word via button
+// (already implemented earlier)
+
+// Clear message
+clearBtn.onclick = ()=> { messageArea.value = ''; predictions.innerHTML = ''; };
+
+// Export / Import quick top buttons
+exportBtn.addEventListener('contextmenu', e=>{ e.preventDefault(); alert('Right-click disabled. Use settings Export for more options.'); });
+
+// ---------- Profile panel ----------
+function updateProfilePanel(){
+  if(!store.currentProfile){ profileData.textContent = 'No profile selected'; return; }
+  const p = store.profiles[store.currentProfile];
+  profileData.innerHTML = `<div><strong>${store.currentProfile}</strong></div>
+    <div style="margin-top:6px;color:var(--muted)">Words: ${Object.keys(p.words||{}).length}</div>
+    <div style="margin-top:6px;color:var(--muted)">Custom Categories: ${Object.keys(p.customCategories||{}).length}</div>
+    <div style="margin-top:6px;color:var(--muted)">BG: <span style="display:inline-block;width:16px;height:12px;background:${p.bg||'#fff'};border-radius:4px;border:1px solid #ddd;margin-left:6px;vertical-align:middle"></span></div>`;
 }
 
-// Import profile
-function importProfile() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "application/json";
-  input.onchange = e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        if (data.words !== undefined) {
-          document.getElementById("userWords").value = data.words;
-          localStorage.setItem("haloWords", data.words);
-          alert("Profile imported!");
-        } else {
-          alert("Invalid profile file.");
-        }
-      } catch {
-        alert("Error reading profile file.");
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
+// ---------- Utility: get profile or create ----------
+function ensureCurrentProfile(){
+  if(!store.currentProfile) {
+    const name = prompt('No profile exists. Enter a name to create one:');
+    if(!name) return null;
+    store.profiles[name] = { words:{}, customCategories:{}, bg:'#f3f4f6' };
+    store.currentProfile = name;
+    saveStore();
+    refreshProfileSelect();
+    buildCategoryButtons();
+    updateGrid();
+  }
+  return store.currentProfile;
 }
+
+// ---------- Init ----------
+(function init(){
+  // if no profile exists, create a default one
+  if(Object.keys(store.profiles).length === 0){
+    store.profiles['Default'] = { words:{}, customCategories:{}, bg:'#f3f4f6' };
+    store.currentProfile = 'Default';
+    saveStore();
+  }
+  // set background if profile has bg
+  if(store.currentProfile && store.profiles[store.currentProfile] && store.profiles[store.currentProfile].bg){
+    document.body.style.background = store.profiles[store.currentProfile].bg;
+    bgColorPicker.value = store.profiles[store.currentProfile].bg;
+  }
+  refreshProfileSelect();
+  buildCategoryButtons();
+  updateGrid();
+  updateProfilePanel();
+})();
 </script>
+
 </body>
 </html>
