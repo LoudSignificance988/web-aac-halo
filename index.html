@@ -1,58 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Halo AAC — Offline Web</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Halo AAC — Offline</title>
 <link rel="icon" href="data:," />
 <style>
-:root {
-  --accent: #2c7be5;
-  --bg: #f3f4f6;
-  --card: #ffffff;
-  --muted: #666;
-  --radius: 10px;
-}
-* { box-sizing: border-box; }
-body { margin:0; font-family:"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:#111; -webkit-font-smoothing:antialiased; }
-header { display:flex; justify-content:space-between; align-items:center; padding:12px 18px; background:linear-gradient(90deg,#0b63d6,#2c7be5); color:#fff; }
-header h1 { margin:0; font-size:20px; }
-header .subtitle { font-size:12px; opacity:0.8; }
-.icon-btn { background:transparent; border:0; color:#fff; cursor:pointer; font-size:18px; padding:6px; border-radius:6px; }
-.icon-btn:hover { background: rgba(255,255,255,0.06); }
-main { max-width:1100px; margin:18px auto; padding:16px; }
-.profile-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
-select, button, input, textarea { font-family:inherit; }
-.btn { background:var(--accent); border:0; color:#fff; padding:8px 10px; border-radius:8px; cursor:pointer; }
-.btn.ghost { background:transparent; color:var(--accent); border:1px solid rgba(44,123,229,0.12); }
-.controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
-.categories { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-.cat-btn { background:var(--card); border:1px solid #e6e6e6; padding:8px 12px; border-radius:999px; cursor:pointer; }
-.cat-btn.active { background:var(--accent); color:#fff; border-color:transparent; }
-.panel { display:flex; gap:16px; flex-wrap:wrap; }
-.left { flex:1 1 360px; min-width:280px; }
-.right { flex:2 1 620px; min-width:320px; }
-.card { background:var(--card); border-radius:var(--radius); padding:12px; box-shadow:0 6px 18px rgba(15,15,15,0.04); margin-bottom:12px; }
-#word-grid { display:grid; gap:8px; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); }
-.word-btn { display:flex; flex-direction:column; align-items:center; justify-content:center; height:86px; font-size:15px; border:1px solid #eee; border-radius:10px; background:#fff; cursor:pointer; }
-.word-emoji { font-size:26px; margin-bottom:6px; }
-textarea#message { width:100%; padding:10px; border-radius:8px; border:1px solid #ddd; min-height:56px; font-size:16px; resize:none; }
-ul#predictions { list-style:none; margin:8px 0 0; padding:0; max-height:140px; overflow:auto; border-radius:6px; }
-#predictions li { padding:8px; border-bottom:1px solid #f0f0f0; cursor:pointer; }
-#predictions li:hover { background:#f5f7fb; }
-#settingsMenu { display:none; position:fixed; top:64px; right:18px; width:320px; background:var(--card); padding:12px; border-radius:10px; box-shadow:0 8px 22px rgba(0,0,0,0.12); z-index:999; }
-#settingsMenu label { display:block; margin-bottom:8px; font-size:13px; color:var(--muted); }
-#settingsMenu select, #settingsMenu input, #settingsMenu textarea { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #e6e6e6; }
-footer { padding:18px; text-align:center; color:#777; font-size:13px; }
-@media(max-width:720px){ .panel{flex-direction:column;} .right{order:2;} .left{order:1;} .cat-btn{font-size:14px;padding:6px 10px;} }
+  :root{
+    --accent:#2c7be5;
+    --bg:#f3f4f6;
+    --card:#ffffff;
+    --muted:#666;
+    --radius:10px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background:var(--bg);
+    color:#111;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:12px 18px;
+    background:linear-gradient(90deg,#0b63d6,#2c7be5);
+    color:#fff;
+  }
+  header h1{margin:0;font-size:20px}
+  header .subtitle{font-size:12px;opacity:0.9}
+  .top-controls{display:flex;gap:8px;align-items:center}
+  .icon-btn{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:6px;border-radius:6px}
+  .icon-btn:hover{background:rgba(255,255,255,0.06)}
+
+  main{padding:16px;max-width:1100px;margin:18px auto}
+  .profile-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+  select,button,input,textarea{font-family:inherit}
+  .btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(44,123,229,0.12)}
+  .btn.warn{background:#e04b4b}
+
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .cat-btn{background:var(--card);border:1px solid #e6e6e6;padding:8px 12px;border-radius:999px;cursor:pointer}
+  .cat-btn.active{background:var(--accent);color:#fff;border-color:transparent}
+
+  .panel{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+  .left{flex:1 1 360px;min-width:280px}
+  .right{flex:2 1 620px;min-width:320px}
+
+  .card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 6px 18px rgba(15,15,15,0.04);margin-bottom:12px}
+
+  #word-grid{display:grid;gap:8px;grid-template-columns: repeat(auto-fill,minmax(110px,1fr))}
+  .word-btn{background:#fff;border:1px solid #eee;padding:8px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;height:86px;font-size:14px}
+  .word-emoji{font-size:22px;margin-bottom:6px;display:block}
+  .word-text{font-weight:600;letter-spacing:0.2px}
+
+  textarea#message{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;min-height:56px;font-size:16px;resize:none;background:#f9fafb}
+  ul#predictions{list-style:none;margin:8px 0 0;padding:0;max-height:140px;overflow:auto;border-radius:6px}
+  #predictions li{padding:8px;border-bottom:1px solid #f0f0f0;cursor:pointer}
+  #predictions li:hover{background:#f5f7fb}
+
+  #settingsMenu{display:none;position:fixed;right:18px;top:64px;background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,0.12);width:360px;z-index:999}
+  #settingsMenu label{display:block;margin-bottom:8px;font-size:13px;color:var(--muted)}
+  #settingsMenu select,input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #e6e6e6}
+
+  footer{padding:18px;text-align:center;color:#777;font-size:13px}
+
+  @media (max-width:720px){
+    .panel{flex-direction:column}
+    .right{order:2}
+    .left{order:1}
+    .cat-btn{font-size:14px;padding:6px 10px}
+    #settingsMenu{right:12px;left:12px;width:auto}
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <div style="display:flex;align-items:center;gap:12px;">
-    <img src="logo.png" alt="Halo Logo" style="height:32px;">
-    <div><h1>Halo AAC — Offline</h1><span class="subtitle">Thanks Kaelynn Partlow</span></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <img src="logo.png" alt="Halo" style="height:32px;display:block" />
+    <div>
+      <h1>Halo AAC — Offline Web</h1>
+      <div class="subtitle">Thanks Kaelynn Partlow — Ivan's build</div>
+    </div>
   </div>
   <div class="top-controls">
     <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
@@ -62,23 +97,24 @@ footer { padding:18px; text-align:center; color:#777; font-size:13px; }
 
 <main>
   <div class="profile-row">
-    <label style="display:flex;align-items:center;gap:8px;">Profile:
+    <label style="display:flex;align-items:center;gap:8px">
+      Profile:
       <select id="profileSelect"></select>
     </label>
     <button id="addProfile" class="btn ghost">Add Profile</button>
     <button id="delProfile" class="btn ghost">Delete</button>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
       <button id="exportBtn" class="btn ghost">Export</button>
       <button id="importBtn" class="btn">Import</button>
     </div>
   </div>
 
   <div class="controls">
-    <div class="categories card" id="categoryBar"></div>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+    <div class="categories card" id="categoryBar" style="display:flex;gap:8px;padding:8px"></div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
       <button id="addWordBtn" class="btn">Add Word</button>
       <button id="addCategoryBtn" class="btn">Add Category</button>
-      <button id="clearBtn" class="btn ghost">Clear</button>
+      <button id="clearBtn" class="btn ghost">Clear Message</button>
     </div>
   </div>
 
@@ -86,180 +122,426 @@ footer { padding:18px; text-align:center; color:#777; font-size:13px; }
     <div class="left">
       <div class="card">
         <label for="message">Message</label>
-        <textarea id="message" readonly placeholder="Click words..."></textarea>
+        <!-- readonly prevents mobile keyboard from appearing when clicking words -->
+        <textarea id="message" readonly placeholder="Click words to add..."></textarea>
         <ul id="predictions"></ul>
-        <div style="display:flex;gap:8px;margin-top:8px;">
+        <div style="display:flex;gap:8px;margin-top:8px">
           <button id="speakBtn" class="btn">Speak</button>
           <button id="stopBtn" class="btn ghost">Stop</button>
         </div>
       </div>
+
       <div class="card">
-        <strong>Profile Data</strong>
-        <div id="profileData" style="margin-top:8px;color:#444;font-size:14px;">No profile selected</div>
+        <strong>Active Profile Data</strong>
+        <div id="profileData" style="margin-top:8px;color:#444;font-size:14px">No profile selected</div>
       </div>
     </div>
 
     <div class="right">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;justify-content:space-between;align-items:center">
           <strong id="gridTitle">All Words</strong>
-          <div style="color:var(--muted);font-size:13px;">Tap a word to append</div>
+          <div style="color:var(--muted);font-size:13px">Tap a word to append</div>
         </div>
-        <div id="word-grid" style="margin-top:12px;"></div>
+        <div id="word-grid" style="margin-top:12px"></div>
       </div>
     </div>
   </div>
 </main>
 
 <div id="settingsMenu">
-  <label>Voice<select id="settingsVoice"></select></label>
-  <label>Background<input type="color" id="bgColorPicker" value="#f3f4f6"></label>
-  <label>Export/Import
-    <div style="display:flex;gap:8px;">
-      <button id="doExport" class="btn ghost" style="flex:1;">Generate</button>
-      <button id="doImport" class="btn" style="flex:1;">Apply</button>
+  <label>Choose Voice
+    <select id="settingsVoice"></select>
+  </label>
+  <label>Background color
+    <input type="color" id="bgColorPicker" value="#f3f4f6">
+  </label>
+
+  <label>Export / Import Save Code
+    <div style="display:flex;gap:8px">
+      <button id="doExport" class="btn ghost" style="flex:1">Generate code</button>
+      <button id="doImport" class="btn" style="flex:1">Apply code</button>
     </div>
   </label>
-  <textarea id="importArea" placeholder="Paste code" style="min-height:80px;padding:8px;border-radius:6px;border:1px solid #e6e6e6;"></textarea>
-  <button id="closeSettings" class="btn ghost" style="width:100%;margin-top:10px;">Close</button>
+
+  <label style="margin-top:8px">Paste Save Code to import:
+    <textarea id="importArea" placeholder="Paste exported code here" style="min-height:96px;padding:8px;border-radius:6px;border:1px solid #e6e6e6"></textarea>
+  </label>
+
+  <div style="display:flex;gap:8px;margin-top:10px">
+    <button id="closeSettings" class="btn ghost" style="flex:1">Close</button>
+  </div>
 </div>
 
-<footer>
-Offline AAC. Export code to save data. Thanks Kaelynn Partlow.
-</footer>
+<footer>Works offline. Export code to move your data between devices.</footer>
 
 <script>
-// ====== DATA ======
-const STORAGE_KEY = 'halo_aac_data_v6';
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"profiles":{},"currentProfile":null,"lastVoice":""}');
-const CATEGORIES = {
-  'Default': [{emoji:'💬', text:'Hello'}, {emoji:'✅', text:'Yes'}, {emoji:'❌', text:'No'}, {emoji:'🙏', text:'Thank you'}],
-  'Food': [{emoji:'🍎', text:'Apple'}, {emoji:'🍔', text:'Burger'}, {emoji:'🍕', text:'Pizza'}, {emoji:'🍌', text:'Banana'}, {emoji:'🥗', text:'Salad'}],
-  'Home': [{emoji:'🏠', text:'House'}, {emoji:'🛏️', text:'Bed'}, {emoji:'🛁', text:'Bath'}, {emoji:'🚪', text:'Door'}, {emoji:'🪑', text:'Chair'}],
-  'Places': [{emoji:'🏫', text:'School'}, {emoji:'🏥', text:'Hospital'}, {emoji:'🏖️', text:'Beach'}, {emoji:'🏛️', text:'Museum'}, {emoji:'🛒', text:'Store'}]
+/* =================== Defaults: 10 categories, ~20 words each (200 total) =================== */
+const DEFAULT_CATEGORIES = {
+  "Food": {
+    "Apple":"🍎","Banana":"🍌","Bread":"🍞","Milk":"🥛","Water":"💧","Juice":"🧃","Rice":"🍚","Meat":"🥩","Cheese":"🧀","Egg":"🥚",
+    "Soup":"🥣","Cake":"🍰","Cookie":"🍪","Pizza":"🍕","Burger":"🍔","Fries":"🍟","Fish":"🐟","Pasta":"🍝","Salad":"🥗","Yogurt":"🧴"
+  },
+  "Home": {
+    "House":"🏠","Bedroom":"🛏️","Kitchen":"🍳","Bathroom":"🚽","Door":"🚪","Window":"🪟","Chair":"🪑","Table":"🛋️","Light":"💡","Stairs":"🪜",
+    "Bed":"🛏️","Sofa":"🛋️","Curtain":"🪟","Sink":"🚰","Mirror":"🪞","TV":"📺","Fridge":"🧊","Oven":"🔥","Phone":"📱","Keys":"🔑"
+  },
+  "Places": {
+    "School":"🏫","Park":"🏞️","Store":"🏪","Office":"🏢","Hospital":"🏥","Library":"📚","Beach":"🏖️","Airport":"✈️","Market":"🛒","Restaurant":"🍴",
+    "Station":"🚉","Bank":"🏦","Theatre":"🎭","Church":"⛪","Gym":"🏋️","Playground":"🛝","Zoo":"🦁","Museum":"🏛️","Hotel":"🏨","Farm":"🚜"
+  },
+  "Feelings": {
+    "Happy":"😊","Sad":"😢","Angry":"😡","Tired":"😴","Excited":"🤩","Scared":"😱","Calm":"😌","Surprised":"😲","Bored":"😐","Proud":"😌",
+    "Lonely":"😔","Worried":"😟","Joyful":"😁","Confused":"😕","Shy":"😳","Relaxed":"😎","Hungry":"🤤","Thirsty":"😋","Sick":"🤒","Okay":"👌"
+  },
+  "People": {
+    "I":"👤","You":"🫵","Mom":"👩‍🦰","Dad":"👨‍🦰","Brother":"👦","Sister":"👧","Friend":"🧑‍🤝‍🧑","Teacher":"🧑‍🏫","Doctor":"🩺","Baby":"👶",
+    "Grandma":"👵","Grandpa":"👴","Neighbor":"🙋","Boss":"🧑‍💼","Coworker":"👩‍💼","Visitor":"👥","Patient":"🧑‍⚕️","Client":"🧑‍💼","Guest":"🧑‍🤝‍🧑","Everyone":"🫂"
+  },
+  "Actions": {
+    "Go":"🏃","Stop":"✋","Come":"👐","Look":"👀","Listen":"👂","Speak":"🗣️","Eat":"🍽️","Drink":"🥤","Play":"🎮","Read":"📖",
+    "Write":"✏️","Open":"🔓","Close":"🔒","Give":"🎁","Take":"🤲","Help":"🆘","Wait":"⏳","Wash":"🧼","Call":"📞","Walk":"🚶"
+  },
+  "Needs": {
+    "Help":"🆘","Bathroom":"🚽","Hungry":"🤤","Thirsty":"😋","Doctor":"🩺","Rest":"🛌","Sleep":"😴","Water":"💧","Food":"🍽️","Money":"💵",
+    "Phone":"📱","Charge":"🔌","Warm":"♨️","Cold":"❄️","Medicine":"💊","Keys":"🔑","Transport":"🚗","Clothes":"👕","Blanket":"🛏️","Shoes":"👟"
+  },
+  "Animals": {
+    "Dog":"🐶","Cat":"🐱","Bird":"🐦","Fish":"🐟","Horse":"🐴","Cow":"🐄","Pig":"🐖","Sheep":"🐑","Rabbit":"🐇","Monkey":"🐒",
+    "Lion":"🦁","Tiger":"🐯","Elephant":"🐘","Bear":"🐻","Frog":"🐸","Duck":"🦆","Goat":"🐐","Deer":"🦌","Whale":"🐋","Dolphin":"🐬"
+  },
+  "Things": {
+    "Book":"📚","Phone":"📱","Computer":"💻","Pen":"🖊️","Bag":"👜","Shoes":"👟","Watch":"⌚","Camera":"📷","Glass":"🥛","Cup":"☕",
+    "Plate":"🍽️","Fork":"🍴","Spoon":"🥄","Pencil":"✏️","Paper":"📄","Map":"🗺️","Bagpack":"🎒","Umbrella":"☂️","Toy":"🧸","Keys":"🔑"
+  },
+  "Weather": {
+    "Sunny":"☀️","Cloudy":"☁️","Rain":"🌧️","Snow":"❄️","Wind":"💨","Hot":"🔥","Cold":"🥶","Storm":"⛈️","Fog":"🌫️","Thunder":"⚡",
+    "Breeze":"🌬️","Humid":"💦","Drizzle":"🌦️","Hail":"🧊","Rainbow":"🌈","Blizzard":"🌨️","Overcast":"☁️","Shiny":"✨","Mild":"🌤️","Freezing":"🧊"
+  }
 };
 
-// ====== VOICES ======
-let voices = [];
+/* =================== Storage & State =================== */
+const STORAGE_KEY = 'halo_aac_v1';
+let data = loadStorage() || { profiles:{}, currentProfile:null, lastVoice:null };
+let currentCategory = Object.keys(DEFAULT_CATEGORIES)[0];
+
+/* =================== Utilities =================== */
+function loadStorage(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; }
+}
+function saveStorage(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function b64encode(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+function b64decode(s){ return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+
+/* =================== DOM refs =================== */
+const profileSelect = document.getElementById('profileSelect');
+const addProfileBtn = document.getElementById('addProfile');
+const delProfileBtn = document.getElementById('delProfile');
+const wordGrid = document.getElementById('word-grid');
+const msgBox = document.getElementById('message');
+const predictions = document.getElementById('predictions');
+const speakBtn = document.getElementById('speakBtn');
+const stopBtn = document.getElementById('stopBtn');
+const addWordBtn = document.getElementById('addWordBtn');
+const addCategoryBtn = document.getElementById('addCategoryBtn');
+const clearBtn = document.getElementById('clearBtn');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsMenu = document.getElementById('settingsMenu');
+const bgColorPicker = document.getElementById('bgColorPicker');
+const settingsVoice = document.getElementById('settingsVoice');
+const voiceSelect = document.getElementById('voiceSelect');
+const gridTitle = document.getElementById('gridTitle');
+const profileData = document.getElementById('profileData');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+const importArea = document.getElementById('importArea');
+const doExport = document.getElementById('doExport');
+const doImport = document.getElementById('doImport');
+const closeSettings = document.getElementById('closeSettings');
+const catBar = document.getElementById('categoryBar');
+
+/* =================== Merge defaults with profile custom words/categories =================== */
+function mergedWordsForCategory(cat){
+  const out = {};
+  // defaults
+  const defCat = DEFAULT_CATEGORIES[cat] || {};
+  Object.entries(defCat).forEach(([w,e])=> out[w]=e);
+  // profile-level custom categories/words
+  if(data.currentProfile && data.profiles[data.currentProfile]){
+    const prof = data.profiles[data.currentProfile];
+    if(prof.words) Object.entries(prof.words).forEach(([w,e])=> out[w]=e);
+    if(prof.customCategories && prof.customCategories[cat]) Object.entries(prof.customCategories[cat]).forEach(([w,e])=> out[w]=e);
+  }
+  return out;
+}
+
+/* =================== Build category buttons =================== */
+function buildCategoryButtons(){
+  catBar.innerHTML = '';
+  const cats = Object.keys(DEFAULT_CATEGORIES);
+  const prof = (data.currentProfile && data.profiles[data.currentProfile]) ? data.profiles[data.currentProfile] : null;
+  if(prof && prof.customCategories) cats.push(...Object.keys(prof.customCategories));
+  // unique
+  const uniq = [...new Set(cats)];
+  uniq.forEach(cat=>{
+    const b = document.createElement('button');
+    b.className='cat-btn';
+    b.textContent = cat;
+    b.type = 'button';
+    b.onclick = ()=> { currentCategory = cat; updateGrid(); updateCategoryActive(); };
+    catBar.appendChild(b);
+  });
+  updateCategoryActive();
+}
+
+function updateCategoryActive(){
+  Array.from(catBar.children).forEach(btn=>{
+    btn.classList.toggle('active', btn.textContent === currentCategory);
+  });
+}
+
+/* =================== Profiles =================== */
+function refreshProfileSelect(){
+  profileSelect.innerHTML = '';
+  Object.keys(data.profiles).forEach(name=>{
+    const o = document.createElement('option'); o.value = name; o.textContent = name;
+    profileSelect.appendChild(o);
+  });
+  if(data.currentProfile && data.profiles[data.currentProfile]) profileSelect.value = data.currentProfile;
+  else {
+    data.currentProfile = Object.keys(data.profiles)[0] || null;
+    if(data.currentProfile) profileSelect.value = data.currentProfile;
+  }
+  refreshProfilePanel();
+}
+
+addProfileBtn.onclick = ()=>{
+  const name = prompt('New profile name:');
+  if(!name) return;
+  data.profiles[name] = { words:{}, customCategories:{}, bg:'#f3f4f6' };
+  data.currentProfile = name;
+  saveStorage(); refreshProfileSelect(); buildCategoryButtons(); updateGrid();
+};
+
+delProfileBtn.onclick = ()=>{
+  if(!data.currentProfile) return alert('No profile selected');
+  if(!confirm('Delete profile "'+data.currentProfile+'"?')) return;
+  delete data.profiles[data.currentProfile];
+  data.currentProfile = Object.keys(data.profiles)[0] || null;
+  saveStorage(); refreshProfileSelect(); buildCategoryButtons(); updateGrid();
+};
+
+profileSelect.onchange = (e)=>{
+  data.currentProfile = e.target.value;
+  saveStorage(); buildCategoryButtons(); updateGrid(); refreshProfilePanel();
+};
+
+function refreshProfilePanel(){
+  if(!data.currentProfile){ profileData.textContent='No profile selected'; return; }
+  const p = data.profiles[data.currentProfile];
+  profileData.innerHTML = `<div><strong>${data.currentProfile}</strong></div>
+    <div style="margin-top:6px;color:var(--muted)">Words: ${Object.keys(p.words||{}).length}</div>
+    <div style="margin-top:6px;color:var(--muted)">Custom Categories: ${Object.keys(p.customCategories||{}).length}</div>
+    <div style="margin-top:6px;color:var(--muted)">BG: <span style="display:inline-block;width:16px;height:12px;background:${p.bg||'#fff'};border-radius:4px;border:1px solid #ddd;margin-left:6px;vertical-align:middle"></span></div>`;
+}
+
+/* =================== Grid & word buttons =================== */
+function updateGrid(){
+  gridTitle.textContent = currentCategory + ' — Words';
+  wordGrid.innerHTML = '';
+  const words = mergedWordsForCategory(currentCategory);
+  Object.entries(words).forEach(([w,e])=>{
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'word-btn';
+    btn.innerHTML = `<div class="word-emoji">${e||''}</div><div class="word-text">${w}</div>`;
+    // clicking appends the word text only (no emoji), and *don't* focus the textarea
+    btn.onclick = ()=> {
+      msgBox.value = msgBox.value ? (msgBox.value + (msgBox.value.trim() ? ' ' : '') + w) : w;
+      // show predictions for the last word typed
+      updatePredictions();
+    };
+    wordGrid.appendChild(btn);
+  });
+  updateCategoryActive();
+}
+
+/* =================== Add word & category =================== */
+addWordBtn.onclick = ()=>{
+  if(!data.currentProfile) return alert('Select or create a profile first');
+  const word = prompt('Enter new word (text):'); if(!word) return;
+  const emoji = prompt('Emoji for display (optional):','❓') || '';
+  // pick category
+  const available = Object.keys(DEFAULT_CATEGORIES).concat(Object.keys(data.profiles[data.currentProfile].customCategories||{}));
+  let cat = prompt('Category? Type one of:\n'+available.join(', '), currentCategory || 'Custom');
+  if(!cat) cat = 'Custom';
+  if(!data.profiles[data.currentProfile].customCategories) data.profiles[data.currentProfile].customCategories = {};
+  if(DEFAULT_CATEGORIES[cat]) {
+    // store as profile-level words (merged into default category)
+    data.profiles[data.currentProfile].words = data.profiles[data.currentProfile].words || {};
+    data.profiles[data.currentProfile].words[word] = emoji;
+  } else {
+    if(!data.profiles[data.currentProfile].customCategories[cat]) data.profiles[data.currentProfile].customCategories[cat] = {};
+    data.profiles[data.currentProfile].customCategories[cat][word] = emoji;
+  }
+  saveStorage(); buildCategoryButtons(); updateGrid(); refreshProfilePanel();
+};
+
+addCategoryBtn.onclick = ()=>{
+  if(!data.currentProfile) return alert('Select or create a profile first');
+  const name = prompt('Enter new category name:'); if(!name) return;
+  if(!data.profiles[data.currentProfile].customCategories) data.profiles[data.currentProfile].customCategories = {};
+  data.profiles[data.currentProfile].customCategories[name] = {};
+  saveStorage(); buildCategoryButtons();
+};
+
+/* =================== Predictions (simple) =================== */
+function getAllWordsArray(){
+  const s = new Set();
+  Object.values(DEFAULT_CATEGORIES).forEach(cat=>Object.keys(cat).forEach(w=>s.add(w)));
+  Object.values(data.profiles||{}).forEach(p=>{
+    if(p.words) Object.keys(p.words).forEach(w=>s.add(w));
+    if(p.customCategories) Object.values(p.customCategories).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
+  });
+  return Array.from(s);
+}
+function updatePredictions(){
+  const text = msgBox.value.trim();
+  predictions.innerHTML = '';
+  if(!text) return;
+  const last = text.split(/\s+/).pop().toLowerCase();
+  if(!last) return;
+  const all = getAllWordsArray();
+  const matches = all.filter(w => w.toLowerCase().startsWith(last) && w.toLowerCase() !== last).slice(0,6);
+  matches.forEach(m=>{
+    const li = document.createElement('li'); li.textContent = m;
+    li.onclick = ()=> {
+      const arr = msgBox.value.trim().split(/\s+/);
+      arr[arr.length-1] = m;
+      msgBox.value = arr.join(' ');
+      predictions.innerHTML = '';
+    };
+    predictions.appendChild(li);
+  });
+}
+
+/* =================== TTS =================== */
+function stripEmojiFromText(s){
+  return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d]/gu,'').replace(/\s+/g,' ').trim();
+}
+let currentUtter = null;
+
+speakBtn.onclick = ()=>{
+  const raw = msgBox.value.trim();
+  if(!raw) return;
+  const speakText = stripEmojiFromText(raw) || raw;
+  currentUtter = new SpeechSynthesisUtterance(speakText);
+  const v = speechSynthesis.getVoices().find(x => x.name === voiceSelect.value);
+  if(v) currentUtter.voice = v;
+  currentUtter.rate = 1;
+  speechSynthesis.speak(currentUtter);
+  data.lastVoice = currentUtter.voice?.name || data.lastVoice;
+  saveStorage();
+};
+
+stopBtn.onclick = ()=> speechSynthesis.cancel();
+
+/* =================== Voices handling =================== */
 function loadVoices(){
-  voices = speechSynthesis.getVoices();
-  const select = document.getElementById('voiceSelect');
-  const settingsSelect = document.getElementById('settingsVoice');
-  select.innerHTML = settingsSelect.innerHTML = '';
+  const voices = speechSynthesis.getVoices();
+  voiceSelect.innerHTML = ''; settingsVoice.innerHTML = '';
   voices.forEach(v=>{
-    const option = document.createElement('option');
-    option.value = v.name; option.textContent = `${v.name} (${v.lang})`;
-    select.appendChild(option);
-    settingsSelect.appendChild(option.cloneNode(true));
+    const o = document.createElement('option'); o.value = v.name; o.textContent = `${v.name} (${v.lang})`;
+    voiceSelect.appendChild(o);
+    settingsVoice.appendChild(o.cloneNode(true));
   });
   const last = data.lastVoice;
-  if(last && voices.find(v=>v.name===last)){
-    select.value = last; settingsSelect.value = last;
+  if(last && Array.from(voiceSelect.options).find(o=>o.value===last)){
+    voiceSelect.value = last; settingsVoice.value = last;
   }
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
 
-// ====== DOM ======
-const profileSelect = document.getElementById('profileSelect');
-const messageArea = document.getElementById('message');
-const wordGrid = document.getElementById('word-grid');
-const categoryBar = document.getElementById('categoryBar');
-const predictionsList = document.getElementById('predictions');
+voiceSelect.onchange = settingsVoice.onchange = (e)=>{
+  data.lastVoice = e.target.value; saveStorage();
+  settingsVoice.value = voiceSelect.value = e.target.value;
+};
 
-// ====== FUNCTIONS ======
-function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-function populateProfiles(){
-  profileSelect.innerHTML='';
-  for(const prof in data.profiles){
-    const opt=document.createElement('option'); opt.value=prof; opt.textContent=prof;
-    profileSelect.appendChild(opt);
+/* =================== Settings UI =================== */
+settingsBtn.onclick = ()=> settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+closeSettings.onclick = ()=> settingsMenu.style.display = 'none';
+bgColorPicker.oninput = (e)=> {
+  document.body.style.background = e.target.value;
+  if(data.currentProfile && data.profiles[data.currentProfile]) {
+    data.profiles[data.currentProfile].bg = e.target.value;
+    saveStorage();
   }
-  profileSelect.value = data.currentProfile || '';
-  updateProfileData();
-}
-function updateProfileData(){
-  const info = document.getElementById('profileData');
-  if(data.currentProfile && data.profiles[data.currentProfile]){
-    info.textContent = JSON.stringify(data.profiles[data.currentProfile],null,2);
-  } else info.textContent = 'No profile selected';
-}
-function addProfile(name){ if(!name) return; data.profiles[name]={words:{},categories:{}}; data.currentProfile=name; populateProfiles(); saveData(); }
-function deleteProfile(name){ if(!name) return; delete data.profiles[name]; data.currentProfile=Object.keys(data.profiles)[0]||null; populateProfiles(); saveData(); }
-function appendWord(word){ messageArea.value += word+' '; updatePredictions(word); }
-function speakMessage(){
-  if(!messageArea.value) return;
-  const utter = new SpeechSynthesisUtterance(messageArea.value);
-  utter.voice = voices.find(v=>v.name===document.getElementById('voiceSelect').value)||null;
-  speechSynthesis.speak(utter);
-  data.lastVoice = utter.voice?.name||'';
-  saveData();
-}
-function stopSpeaking(){ speechSynthesis.cancel(); }
-function updatePredictions(lastWord){
-  predictionsList.innerHTML='';
-  const words = Object.values(CATEGORIES).flat().map(w=>w.text);
-  const preds = words.filter(w=>w.toLowerCase().startsWith(lastWord.toLowerCase()) && w!==lastWord).slice(0,5);
-  preds.forEach(p=>{
-    const li=document.createElement('li'); li.textContent=p; li.onclick=()=>appendWord(p);
-    predictionsList.appendChild(li);
-  });
-}
-function populateWords(category){
-  wordGrid.innerHTML='';
-  const words = CATEGORIES[category]||[];
-  words.forEach(w=>{
-    const btn=document.createElement('div'); btn.className='word-btn';
-    btn.innerHTML=`<div class="word-emoji">${w.emoji}</div><div>${w.text}</div>`;
-    btn.onclick=()=>appendWord(w.text);
-    wordGrid.appendChild(btn);
-  });
-}
-function populateCategories(){
-  categoryBar.innerHTML='';
-  Object.keys(CATEGORIES).forEach(cat=>{
-    const btn=document.createElement('button'); btn.className='cat-btn'; btn.textContent=cat;
-    btn.onclick=()=>{populateWords(cat); document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');};
-    categoryBar.appendChild(btn);
-  });
-  document.querySelector('.cat-btn')?.click();
-}
+};
 
-// ====== EVENTS ======
-document.getElementById('speakBtn').onclick=speakMessage;
-document.getElementById('stopBtn').onclick=stopSpeaking;
-document.getElementById('addProfile').onclick=()=>{ const name=prompt('Profile name:'); addProfile(name); };
-document.getElementById('delProfile').onclick=()=>{ if(profileSelect.value) deleteProfile(profileSelect.value); };
-profileSelect.onchange=()=>{ data.currentProfile=profileSelect.value; updateProfileData(); saveData(); };
-document.getElementById('clearBtn').onclick=()=>{ messageArea.value=''; predictionsList.innerHTML=''; };
-document.getElementById('settingsBtn').onclick=()=>{ document.getElementById('settingsMenu').style.display='block'; };
-document.getElementById('closeSettings').onclick=()=>{ document.getElementById('settingsMenu').style.display='none'; };
-document.getElementById('bgColorPicker').oninput=e=>{ document.body.style.background=e.target.value; };
-document.getElementById('doExport').onclick=()=>{ document.getElementById('importArea').value = JSON.stringify(data); };
-document.getElementById('doImport').onclick=()=>{
+/* =================== Export / Import =================== */
+doExport.onclick = ()=>{
   try{
-    const imported = JSON.parse(document.getElementById('importArea').value);
-    data = imported; populateProfiles(); populateCategories(); saveData();
-    alert('Import successful');
-  }catch{ alert('Invalid JSON'); }
-};
-document.getElementById('addWordBtn').onclick=()=>{
-  const w=prompt('New word:'); if(!w) return;
-  const cat = prompt('Category (leave blank for Default):')||'Default';
-  const e = prompt('Emoji for this word:')||'💬';
-  if(!CATEGORIES[cat]) CATEGORIES[cat]=[];
-  CATEGORIES[cat].push({emoji:e,text:w});
-  populateCategories();
-};
-document.getElementById('addCategoryBtn').onclick=()=>{
-  const c=prompt('Category name:'); if(!c) return; if(!CATEGORIES[c]) CATEGORIES[c]=[]; populateCategories(); 
+    const code = b64encode(data);
+    // copy to clipboard if available
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(code).then(()=> alert('Export code copied to clipboard.'));
+    } else {
+      prompt('Export code (copy):', code);
+    }
+    importArea.value = code;
+  }catch(e){ alert('Export failed: '+e.message); }
 };
 
-// ====== INIT ======
-populateProfiles();
-populateCategories();
+doImport.onclick = ()=>{
+  try{
+    const txt = importArea.value.trim();
+    if(!txt) return alert('Paste exported code first.');
+    const parsed = b64decode(txt);
+    if(parsed && parsed.profiles){
+      data.profiles = Object.assign({}, data.profiles || {}, parsed.profiles);
+      data.currentProfile = parsed.currentProfile || data.currentProfile;
+      data.lastVoice = parsed.lastVoice || data.lastVoice;
+      saveStorage(); refreshProfileSelect(); buildCategoryButtons(); updateGrid(); refreshProfilePanel();
+      alert('Imported successfully.');
+    } else {
+      // try raw JSON fallback
+      const parsed2 = JSON.parse(txt);
+      if(parsed2 && parsed2.profiles){ data = parsed2; saveStorage(); refreshProfileSelect(); buildCategoryButtons(); updateGrid(); refreshProfilePanel(); alert('Imported JSON successfully.'); }
+      else alert('Invalid save code.');
+    }
+  }catch(e){ alert('Import failed: invalid code.'); }
+};
+
+exportBtn.onclick = ()=> doExport.click();
+importBtn.onclick = ()=>{ const code = prompt('Paste save code to import:'); if(!code) return; importArea.value = code; doImport.click(); };
+
+/* =================== Misc =================== */
+msgBox.addEventListener('input', updatePredictions);
+clearBtn.onclick = ()=> { msgBox.value = ''; predictions.innerHTML = ''; };
+addWordBtn.addEventListener('click', ()=> addWordBtn.onclick());
+addCategoryBtn.addEventListener('click', ()=> addCategoryBtn.onclick());
+
+/* =================== Init =================== */
+function init(){
+  // if no profiles exist, create a default
+  if(!data.profiles || Object.keys(data.profiles).length === 0){
+    data.profiles = { "Default": { words:{}, customCategories:{}, bg:'#f3f4f6' } };
+    data.currentProfile = "Default";
+    saveStorage();
+  }
+  // set background from profile if available
+  if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].bg){
+    document.body.style.background = data.profiles[data.currentProfile].bg;
+    bgColorPicker.value = data.profiles[data.currentProfile].bg;
+  }
+  refreshProfileSelect();
+  buildCategoryButtons();
+  updateGrid();
+  refreshProfilePanel();
+}
+init();
+
 </script>
-
 </body>
 </html>
-
