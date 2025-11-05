@@ -1,179 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Halo AAC — Offline Web</title>
-<link rel="icon" href="logo.png" type="image/png" />
-
+<link rel="icon" href="logo.png" type="image/png">
 <style>
-  :root{
-    --accent:#2c7be5;
-    --bg:#f3f4f6;
-    --card:#ffffff;
-    --muted:#666;
-    --radius:10px;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background:var(--bg);
-    color:#111;
-    -webkit-font-smoothing:antialiased;
-  }
-  header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:12px 18px;
-    background:linear-gradient(90deg,#0b63d6,#2c7be5);
-    color:#fff;
-  }
-  header h1{margin:0;font-size:20px;letter-spacing:0.2px;}
-  .top-controls{display:flex;gap:8px;align-items:center;}
-  .icon-btn{
-    background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:6px;border-radius:6px;
-  }
-  .icon-btn:hover{background:rgba(255,255,255,0.06);}
-  main{padding:16px;max-width:1100px;margin:18px auto;}
-  .profile-row{display:flex;gap:8px;align-items:center;margin-bottom:12px;}
-  select,button,input,textarea{font-family:inherit;}
-  .btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer;}
-  .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(44,123,229,0.12);}
-  .btn.warn{background:#e04b4b;}
-  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;}
-  .categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
-  .cat-btn{background:var(--card);border:1px solid #e6e6e6;padding:8px 12px;border-radius:999px;cursor:pointer;}
-  .cat-btn.active{background:var(--accent);color:#fff;border-color:transparent;}
-  .panel{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;}
-  .left{flex:1 1 360px;min-width:280px;}
-  .right{flex:2 1 620px;min-width:320px;}
-  .card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 6px 18px rgba(15,15,15,0.04);margin-bottom:12px;}
-  #word-grid{display:grid;gap:8px;grid-template-columns: repeat(auto-fill,minmax(110px,1fr));}
-  .word-btn{background:#fff;border:1px solid #eee;padding:8px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;height:86px;font-size:15px;}
-  .word-emoji{font-size:22px;margin-bottom:6px;}
-  textarea#message{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;min-height:56px;font-size:16px;}
-  ul#predictions{list-style:none;margin:8px 0 0;padding:0;max-height:140px;overflow:auto;border-radius:6px;}
-  #predictions li{padding:8px;border-bottom:1px solid #f0f0f0;cursor:pointer;}
-  #predictions li:hover{background:#f5f7fb;}
-  #settingsMenu{display:none;position:fixed;right:18px;top:64px;background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,0.12);width:320px;z-index:999;}
-  #settingsMenu label{display:block;margin-bottom:8px;font-size:13px;color:var(--muted);}
-  #settingsMenu select,input{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #e6e6e6;}
-  footer{padding:18px;text-align:center;color:#777;font-size:13px;}
-  @media (max-width:720px){
-    .panel{flex-direction:column;}
-    .right{order:2;}
-    .left{order:1;}
-    .cat-btn{font-size:14px;padding:6px 10px;}
-  }
+:root{
+  --accent:#2c7be5;
+  --bg:#f3f4f6;
+  --card:#ffffff;
+  --muted:#666;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background:var(--bg);
+  color:#111;
+  -webkit-font-smoothing:antialiased;
+}
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 18px;
+  background:linear-gradient(90deg,#0b63d6,#2c7be5);
+  color:#fff;
+}
+header h1{
+  margin:0;font-size:20px;letter-spacing:0.2px;
+  display:flex;align-items:center;gap:6px;
+}
+header h1 img{height:32px;width:32px;border-radius:6px;}
+.top-controls{display:flex;gap:8px;align-items:center}
+.icon-btn{background:transparent;border:0;color:#fff;font-size:18px;cursor:pointer;padding:6px;border-radius:6px;}
+.icon-btn:hover{background:rgba(255,255,255,0.06)}
+main{padding:16px;max-width:1100px;margin:18px auto}
+.profile-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+select,button,input,textarea{font-family:inherit}
+.btn{background:var(--accent);border:0;color:#fff;padding:8px 10px;border-radius:8px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(44,123,229,0.12)}
+.btn.warn{background:#e04b4b}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.categories{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.cat-btn{background:var(--card);border:1px solid #e6e6e6;padding:8px 12px;border-radius:999px;cursor:pointer}
+.cat-btn.active{background:var(--accent);color:#fff;border-color:transparent}
+.panel{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.left{flex:1 1 360px;min-width:280px;}
+.right{flex:2 1 620px;min-width:320px;}
+.card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 6px 18px rgba(15,15,15,0.04);margin-bottom:12px;}
+#word-grid{display:grid;gap:8px;grid-template-columns: repeat(auto-fill,minmax(110px,1fr));}
+.word-btn{background:#fff;border:1px solid #eee;padding:8px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;height:86px;font-size:15px;}
+.word-emoji{font-size:22px;margin-bottom:6px}
+textarea#message{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;min-height:56px;font-size:16px}
+ul#predictions{list-style:none;margin:8px 0 0;padding:0;max-height:140px;overflow:auto;border-radius:6px}
+#predictions li{padding:8px;border-bottom:1px solid #f0f0f0;cursor:pointer}
+#predictions li:hover{background:#f5f7fb}
+/* Settings menu */
+#settingsMenu{display:none;position:fixed;right:18px;top:64px;background:var(--card);padding:12px;border-radius:10px;box-shadow:0 8px 22px rgba(0,0,0,0.12);width:320px;z-index:999}
+#settingsMenu label{display:block;margin-bottom:8px;font-size:13px;color:var(--muted)}
+#settingsMenu select,input,textarea{width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #e6e6e6}
+footer{padding:18px;text-align:center;color:#777;font-size:13px}
+@media (max-width:720px){
+  .panel{flex-direction:column}
+  .right{order:2}
+  .left{order:1}
+  .cat-btn{font-size:14px;padding:6px 10px}
+}
 </style>
 </head>
 <body>
-
 <header>
-  <div style="display:flex;align-items:center;gap:8px;">
-    <img src="logo.png" alt="Halo Logo" style="height:32px;width:32px;border-radius:6px;">
-    <h1>Halo AAC — Offline Web</h1>
-  </div>
-  <div class="top-controls">
-    <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
-    <select id="voiceSelect" aria-label="Voice selector"></select>
-  </div>
+<h1><img src="logo.png" alt="Halo Logo"> Halo AAC — Offline</h1>
+<div class="top-controls">
+  <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+  <select id="voiceSelect" aria-label="Voice selector"></select>
+</div>
 </header>
-
-<p style="text-align:center; margin:8px 0; font-size:14px; color:#555;">
-  Thank you to Kaelynn Partlow for the idea for Halo
-</p>
-
 <main>
-  <!-- Profile Row -->
-  <div class="profile-row">
-    <label style="display:flex;align-items:center;gap:8px">
-      Profile:
-      <select id="profileSelect"></select>
-    </label>
-    <button id="addProfile" class="btn ghost">Add Profile</button>
-    <button id="delProfile" class="btn ghost">Delete</button>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <button id="exportBtn" class="btn ghost">Export Save Code</button>
-      <button id="importBtn" class="btn">Import Save Code</button>
-    </div>
-  </div>
-
-  <!-- Controls -->
-  <div class="controls">
-    <div class="categories card" id="categoryBar" style="display:flex;gap:8px;padding:8px"></div>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <button id="addWordBtn" class="btn">Add Word</button>
-      <button id="addCategoryBtn" class="btn">Add Category</button>
-      <button id="clearBtn" class="btn ghost">Clear Message</button>
-    </div>
-  </div>
-
-  <!-- Panel -->
-  <div class="panel">
-    <div class="left">
-      <div class="card">
-        <label for="message">Message</label>
-        <textarea id="message" placeholder="Type or click words..."></textarea>
-        <ul id="predictions"></ul>
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="speakBtn" class="btn">Speak</button>
-          <button id="stopBtn" class="btn ghost">Stop</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <strong>Active Profile Data</strong>
-        <div id="profileData" style="margin-top:8px;color:#444;font-size:14px">No profile selected</div>
-      </div>
-    </div>
-
-    <div class="right">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong id="gridTitle">All Words</strong>
-          <div style="color:var(--muted);font-size:13px">Tap a word to append</div>
-        </div>
-        <div id="word-grid" style="margin-top:12px"></div>
-      </div>
-    </div>
-  </div>
-</main>
-
-<!-- Settings Menu -->
-<div id="settingsMenu">
-  <label>Choose Voice
-    <select id="settingsVoice"></select>
+<div class="profile-row">
+  <label style="display:flex;align-items:center;gap:8px">Profile:
+    <select id="profileSelect"></select>
   </label>
-  <label>Background color
-    <input type="color" id="bgColorPicker" value="#f3f4f6">
-  </label>
-  <label>Export / Import Save Code
-    <div style="display:flex;gap:8px">
-      <button id="doExport" class="btn ghost" style="flex:1">Generate code</button>
-      <button id="doImport" class="btn" style="flex:1">Apply code</button>
-    </div>
-  </label>
-  <label style="margin-top:8px">Paste Save Code to import:
-    <textarea id="importArea" placeholder="Paste exported code here" style="min-height:80px;padding:8px;border-radius:6px;border:1px solid #e6e6e6"></textarea>
-  </label>
-  <div style="display:flex;gap:8px;margin-top:10px">
-    <button id="closeSettings" class="btn ghost" style="flex:1">Close</button>
+  <button id="addProfile" class="btn ghost">Add Profile</button>
+  <button id="delProfile" class="btn ghost">Delete</button>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <button id="exportBtn" class="btn ghost">Export Save Code</button>
+    <button id="importBtn" class="btn">Import Save Code</button>
   </div>
 </div>
-
+<div class="controls">
+  <div class="categories card" id="categoryBar" style="display:flex;gap:8px;padding:8px"></div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <button id="addWordBtn" class="btn">Add Word</button>
+    <button id="addCategoryBtn" class="btn">Add Category</button>
+    <button id="clearBtn" class="btn ghost">Clear Message</button>
+  </div>
+</div>
+<div class="panel">
+<div class="left">
+<div class="card">
+  <label for="message">Message</label>
+  <textarea id="message" placeholder="Type or click words..." readonly></textarea>
+  <ul id="predictions"></ul>
+  <div style="display:flex;gap:8px;margin-top:8px">
+    <button id="speakBtn" class="btn">Speak</button>
+    <button id="stopBtn" class="btn ghost">Stop</button>
+  </div>
+</div>
+<div class="card">
+  <strong>Active Profile Data</strong>
+  <div id="profileData" style="margin-top:8px;color:#444;font-size:14px">No profile selected</div>
+</div>
+</div>
+<div class="right">
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <strong id="gridTitle">All Words</strong>
+    <div style="color:var(--muted);font-size:13px">Tap a word to append</div>
+  </div>
+  <div id="word-grid" style="margin-top:12px"></div>
+</div>
+</div>
+</div>
+</main>
+<div id="settingsMenu">
+<label>Choose Voice
+  <select id="settingsVoice"></select>
+</label>
+<label>Background color
+  <input type="color" id="bgColorPicker" value="#f3f4f6">
+</label>
+<label>Export / Import Save Code
+  <div style="display:flex;gap:8px">
+    <button id="doExport" class="btn ghost" style="flex:1">Generate code</button>
+    <button id="doImport" class="btn" style="flex:1">Apply code</button>
+  </div>
+</label>
+<label style="margin-top:8px">Paste Save Code to import:
+  <textarea id="importArea" placeholder="Paste exported code here" style="min-height:80px;padding:8px;border-radius:6px;border:1px solid #e6e6e6"></textarea>
+</label>
+<div style="display:flex;gap:8px;margin-top:10px">
+  <button id="closeSettings" class="btn ghost" style="flex:1">Close</button>
+</div>
+</div>
 <footer>Works offline. Export code to move your data between devices.</footer>
 
 <script>
-/* =================== Data =================== */
-const STORAGE_KEY = 'halo_aac_data_v2';
-let data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"profiles":{},"currentProfile":null}');
-if(!data.profiles) data.profiles = {};
-if(!data.currentProfile) data.currentProfile = Object.keys(data.profiles)[0] || null;
+// =================== Data ===================
+const STORAGE_KEY = 'halo_aac_data_v3';
+let data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"profiles":{},"currentProfile":null}');
+if(!data.profiles) data.profiles={};
+if(!data.currentProfile) data.currentProfile=Object.keys(data.profiles)[0]||null;
 
-/* =================== UI =================== */
+const CATEGORIES = {
+"Core":{"I":"👤","You":"🫵","We":"👥","They":"👥","Go":"🏃","Stop":"✋","Hello":"👋","Goodbye":"👋","Yes":"✅","No":"❌","Help":"🆘","Eat":"🍽️","Drink":"🥤","Want":"🤲","Need":"🤲","Love":"❤️","Like":"👍","Hate":"👎","Think":"🤔","Know":"🧠","See":"👀","Hear":"👂","Feel":"🤗","Wait":"⏳","Come":"👐","Leave":"🚪","Play":"🎮","Work":"💼","Read":"📖","Write":"✏️","More":"➕","Less":"➖","Again":"🔁","Now":"🕑","Later":"⏳","Fast":"⚡","Slow":"🐢","Big":"🟦","Small":"🟩","Hot":"🔥","Cold":"❄️","YesPlease":"🙏","NoThanks":"🙅‍♂️","StopIt":"✋"},
+"Food":{"Apple":"🍎","Banana":"🍌","Bread":"🍞","Milk":"🥛","Water":"💧","Juice":"🧃","Rice":"🍚","Meat":"🥩","Cheese":"🧀","Egg":"🥚","Soup":"🥣","Cake":"🍰","Chocolate":"🍫","Cookie":"🍪","Pizza":"🍕","Burger":"🍔","Fries":"🍟","Fish":"🐟","Vegetables":"🥦","Fruit":"🍎","Snack":"🍿","Yogurt":"🧴","Pasta":"🍝","Salad":"🥗","Honey":"🍯","Butter":"🧈","Steak":"🥩","Sushi":"🍣","Noodles":"🍜","Cereal":"🥣","Coffee":"☕","Tea":"🍵","Popcorn":"🍿","Ice Cream":"🍨"},
+"Feelings":{"Happy":"😊","Sad":"😢","Angry":"😡","Excited":"🤩","Tired":"😴","Scared":"😱","Confused":"😕","Surprised":"😲","Bored":"😐","Love":"❤️","Like":"👍","Dislike":"👎","Proud":"😌","Shy":"😳","Worried":"😟","Calm":"😌","Relaxed":"😎","Hungry":"🤤","Thirsty":"😋","Sick":"🤒","Lonely":"😔","Joyful":"😁","Excited":"🤩","Frustrated":"😤"},
+"Places":{"Home":"🏠","School":"🏫","Park":"🏞️","Bathroom":"🚽","Kitchen":"🍳","Bedroom":"🛏️","Store":"🏪","Office":"🏢","Hospital":"🏥","Library":"📚","Playground":"🛝","Garden":"🌳","Beach":"🏖️","Mountain":"⛰️","City":"🏙️","Village":"🏘️","Market":"🛒","Restaurant":"🍴","Cafe":"☕","Theater":"🎭","Bus":"🚌","Train":"🚆","Airport":"✈️"},
+"Activities":{"Run":"🏃","Walk":"🚶","Jump":"🤾","Swim":"🏊","Dance":"💃","Sing":"🎤","Draw":"🖌️","Paint":"🎨","Cook":"🍳","Read":"📖","Write":"✏️","Study":"📚","Sleep":"😴","Play":"🎮","Exercise":"🏋️","Travel":"✈️","Shop":"🛍️","Drive":"🚗","Watch":"👀","Listen":"🎧","Ride":"🚴","Climb":"🧗"},
+"Animals":{"Dog":"🐶","Cat":"🐱","Bird":"🐦","Fish":"🐟","Horse":"🐴","Cow":"🐄","Pig":"🐖","Sheep":"🐑","Rabbit":"🐇","Monkey":"🐒","Lion":"🦁","Tiger":"🐅","Elephant":"🐘","Bear":"🐻","Wolf":"🐺","Frog":"🐸","Snake":"🐍","Fox":"🦊","Deer":"🦌","Whale":"🐋","Dolphin":"🐬","Eagle":"🦅","Owl":"🦉","Penguin":"🐧","Chicken":"🐔","Goat":"🐐"}
+};
+
+// =================== UI References ===================
 const profileSelect = document.getElementById('profileSelect');
 const addProfileBtn = document.getElementById('addProfile');
 const delProfileBtn = document.getElementById('delProfile');
@@ -200,27 +191,16 @@ const doImport = document.getElementById('doImport');
 const closeSettings = document.getElementById('closeSettings');
 const catBar = document.getElementById('categoryBar');
 
-/* =================== Categories =================== */
-const CATEGORIES = {
-  "Core":{"I":"👤","You":"🫵","Yes":"✅","No":"❌"},
-  "Food":{"Apple":"🍎","Banana":"🍌"},
-  "Feelings":{"Happy":"😊","Sad":"😢"},
-  "Places":{"Home":"🏠","School":"🏫"},
-  "Activities":{"Run":"🏃","Walk":"🚶"},
-  "Animals":{"Dog":"🐶","Cat":"🐱"}
-};
 let currentCategory = 'Core';
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
 
-/* =================== Functions =================== */
-function saveStorage(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
-
+// =================== Functions ===================
 function buildCategoryButtons(){
   catBar.innerHTML='';
-  const allCats = Object.keys(CATEGORIES);
-  if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].customCategories){
-    allCats.push(...Object.keys(data.profiles[data.currentProfile].customCategories));
-  }
-  allCats.forEach(cat=>{
+  let cats = Object.keys(CATEGORIES);
+  if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].customCategories)
+    cats = cats.concat(Object.keys(data.profiles[data.currentProfile].customCategories));
+  cats.forEach(cat=>{
     const b=document.createElement('button');
     b.className='cat-btn';
     b.textContent=cat;
@@ -233,103 +213,6 @@ function updateCategoryActive(){
     btn.classList.toggle('active', btn.textContent===currentCategory);
   });
 }
-function mergedWordsForCategory(cat){
-  const out={};
-  Object.assign(out, CATEGORIES[cat]||{});
-  if(data.currentProfile && data.profiles[data.currentProfile]){
-    const prof=data.profiles[data.currentProfile];
-    if(prof.words) Object.entries(prof.words).forEach(([w,e])=>out[w]=e);
-    if(prof.customCategories && prof.customCategories[cat]){
-      Object.entries(prof.customCategories[cat]).forEach(([w,e])=>out[w]=e);
-    }
-  }
-  return out;
-}
-function updateGrid(){
-  gridTitle.textContent=currentCategory+' — Words';
-  wordGrid.innerHTML='';
-  const words=mergedWordsForCategory(currentCategory);
-  Object.entries(words).forEach(([w,e])=>{
-    const b=document.createElement('button');
-    b.className='word-btn';
-    b.innerHTML=`<div class="word-emoji">${e||''}</div><div class="word-text">${w}</div>`;
-    b.onclick=()=>addWordToMessage(w);
-    wordGrid.appendChild(b);
-  });
-  updateCategoryActive();
-}
-function addWordToMessage(word){
-  // Fix: Do not focus textarea to prevent keyboard
-  if(msgBox.value) msgBox.value += ' ' + word;
-  else msgBox.value = word;
-  predict();
-}
-function predict(){
-  const text = msgBox.value.trim();
-  predictions.innerHTML='';
-  if(!text) return;
-  const last = text.split(/\s+/).pop().toLowerCase();
-  if(!last) return;
-  const allWords = [];
-  Object.values(CATEGORIES).forEach(cat=>Object.keys(cat).forEach(w=>allWords.push(w)));
-  Object.values(data.profiles||{}).forEach(p=>{
-    if(p.words) Object.keys(p.words).forEach(w=>allWords.push(w));
-    if(p.customCategories) Object.values(p.customCategories).forEach(c=>Object.keys(c).forEach(w=>allWords.push(w)));
-  });
-  const matches = allWords.filter(w=>w.toLowerCase().startsWith(last)&&w.toLowerCase()!==last).slice(0,8);
-  matches.forEach(m=>{
-    const li=document.createElement('li'); li.textContent=m;
-    li.onclick=()=>{
-      const arr = msgBox.value.trim().split(/\s+/);
-      arr[arr.length-1] = m;
-      msgBox.value = arr.join(' ');
-      predictions.innerHTML='';
-    };
-    predictions.appendChild(li);
-  });
-}
-
-/* =================== Voice =================== */
-function stripEmojiAndSymbols(s){
-  return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d]/gu,'').replace(/\s+/g,' ').trim();
-}
-let currentUtter=null;
-function loadVoices(){
-  const voices = speechSynthesis.getVoices();
-  voiceSelect.innerHTML=''; settingsVoice.innerHTML='';
-  voices.forEach(v=>{
-    const opt1=document.createElement('option'); opt1.value=v.name; opt1.textContent=v.name; voiceSelect.appendChild(opt1);
-    const opt2=opt1.cloneNode(true); settingsVoice.appendChild(opt2);
-  });
-  const last=data.lastVoice; if(last && voices.find(v=>v.name===last)){voiceSelect.value=last; settingsVoice.value=last;}
-}
-speechSynthesis.onvoiceschanged=loadVoices; loadVoices();
-voiceSelect.onchange=settingsVoice.onchange=(e)=>{
-  data.lastVoice=e.target.value; saveStorage();
-  voiceSelect.value=e.target.value; settingsVoice.value=e.target.value;
-};
-speakBtn.onclick=()=>{
-  const raw = msgBox.value.trim(); if(!raw) return;
-  const speakText = stripEmojiAndSymbols(raw)||raw;
-  currentUtter = new SpeechSynthesisUtterance(speakText);
-  const v = speechSynthesis.getVoices().find(x=>x.name===voiceSelect.value);
-  if(v) currentUtter.voice=v;
-  speechSynthesis.speak(currentUtter);
-};
-stopBtn.onclick=()=>speechSynthesis.cancel();
-
-/* =================== Event Listeners =================== */
-msgBox.addEventListener('input', predict);
-clearBtn.onclick=()=>{ msgBox.value=''; predictions.innerHTML=''; };
-settingsBtn.onclick=()=>settingsMenu.style.display=settingsMenu.style.display==='block'?'none':'block';
-closeSettings.onclick=()=>settingsMenu.style.display='none';
-bgColorPicker.oninput=(e)=>{
-  document.body.style.background=e.target.value;
-  if(data.currentProfile && data.profiles[data.currentProfile]) data.profiles[data.currentProfile].bg=e.target.value;
-  saveStorage();
-};
-
-/* =================== Profiles =================== */
 function refreshProfileSelect(){
   profileSelect.innerHTML='';
   Object.keys(data.profiles).forEach(name=>{
@@ -337,46 +220,127 @@ function refreshProfileSelect(){
     profileSelect.appendChild(o);
   });
   if(data.currentProfile && data.profiles[data.currentProfile]) profileSelect.value=data.currentProfile;
-  updateProfilePanel();
+  else data.currentProfile = Object.keys(data.profiles)[0]||null;
+  refreshProfilePanel();
 }
-addProfileBtn.onclick=()=>{
-  const name=prompt('New profile name:'); if(!name) return;
-  data.profiles[name]={words:{}, bg:'#f3f4f6', customCategories:{}};
-  data.currentProfile=name; saveStorage(); refreshProfileSelect(); updateGrid();
-};
-delProfileBtn.onclick=()=>{
-  if(!data.currentProfile) return alert('No profile selected');
-  if(!confirm('Delete profile "'+data.currentProfile+'"?')) return;
-  delete data.profiles[data.currentProfile];
-  data.currentProfile=Object.keys(data.profiles)[0]||null;
-  saveStorage(); refreshProfileSelect(); updateGrid();
-};
-profileSelect.onchange=(e)=>{
-  data.currentProfile=e.target.value; saveStorage(); updateGrid(); updateProfilePanel();
-};
-
-/* =================== Profile Display =================== */
-function updateProfilePanel(){ refreshProfileDisplay(); }
-function refreshProfileDisplay(){
+function refreshProfilePanel(){
   if(!data.currentProfile){ profileData.textContent='No profile selected'; return; }
-  const p=data.profiles[data.currentProfile];
+  const p = data.profiles[data.currentProfile];
   profileData.innerHTML=`<div><strong>${data.currentProfile}</strong></div>
     <div style="margin-top:6px;color:var(--muted)">Words: ${Object.keys(p.words||{}).length}</div>
     <div style="margin-top:6px;color:var(--muted)">Custom Categories: ${Object.keys(p.customCategories||{}).length}</div>
     <div style="margin-top:6px;color:var(--muted)">BG: <span style="display:inline-block;width:16px;height:12px;background:${p.bg||'#fff'};border-radius:4px;border:1px solid #ddd;margin-left:6px;vertical-align:middle"></span></div>`;
 }
+function mergedWords(cat){
+  const out = {...(CATEGORIES[cat]||{})};
+  if(data.currentProfile && data.profiles[data.currentProfile]){
+    const p = data.profiles[data.currentProfile];
+    if(p.words) Object.entries(p.words).forEach(([w,e])=>out[w]=e);
+    if(p.customCategories && p.customCategories[cat]) Object.entries(p.customCategories[cat]).forEach(([w,e])=>out[w]=e);
+  }
+  return out;
+}
+function updateGrid(){
+  gridTitle.textContent=currentCategory+' — Words';
+  wordGrid.innerHTML='';
+  const words=mergedWords(currentCategory);
+  Object.entries(words).forEach(([w,e])=>{
+    const b=document.createElement('button');
+    b.className='word-btn';
+    b.innerHTML=`<div class="word-emoji">${e||''}</div><div class="word-text">${w}</div>`;
+    b.onclick=()=>{ msgBox.value=msgBox.value?(msgBox.value+' '+w):w; };
+    wordGrid.appendChild(b);
+  });
+  updateCategoryActive();
+}
 
-/* =================== Export/Import =================== */
-doExport.onclick=()=>{ try{ importArea.value=btoa(unescape(encodeURIComponent(JSON.stringify(data)))); alert('Save code generated.'); }catch(e){alert('Export failed:'+e.message);} };
-doImport.onclick=()=>{ try{ const txt=importArea.value.trim(); if(!txt) return alert('Paste Save Code first.'); const parsed=JSON.parse(decodeURIComponent(escape(atob(txt)))); if(parsed && parsed.profiles){ data.profiles=Object.assign({}, data.profiles||{}, parsed.profiles); data.currentProfile=parsed.currentProfile||data.currentProfile; saveStorage(); refreshProfileSelect(); updateGrid(); refreshProfileDisplay(); alert('Imported successfully.'); } else alert('Invalid Save Code.'); }catch(e){alert('Invalid code or corrupted.');} };
+// =================== Profiles ===================
+addProfileBtn.onclick=()=>{
+  const name=prompt('New profile name:'); if(!name) return;
+  data.profiles[name]={words:{}, bg:'#f3f4f6', customCategories:{}};
+  data.currentProfile=name; save(); refreshProfileSelect(); updateGrid();
+};
+delProfileBtn.onclick=()=>{
+  if(!data.currentProfile) return alert('No profile selected');
+  if(!confirm('Delete profile "'+data.currentProfile+'"?')) return;
+  delete data.profiles[data.currentProfile]; data.currentProfile=Object.keys(data.profiles)[0]||null;
+  save(); refreshProfileSelect(); updateGrid();
+};
+profileSelect.onchange=(e)=>{ data.currentProfile=e.target.value; save(); updateGrid(); refreshProfilePanel(); };
+
+// =================== Add Word/Category ===================
+addWordBtn.onclick=()=>{
+  if(!data.currentProfile) return alert('Select or create profile first');
+  const word=prompt('Enter word:'); if(!word) return;
+  const cat = prompt('Category?', currentCategory) || 'Custom';
+  const emoji = prompt('Emoji (optional)','❓')||'';
+  const p = data.profiles[data.currentProfile];
+  if(!CATEGORIES[cat] && !p.customCategories[cat]) p.customCategories[cat]={};
+  if(CATEGORIES[cat]) p.words[word]=emoji;
+  else p.customCategories[cat][word]=emoji;
+  save(); buildCategoryButtons(); updateGrid(); refreshProfilePanel();
+};
+addCategoryBtn.onclick=()=>{
+  if(!data.currentProfile) return alert('Select or create profile first');
+  const name = prompt('Category name:'); if(!name) return;
+  const p = data.profiles[data.currentProfile];
+  if(!p.customCategories[name]) p.customCategories[name]={};
+  save(); buildCategoryButtons(); updateGrid(); refreshProfilePanel();
+};
+
+// =================== Clear/Predictions ===================
+clearBtn.onclick=()=>{ msgBox.value=''; predictions.innerHTML=''; };
+
+// =================== TTS ===================
+let currentUtter=null;
+function stripEmoji(s){ return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d]/gu,'').trim(); }
+speakBtn.onclick=()=>{
+  const raw=msgBox.value.trim(); if(!raw) return;
+  const txt = stripEmoji(raw)||raw;
+  currentUtter = new SpeechSynthesisUtterance(txt);
+  const v = speechSynthesis.getVoices().find(x=>x.name===voiceSelect.value);
+  if(v) currentUtter.voice=v;
+  speechSynthesis.speak(currentUtter);
+};
+stopBtn.onclick=()=>speechSynthesis.cancel();
+
+// =================== Settings ===================
+settingsBtn.onclick=()=>settingsMenu.style.display=(settingsMenu.style.display==='block'?'none':'block');
+closeSettings.onclick=()=>settingsMenu.style.display='none';
+bgColorPicker.oninput=(e)=>{
+  document.body.style.background=e.target.value;
+  if(data.currentProfile && data.profiles[data.currentProfile]) data.profiles[data.currentProfile].bg=e.target.value;
+  save();
+};
+function loadVoices(){
+  const voices=speechSynthesis.getVoices();
+  voiceSelect.innerHTML=''; settingsVoice.innerHTML='';
+  voices.forEach(v=>{
+    const o=document.createElement('option'); o.value=v.name; o.textContent=v.name;
+    voiceSelect.appendChild(o);
+    settingsVoice.appendChild(o.cloneNode(true));
+  });
+  const last=data.lastVoice;
+  if(last && voices.find(v=>v.name===last)){ voiceSelect.value=last; settingsVoice.value=last; }
+}
+speechSynthesis.onvoiceschanged=loadVoices; loadVoices();
+voiceSelect.onchange=settingsVoice.onchange=(e)=>{ data.lastVoice=e.target.value; save(); settingsVoice.value=e.target.value; voiceSelect.value=e.target.value; };
+
+// =================== Export/Import ===================
+doExport.onclick=()=>{ importArea.value=btoa(unescape(encodeURIComponent(JSON.stringify(data)))); alert('Save code generated'); };
+doImport.onclick=()=>{
+  try{
+    const txt=importArea.value.trim(); if(!txt) return alert('Paste Save Code');
+    const parsed=JSON.parse(decodeURIComponent(escape(atob(txt))));
+    if(parsed && parsed.profiles){ data=parsed; save(); refreshProfileSelect(); updateGrid(); refreshProfilePanel(); alert('Imported'); }
+    else alert('Invalid Save Code');
+  }catch(e){ alert('Invalid Save Code'); }
+};
 exportBtn.onclick=()=>doExport.click();
-importBtn.onclick=()=>{ const code=prompt('Paste Save Code here:'); if(!code) return; importArea.value=code; doImport.click(); };
+importBtn.onclick=()=>{ const code=prompt('Paste Save Code'); if(!code) return; importArea.value=code; doImport.click(); };
 
-/* =================== Initial Setup =================== */
-buildCategoryButtons();
-refreshProfileSelect();
-updateGrid();
-refreshProfileDisplay();
+// =================== Init ===================
+buildCategoryButtons(); refreshProfileSelect(); updateGrid(); 
 if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[data.currentProfile].bg){
   document.body.style.background=data.profiles[data.currentProfile].bg;
   bgColorPicker.value=data.profiles[data.currentProfile].bg;
@@ -384,4 +348,3 @@ if(data.currentProfile && data.profiles[data.currentProfile] && data.profiles[da
 </script>
 </body>
 </html>
-
