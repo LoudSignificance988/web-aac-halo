@@ -1,4 +1,5 @@
->
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,9 +42,6 @@ textarea#message { width:100%; padding:10px; border-radius:8px; border:1px solid
 ul#predictions { list-style:none; margin:8px 0 0; padding:0; max-height:140px; overflow:auto; border-radius:6px; }
 #predictions li { padding:8px; border-bottom:1px solid #f0f0f0; cursor:pointer; }
 #predictions li:hover { background:#f5f7fb; }
-#settingsMenu { display:none; position:fixed; top:64px; right:18px; width:320px; background:var(--card); padding:12px; border-radius:10px; box-shadow:0 8px 22px rgba(0,0,0,0.12); z-index:999; }
-#settingsMenu label { display:block; margin-bottom:8px; font-size:13px; color:var(--muted); }
-#settingsMenu select, #settingsMenu input, #settingsMenu textarea { width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #e6e6e6; }
 footer { padding:18px; text-align:center; color:#777; font-size:13px; }
 @media(max-width:720px){ .panel{flex-direction:column;} .right{order:2;} .left{order:1;} .cat-btn{font-size:14px;padding:6px 10px;} }
 </style>
@@ -68,10 +66,6 @@ footer { padding:18px; text-align:center; color:#777; font-size:13px; }
     </label>
     <button id="addProfile" class="btn ghost">Add Profile</button>
     <button id="delProfile" class="btn ghost">Delete</button>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-      <button id="exportBtn" class="btn ghost">Export</button>
-      <button id="importBtn" class="btn">Import</button>
-    </div>
   </div>
 
   <div class="controls">
@@ -94,10 +88,6 @@ footer { padding:18px; text-align:center; color:#777; font-size:13px; }
           <button id="stopBtn" class="btn ghost">Stop</button>
         </div>
       </div>
-      <div class="card">
-        <strong>Profile Data</strong>
-        <div id="profileData" style="margin-top:8px;color:#444;font-size:14px;">No profile selected</div>
-      </div>
     </div>
 
     <div class="right">
@@ -112,21 +102,8 @@ footer { padding:18px; text-align:center; color:#777; font-size:13px; }
   </div>
 </main>
 
-<div id="settingsMenu">
-  <label>Voice<select id="settingsVoice"></select></label>
-  <label>Background<input type="color" id="bgColorPicker" value="#f3f4f6"></label>
-  <label>Export/Import
-    <div style="display:flex;gap:8px;">
-      <button id="doExport" class="btn ghost" style="flex:1;">Generate</button>
-      <button id="doImport" class="btn" style="flex:1;">Apply</button>
-    </div>
-  </label>
-  <textarea id="importArea" placeholder="Paste code" style="min-height:80px;padding:8px;border-radius:6px;border:1px solid #e6e6e6;"></textarea>
-  <button id="closeSettings" class="btn ghost" style="width:100%;margin-top:10px;">Close</button>
-</div>
-
 <footer>
-Offline AAC. Export code to save data. Thanks Kaelynn Partlow.
+Offline AAC. Thanks Kaelynn Partlow.
 </footer>
 
 <script>
@@ -134,7 +111,16 @@ Offline AAC. Export code to save data. Thanks Kaelynn Partlow.
 const STORAGE_KEY = 'halo_aac_data_v4';
 let data = JSON.parse(localStorage.getItem(STORAGE_KEY)||'{"profiles":{},"currentProfile":null,"lastVoice":""}');
 const CATEGORIES = {
-  'Default': ['Hello','Yes','No','Thank you','Please','Water','Eat','Bathroom']
+  'Greetings': ['Hello 👋','Hi 😃','Good morning ☀️','Good night 🌙','Bye 👋'],
+  'Responses': ['Yes ✅','No ❌','Please 🙏','Thank you 🙏','Sorry 😔'],
+  'Food': ['Water 💧','Eat 🍽️','Fruit 🍎','Bread 🍞','Milk 🥛'],
+  'Places': ['Home 🏠','School 🏫','Park 🌳','Store 🏬','Bathroom 🚻'],
+  'Emotions': ['Happy 😄','Sad 😢','Angry 😡','Excited 🤩','Tired 😴'],
+  'Activities': ['Play ⚽','Sleep 🛌','Read 📖','Draw 🎨','Dance 💃'],
+  'Family': ['Mom 👩','Dad 👨','Sister 👧','Brother 👦','Grandma 👵'],
+  'Colors': ['Red 🔴','Blue 🔵','Green 🟢','Yellow 🟡','Black ⚫'],
+  'Numbers': ['One 1','Two 2','Three 3','Four 4','Five 5'],
+  'Animals': ['Dog 🐶','Cat 🐱','Bird 🐦','Fish 🐟','Cow 🐄']
 };
 
 // ========== VOICES ==========
@@ -142,18 +128,12 @@ let voices = [];
 function loadVoices(){
   voices = speechSynthesis.getVoices();
   const select = document.getElementById('voiceSelect');
-  const settingsSelect = document.getElementById('settingsVoice');
-  select.innerHTML = settingsSelect.innerHTML = '';
+  select.innerHTML = '';
   voices.forEach(v=>{
     const option = document.createElement('option');
     option.value = v.name; option.textContent = `${v.name} (${v.lang})`;
     select.appendChild(option);
-    settingsSelect.appendChild(option.cloneNode(true));
   });
-  const last = data.lastVoice;
-  if(last && voices.find(v=>v.name===last)){
-    select.value = last; settingsSelect.value = last;
-  }
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 loadVoices();
@@ -163,12 +143,9 @@ const profileSelect = document.getElementById('profileSelect');
 const messageArea = document.getElementById('message');
 const wordGrid = document.getElementById('word-grid');
 const categoryBar = document.getElementById('categoryBar');
-const predictionsList = document.getElementById('predictions');
 
 // ========== FUNCTIONS ==========
-function saveData(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
+function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
 
 function populateProfiles(){
   profileSelect.innerHTML = '';
@@ -177,57 +154,30 @@ function populateProfiles(){
     profileSelect.appendChild(opt);
   }
   profileSelect.value = data.currentProfile || '';
-  updateProfileData();
 }
-function updateProfileData(){
-  const info = document.getElementById('profileData');
-  if(data.currentProfile && data.profiles[data.currentProfile]){
-    info.textContent = JSON.stringify(data.profiles[data.currentProfile],null,2);
-  } else info.textContent = 'No profile selected';
-}
-function addProfile(name){
-  if(!name) return;
-  data.profiles[name] = {words:{},categories:{}};
-  data.currentProfile = name;
-  populateProfiles(); saveData();
-}
-function deleteProfile(name){
-  if(!name) return;
-  delete data.profiles[name];
-  data.currentProfile = Object.keys(data.profiles)[0]||null;
-  populateProfiles(); saveData();
-}
-function appendWord(word){ messageArea.value += word+' '; updatePredictions(word); }
+
+function appendWord(word){ messageArea.value += word+' '; }
+
 function speakMessage(){
   if(!messageArea.value) return;
   const utter = new SpeechSynthesisUtterance(messageArea.value);
   utter.voice = voices.find(v=>v.name===document.getElementById('voiceSelect').value)||null;
   speechSynthesis.speak(utter);
-  data.lastVoice = utter.voice?.name||'';
-  saveData();
 }
+
 function stopSpeaking(){ speechSynthesis.cancel(); }
-function updatePredictions(lastWord){
-  // Simple prediction: find words starting with lastWord
-  predictionsList.innerHTML = '';
-  const words = Object.keys(CATEGORIES).flatMap(cat=>CATEGORIES[cat]);
-  const preds = words.filter(w=>w.toLowerCase().startsWith(lastWord.toLowerCase()) && w!==lastWord).slice(0,5);
-  preds.forEach(p=>{
-    const li = document.createElement('li'); li.textContent = p;
-    li.onclick=()=>appendWord(p);
-    predictionsList.appendChild(li);
-  });
-}
+
 function populateWords(category){
   wordGrid.innerHTML = '';
   const words = CATEGORIES[category]||[];
   words.forEach(w=>{
     const btn = document.createElement('div'); btn.className='word-btn';
-    btn.innerHTML=`<div class="word-emoji">💬</div><div>${w}</div>`;
+    btn.innerHTML=`<div class="word-emoji">${w.split(' ').slice(-1)}</div><div>${w.split(' ').slice(0,-1).join(' ')}</div>`;
     btn.onclick=()=>appendWord(w);
     wordGrid.appendChild(btn);
   });
 }
+
 function populateCategories(){
   categoryBar.innerHTML='';
   Object.keys(CATEGORIES).forEach(cat=>{
@@ -241,21 +191,7 @@ function populateCategories(){
 // ========== EVENTS ==========
 document.getElementById('speakBtn').onclick=speakMessage;
 document.getElementById('stopBtn').onclick=stopSpeaking;
-document.getElementById('addProfile').onclick=()=>{ const name=prompt('Profile name:'); addProfile(name); };
-document.getElementById('delProfile').onclick=()=>{ if(profileSelect.value) deleteProfile(profileSelect.value); };
-profileSelect.onchange=()=>{ data.currentProfile=profileSelect.value; updateProfileData(); saveData(); };
-document.getElementById('clearBtn').onclick=()=>{ messageArea.value=''; predictionsList.innerHTML=''; };
-document.getElementById('settingsBtn').onclick=()=>{ document.getElementById('settingsMenu').style.display='block'; };
-document.getElementById('closeSettings').onclick=()=>{ document.getElementById('settingsMenu').style.display='none'; };
-document.getElementById('bgColorPicker').oninput=e=>{ document.body.style.background=e.target.value; };
-document.getElementById('doExport').onclick=()=>{ document.getElementById('importArea').value = JSON.stringify(data); };
-document.getElementById('doImport').onclick=()=>{
-  try{
-    const imported = JSON.parse(document.getElementById('importArea').value);
-    data = imported; populateProfiles(); populateCategories(); saveData();
-    alert('Import successful');
-  }catch{ alert('Invalid JSON'); }
-};
+document.getElementById('clearBtn').onclick=()=>{ messageArea.value=''; };
 document.getElementById('addWordBtn').onclick=()=>{
   const w=prompt('New word:'); if(!w) return;
   const cat = prompt('Category (leave blank for Default):')||'Default';
