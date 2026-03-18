@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Halo AAC</title>
+<link rel="icon" href="data:,"/>
+<style>
+:root{
+  --accent:#2c7be5;
+  --accent-dark:#0b63d6;
+  --accent-light:#deeaff;
+  --bg:#f0f2f5;
+  --card:#fff;
+  --muted:#777;
+  --radius:12px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 14px;height:54px;
+  background:linear-gradient(90deg,var(--accent-dark),var(--accent));
+  color:#fff;position:sticky;top:0;z-index:200;
+  box-shadow:0 2px 10px rgba(0,0,0,0.2);
+}
+header h1{font-size:17px;font-weight:700;white-space:nowrap}
+.subtitle{font-size:10px;opacity:.8;margin-top:1px}
+.hdr-right{display:flex;gap:6px;align-items:center}
+.icon-btn{
+  background:rgba(255,255,255,.18);border:0;color:#fff;
+  font-size:13px;font-weight:700;cursor:pointer;padding:7px 10px;border-radius:8px;
+  line-height:1;transition:background .12s;white-space:nowrap
+}
+.icon-btn:active{background:rgba(255,255,255,.35)}
+
+main{padding:10px;max-width:1100px;margin:0 auto}
+
+select,button,input,textarea{font-family:inherit}
+.btn{
+  background:var(--accent);border:0;color:#fff;
+  padding:9px 13px;border-radius:9px;cursor:pointer;
+  font-size:13px;font-weight:600;transition:opacity .12s,transform .08s;white-space:nowrap
+}
+.btn:active{transform:scale(.95);opacity:.85}
+.btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
+.btn.ghost:active{background:var(--accent-light)}
+
+/* PROFILE ROW */
+.profile-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
+.profile-row select{padding:7px 9px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;flex:1;min-width:80px;max-width:180px}
+
+/* CATEGORY BAR */
+#catWrap{
+  display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;padding:8px 10px;
+  background:var(--card);border-radius:var(--radius);
+  box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:9px;
+}
+#catWrap::-webkit-scrollbar{display:none}
+.cat-btn{
+  background:transparent;border:1.5px solid #ddd;
+  padding:6px 13px;border-radius:999px;cursor:pointer;
+  font-size:13px;font-weight:500;white-space:nowrap;flex-shrink:0;transition:all .12s
+}
+.cat-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.cat-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;align-items:center}
+.cat-actions .btn{padding:8px 11px;font-size:12px}
+
+/* PANEL */
+.panel{display:flex;gap:10px;align-items:flex-start}
+.left{flex:0 0 290px;display:flex;flex-direction:column;gap:10px}
+.right{flex:1;min-width:0}
+
+.card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
+
+#message{
+  width:100%;padding:10px;border-radius:8px;border:1.5px solid #ddd;
+  font-size:16px;min-height:58px;resize:none;background:#f8f9fb;line-height:1.5;display:block
+}
+#message:focus{outline:none;border-color:var(--accent)}
+
+#predictions{list-style:none;max-height:100px;overflow-y:auto;border-radius:6px;margin-top:5px}
+#predictions li{padding:7px 10px;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px}
+#predictions li:hover{background:var(--accent-light)}
+
+/* TTS STATUS */
+#ttsBar{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;
+  background:var(--accent-light);border:1px solid #b8d0f7;
+  margin:8px 0;font-size:12px;color:var(--accent);font-weight:600
+}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.dot.on{animation:pulse .7s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.55)}}
+
+.speak-row{display:flex;gap:6px;margin-bottom:8px}
+.speak-row .btn{flex:1;font-size:14px;padding:11px 8px}
+
+/* RATE SLIDER — constrained so it never overflows */
+.rate-wrap{display:flex;align-items:center;gap:8px}
+.rate-wrap label{font-size:12px;color:var(--muted);flex-shrink:0}
+.rate-wrap input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
+.rate-wrap .val{font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;width:28px;text-align:right}
+
+/* WORD GRID */
+#wordGrid{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
+.word-btn{
+  background:#fff;border:1.5px solid #eee;padding:6px 4px;
+  border-radius:10px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;height:80px;transition:all .1s;touch-action:manipulation
+}
+.word-btn:active{transform:scale(.93);border-color:var(--accent);background:var(--accent-light)}
+.word-emoji{font-size:22px;display:block;margin-bottom:4px;line-height:1}
+.word-text{font-size:12px;font-weight:600;text-align:center;line-height:1.2;word-break:break-word}
+
+#wordSearch{
+  padding:7px 12px;border-radius:999px;border:1.5px solid #ddd;
+  font-size:13px;width:100%;display:block;margin-bottom:9px
+}
+#wordSearch:focus{outline:none;border-color:var(--accent)}
+
+/* SETTINGS SHEET (slides up from bottom) */
+#settingsOverlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:300;align-items:flex-end;justify-content:center
+}
+#settingsOverlay.open{display:flex}
+#settingsPanel{
+  background:#fff;border-radius:20px 20px 0 0;
+  width:100%;max-width:540px;max-height:92vh;overflow-y:auto;
+  padding:16px 18px 36px;
+}
+.drag-handle{width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 14px}
+.s-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.s-section{margin-bottom:22px}
+.s-label{font-size:11px;font-weight:700;color:#aaa;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+
+/* ENGINE GRID */
+.engine-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.engine-card{
+  border:2px solid #e8e8e8;border-radius:10px;padding:10px 8px;
+  cursor:pointer;text-align:center;transition:all .13s;background:#fafafa
+}
+.engine-card.active{border-color:var(--accent);background:var(--accent-light)}
+.engine-card:active{transform:scale(.96)}
+.e-icon{font-size:20px;display:block;margin-bottom:3px}
+.e-name{font-size:13px;font-weight:700}
+.e-sub{font-size:11px;color:#999;margin-top:2px}
+
+/* SYSTEM VOICE LIST */
+#sysPickerWrap{display:none;margin-top:10px}
+#sysPickerWrap.show{display:block}
+#sysVoiceList{max-height:180px;overflow-y:auto;border:1px solid #eee;border-radius:8px;margin-top:6px}
+.v-row{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;border-bottom:1px solid #f3f3f3}
+.v-row:last-child{border-bottom:0}
+.v-row.sel{background:var(--accent-light)}
+.v-name{flex:1;font-size:13px;font-weight:500}
+.v-lang{font-size:11px;color:#ccc}
+.v-play{border:0;background:var(--accent);color:#fff;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;flex-shrink:0}
+
+/* COLOR SWATCHES */
+.swatch-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .12s;flex-shrink:0}
+.swatch:active{transform:scale(1.2)}
+.swatch.active{border-color:#333}
+.color-row{display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.color-row label{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
+.color-row input[type=color]{width:36px;height:36px;border-radius:8px;border:1.5px solid #ddd;padding:2px;cursor:pointer;background:none}
+
+#importArea{width:100%;padding:9px;border-radius:8px;border:1.5px solid #ddd;font-size:12px;min-height:65px;resize:none;margin-top:8px}
+.two-btn{display:flex;gap:8px}
+.two-btn .btn{flex:1;padding:10px}
+
+#profileData{font-size:13px;color:#555;line-height:1.8;margin-top:6px}
+
+/* ═══ MOBILE ≤ 640 ═══ */
+@media(max-width:640px){
+  header h1{font-size:15px}
+  .subtitle{display:none}
+  main{padding:8px}
+  .panel{flex-direction:column}
+  .left{flex:none;width:100%;order:1}
+  .right{order:2;width:100%}
+  #wordGrid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px}
+  .word-btn{height:70px}
+  .word-emoji{font-size:19px}
+  .word-text{font-size:11px}
+  .speak-row .btn{padding:13px 8px;font-size:15px}
+  .profile-row .btn{padding:7px 8px;font-size:12px}
+  #settingsPanel{max-height:94vh}
+}
+@media(min-width:641px) and (max-width:900px){
+  .left{flex:0 0 260px}
+  #wordGrid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Halo AAC</h1>
+    <div class="subtitle">Thanks Kaelynn Partlow — Ivan's build</div>
+  </div>
+  <div class="hdr-right">
+    <button class="icon-btn" id="enginePill" onclick="openSettings()">🎙️ Google</button>
+    <button class="icon-btn" onclick="openSettings()">⚙️</button>
+  </div>
+</header>
+
+<main>
+  <div class="profile-row">
+    <select id="profileSelect"></select>
+    <button class="btn ghost" id="addProfileBtn">+ Profile</button>
+    <button class="btn ghost" id="delProfileBtn">Delete</button>
+    <button class="btn ghost" id="exportBtn" style="margin-left:auto">Export</button>
+    <button class="btn" id="importTopBtn">Import</button>
+  </div>
+
+  <div id="catWrap"></div>
+
+  <div class="cat-actions">
+    <button class="btn" id="addWordBtn">+ Word</button>
+    <button class="btn" id="addCatBtn">+ Category</button>
+    <button class="btn ghost" id="clearBtn">Clear</button>
+  </div>
+
+  <div class="panel">
+    <div class="left">
+      <div class="card">
+        <textarea id="message" readonly placeholder="Tap words to build message…"></textarea>
+        <ul id="predictions"></ul>
+        <div id="ttsBar"><div class="dot" id="dot"></div><span id="ttsStatus">Ready</span></div>
+        <div class="speak-row">
+          <button class="btn" id="speakBtn">▶ Speak</button>
+          <button class="btn ghost" id="stopBtn">■ Stop</button>
+          <button class="btn ghost" id="bsBtn">⌫</button>
+        </div>
+        <div class="rate-wrap">
+          <label for="rateSlider">Speed</label>
+          <input type="range" id="rateSlider" min="0.5" max="3.5" step="0.1" value="1.1">
+          <span class="val" id="rateVal">1.1×</span>
+        </div>
+      </div>
+      <div class="card">
+        <strong>Profile</strong>
+        <div id="profileData">No profile</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <input type="search" id="wordSearch" placeholder="🔍 Search words…">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <strong id="gridTitle">Words</strong>
+          <span style="font-size:12px;color:var(--muted)">Tap to add</span>
+        </div>
+        <div id="wordGrid"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- SETTINGS SHEET -->
+<div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div id="settingsPanel">
+    <div class="drag-handle"></div>
+    <div class="s-title">⚙️ Settings</div>
+
+    <div class="s-section">
+      <div class="s-label">🎙️ Voice Engine</div>
+      <div class="engine-grid" id="engineGrid">
+        <div class="engine-card active" data-eng="google">
+          <span class="e-icon">🌐</span>
+          <div class="e-name">Google</div>
+          <div class="e-sub">Free · Natural · Online</div>
+        </div>
+        <div class="engine-card" data-eng="system">
+          <span class="e-icon">📱</span>
+          <div class="e-name">System</div>
+          <div class="e-sub">Device voices · Offline</div>
+        </div>
+      </div>
+      <div id="sysPickerWrap">
+        <div class="s-label" style="margin-top:10px;margin-bottom:4px">System Voice</div>
+        <div id="sysVoiceList"></div>
+      </div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">🎨 Theme Color</div>
+      <div class="swatch-row" id="swatchRow">
+        <div class="swatch active" data-a="#2c7be5" data-d="#0b63d6" style="background:#2c7be5"></div>
+        <div class="swatch" data-a="#7c3aed" data-d="#5b21b6" style="background:#7c3aed"></div>
+        <div class="swatch" data-a="#059669" data-d="#047857" style="background:#059669"></div>
+        <div class="swatch" data-a="#dc2626" data-d="#b91c1c" style="background:#dc2626"></div>
+        <div class="swatch" data-a="#d97706" data-d="#b45309" style="background:#d97706"></div>
+        <div class="swatch" data-a="#0891b2" data-d="#0e7490" style="background:#0891b2"></div>
+        <div class="swatch" data-a="#db2777" data-d="#be185d" style="background:#db2777"></div>
+        <div class="swatch" data-a="#334155" data-d="#0f172a" style="background:#334155"></div>
+      </div>
+      <div class="color-row">
+        <label><input type="color" id="bgPicker" value="#f0f2f5"> Background</label>
+        <label><input type="color" id="accentPicker" value="#2c7be5"> Custom accent</label>
+      </div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-label">💾 Data</div>
+      <div class="two-btn">
+        <button class="btn ghost" id="doExport">Export Code</button>
+        <button class="btn" id="doImport">Import Code</button>
+      </div>
+      <textarea id="importArea" placeholder="Paste export code here…"></textarea>
+    </div>
+
+    <button class="btn" style="width:100%;padding:13px;font-size:15px" onclick="closeSettings()">Done ✓</button>
+  </div>
+</div>
+
+<script>
+/* ═══ WORD DATA ═══ */
+const DEFAULT_CATEGORIES = {
+  "Food & Drink":{"Apple":"🍎","Banana":"🍌","Bread":"🍞","Milk":"🥛","Water":"💧","Juice":"🧃","Rice":"🍚","Meat":"🥩","Cheese":"🧀","Egg":"🥚","Soup":"🥣","Cake":"🍰","Cookie":"🍪","Pizza":"🍕","Burger":"🍔","Fries":"🍟","Fish":"🐟","Pasta":"🍝","Salad":"🥗","Yogurt":"🫙","Coffee":"☕","Tea":"🍵","Soda":"🥤","Snack":"🍿","Sandwich":"🥪","Taco":"🌮","Sushi":"🍣","Noodles":"🍜","Candy":"🍬","Butter":"🧈","Honey":"🍯","Cereal":"🥣","Pancake":"🥞","Waffle":"🧇","Smoothie":"🥤","Ice cream":"🍦","Popcorn":"🍿","Steak":"🥩","Corn":"🌽"},
+  "Home":{"House":"🏠","Bedroom":"🛏️","Kitchen":"🍳","Bathroom":"🚽","Door":"🚪","Window":"🪟","Chair":"🪑","Table":"🛋️","Light":"💡","Stairs":"🪜","Bed":"🛏️","Sofa":"🛋️","Sink":"🚰","Mirror":"🪞","TV":"📺","Fridge":"🧊","Oven":"🔥","Phone":"📱","Keys":"🔑","Garage":"🏠","Laundry":"🧺","Closet":"🚪","Shelf":"📚","Lamp":"💡","Shower":"🚿","Tub":"🛁","Garden":"🌿","Yard":"🌳","Vacuum":"🧹","Blanket":"🛏️","Pillow":"😴"},
+  "Places":{"School":"🏫","Park":"🏞️","Store":"🏪","Office":"🏢","Hospital":"🏥","Library":"📚","Beach":"🏖️","Airport":"✈️","Market":"🛒","Restaurant":"🍴","Station":"🚉","Bank":"🏦","Theatre":"🎭","Church":"⛪","Gym":"🏋️","Playground":"🛝","Zoo":"🦁","Museum":"🏛️","Hotel":"🏨","Farm":"🚜","Mall":"🛍️","Clinic":"🩺","Pharmacy":"💊","Cafe":"☕","Bakery":"🥐","Stadium":"🏟️","City":"🌆","Forest":"🌲","Mountain":"⛰️","Lake":"🌊","Island":"🏝️"},
+  "Feelings":{"Happy":"😊","Sad":"😢","Angry":"😡","Tired":"😴","Excited":"🤩","Scared":"😱","Calm":"😌","Surprised":"😲","Bored":"😐","Proud":"😌","Lonely":"😔","Worried":"😟","Joyful":"😁","Confused":"😕","Shy":"😳","Relaxed":"😎","Hungry":"🤤","Thirsty":"😋","Sick":"🤒","Okay":"👌","Frustrated":"😤","Grateful":"🙏","Hopeful":"🌟","Nervous":"😬","Embarrassed":"😳","Content":"😊","Overwhelmed":"😵","Disappointed":"😞","Relieved":"😮‍💨","Love":"❤️","Pain":"💢","Anxious":"😰","Energetic":"⚡","Peaceful":"☮️","Loved":"🥰","Unsafe":"⚠️","Safe":"🛡️"},
+  "People":{"I":"👤","You":"🫵","Mom":"👩‍🦰","Dad":"👨‍🦰","Brother":"👦","Sister":"👧","Friend":"🧑‍🤝‍🧑","Teacher":"🧑‍🏫","Doctor":"🩺","Baby":"👶","Grandma":"👵","Grandpa":"👴","Neighbor":"🙋","Boss":"🧑‍💼","Nurse":"👩‍⚕️","Therapist":"🧑‍⚕️","Aide":"🙋","Caregiver":"🤲","We":"👫","They":"👥","He":"🧑","She":"👩","Family":"👨‍👩‍👧","Everyone":"🫂"},
+  "Actions":{"Go":"🏃","Stop":"✋","Come":"👐","Look":"👀","Listen":"👂","Speak":"🗣️","Eat":"🍽️","Drink":"🥤","Play":"🎮","Read":"📖","Write":"✏️","Open":"🔓","Close":"🔒","Give":"🎁","Take":"🤲","Help":"🆘","Wait":"⏳","Wash":"🧼","Call":"📞","Walk":"🚶","Run":"🏃","Sit":"🪑","Stand":"🧍","Lie down":"🛌","Sleep":"😴","Wake up":"⏰","Jump":"🤸","Sing":"🎤","Dance":"💃","Hug":"🤗","Cry":"😭","Laugh":"😂","Smile":"😊","Wave":"👋","Clap":"👏"},
+  "Needs":{"Help":"🆘","Bathroom":"🚽","Hungry":"🤤","Thirsty":"😋","Doctor":"🩺","Rest":"🛌","Sleep":"😴","Water":"💧","Food":"🍽️","Money":"💵","Phone":"📱","Charge":"🔌","Warm":"♨️","Cold":"❄️","Medicine":"💊","Transport":"🚗","Clothes":"👕","Blanket":"🛏️","Shoes":"👟","Pain relief":"💢","Ambulance":"🚑","Emergency":"🆘","Quiet":"🤫","Comfort":"🤗","Air":"💨","Glasses":"👓","Wheelchair":"♿","Bathroom NOW":"🚨","Break":"⏸️","Privacy":"🔒","Calm down":"😮‍💨"},
+  "Animals":{"Dog":"🐶","Cat":"🐱","Bird":"🐦","Fish":"🐟","Horse":"🐴","Cow":"🐄","Pig":"🐖","Sheep":"🐑","Rabbit":"🐇","Monkey":"🐒","Lion":"🦁","Tiger":"🐯","Elephant":"🐘","Bear":"🐻","Frog":"🐸","Duck":"🦆","Goat":"🐐","Deer":"🦌","Whale":"🐋","Dolphin":"🐬","Turtle":"🐢","Butterfly":"🦋","Bee":"🐝","Owl":"🦉","Eagle":"🦅","Penguin":"🐧","Fox":"🦊","Giraffe":"🦒","Panda":"🐼","Shark":"🦈"},
+  "Things":{"Book":"📚","Phone":"📱","Computer":"💻","Pen":"🖊️","Bag":"👜","Shoes":"👟","Watch":"⌚","Camera":"📷","Cup":"☕","Plate":"🍽️","Fork":"🍴","Spoon":"🥄","Pencil":"✏️","Paper":"📄","Backpack":"🎒","Umbrella":"☂️","Toy":"🧸","Keys":"🔑","Scissors":"✂️","Bottle":"🍶","Bowl":"🥣","Wallet":"👛","Earbuds":"🎧","Charger":"🔌","Tablet":"📱","Remote":"📺","Controller":"🎮","Ball":"⚽","Bike":"🚲","Clock":"⏰","Notebook":"📓"},
+  "Weather":{"Sunny":"☀️","Cloudy":"☁️","Rain":"🌧️","Snow":"❄️","Wind":"💨","Hot":"🔥","Cold":"🥶","Storm":"⛈️","Fog":"🌫️","Thunder":"⚡","Rainbow":"🌈","Blizzard":"🌨️","Clear":"🌤️","Freezing":"🧊","Tornado":"🌪️","Flood":"🌊","Hurricane":"🌀","Heatwave":"🌡️","Sunrise":"🌅","Sunset":"🌇","Night":"🌙","Morning":"🌄","Warm":"🌤️","Windy":"💨"},
+  "School":{"Class":"🏫","Homework":"📝","Test":"✏️","Lunch":"🍱","Recess":"🛝","Teacher":"🧑‍🏫","Pencil":"✏️","Book":"📚","Desk":"🪑","Gym":"🏋️","Art":"🎨","Music":"🎵","Math":"➕","Reading":"📖","Science":"🔬","History":"📜","Computer":"💻","Library":"📚","Cafeteria":"🍽️","Bus":"🚌","Nurse":"💊","Assignment":"📝","Study":"📖","Grade":"🅰️","Break":"⏸️","Drama":"🎭","PE":"⚽","Field trip":"🚌","Graduate":"🎓"},
+  "Health":{"Pain":"💢","Doctor":"🩺","Medicine":"💊","Hospital":"🏥","Ambulance":"🚑","Headache":"🤕","Fever":"🌡️","Nausea":"🤢","Dizzy":"😵","Tired":"😴","Sore":"💢","Allergy":"🤧","Cough":"🤧","Sneeze":"🤧","Cold":"🥶","Flu":"🤒","Burn":"🔥","Cut":"🩹","Bruise":"💜","Surgery":"🔪","Check-up":"🩺","Therapy":"🧠","Wheelchair":"♿","Crutches":"🦯","Glasses":"👓","Oxygen":"💨","Pulse":"💓"},
+  "Questions":{"What":"❓","Where":"📍","When":"⏰","Who":"👤","Why":"🤔","How":"🔧","Can I":"🙋","Can you":"🫵","Yes":"✅","No":"❌","Maybe":"🤷","I don't know":"🤷","I need":"🆘","I want":"✋","I like":"👍","I don't like":"👎","I feel":"💭","Please":"🙏","Thank you":"🙏","Sorry":"😔","Help me":"🆘","Wait":"⏳","Repeat":"🔁","Slower":"🐢","Louder":"📢","More":"➕","Less":"➖","Different":"🔄","Same":"🟰","Better":"⬆️","Worse":"⬇️"},
+  "Social":{"Hello":"👋","Goodbye":"👋","Good morning":"🌅","Good night":"🌙","How are you":"🙋","Fine":"👍","Great":"🌟","Bad":"👎","Okay":"👌","Please":"🙏","Thank you":"🙏","You're welcome":"😊","Sorry":"😔","Excuse me":"🙋","Let's go":"🏃","See you later":"👋","Miss you":"💔","Love you":"❤️","Happy birthday":"🎂","Congratulations":"🎉","Good job":"👏","I agree":"✅","I disagree":"❌","Really":"😮","Wow":"🤩","No problem":"👍","Sure":"✅","Never mind":"🤷","I'm ready":"✅","Come with me":"🤝"},
+  "Time":{"Now":"⏱️","Later":"⏰","Soon":"⌛","Today":"📅","Tomorrow":"🌅","Yesterday":"⬅️","Morning":"🌄","Afternoon":"☀️","Evening":"🌆","Night":"🌙","Monday":"📅","Tuesday":"📅","Wednesday":"📅","Thursday":"📅","Friday":"📅","Saturday":"📅","Sunday":"📅","Weekend":"🎉","Holiday":"🎉","This week":"📅","Next week":"📅","Hour":"⏰","Minute":"⏱️","Early":"🌅","Late":"🌙"},
+  "Transport":{"Car":"🚗","Bus":"🚌","Train":"🚂","Plane":"✈️","Bike":"🚲","Walk":"🚶","Taxi":"🚕","Truck":"🚛","Boat":"⛵","Scooter":"🛴","Subway":"🚇","Ferry":"⛴️","Helicopter":"🚁","Ambulance":"🚑","Motorcycle":"🏍️","Wheelchair":"♿","Left":"⬅️","Right":"➡️","Stop":"🛑","Go":"🟢","Straight":"⬆️","Ticket":"🎫","GPS":"📍"}
+};
+
+/* ═══ STORAGE ═══ */
+const KEY='halo_aac_v1';
+let data=(()=>{try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}})()
+  ||{profiles:{},currentProfile:null,engine:'google',sysVoice:null,accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5'};
+function save(){localStorage.setItem(KEY,JSON.stringify(data));}
+function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
+function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
+
+/* ═══ STATE ═══ */
+let curCat=Object.keys(DEFAULT_CATEGORIES)[0];
+let curEngine=data.engine||'google';
+let curSysVoice=data.sysVoice||null;
+
+/* ═══ DOM ═══ */
+const $=id=>document.getElementById(id);
+const msgBox=$('message'),predictions=$('predictions'),speakBtn=$('speakBtn'),
+      stopBtn=$('stopBtn'),bsBtn=$('bsBtn'),clearBtn=$('clearBtn'),
+      rateSlider=$('rateSlider'),rateVal=$('rateVal'),
+      dot=$('dot'),ttsStatus=$('ttsStatus'),
+      wordGrid=$('wordGrid'),gridTitle=$('gridTitle'),wordSearch=$('wordSearch'),
+      catWrap=$('catWrap'),profileSel=$('profileSelect'),profileData=$('profileData'),
+      enginePill=$('enginePill');
+
+/* ═══ TTS ═══ */
+const ENG_NAMES={google:'Google',system:'System'};
+
+function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
+function stripEmoji(s){return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d\uFE0F]/gu,'').replace(/\s+/g,' ').trim();}
+
+function chunkText(t,max=180){
+  const words=t.split(' '),out=[];let cur='';
+  for(const w of words){
+    if((cur+' '+w).trim().length>max){if(cur)out.push(cur.trim());cur=w;}
+    else cur=cur?cur+' '+w:w;
+  }
+  if(cur.trim())out.push(cur.trim());
+  return out;
+}
+
+let activeAudio=null;
+
+async function playChunks(chunks,urlFn,label){
+  const rate=parseFloat(rateSlider.value);
+  const audios=chunks.map(c=>{const a=new Audio(urlFn(c));a.preload='auto';a.load();return a;});
+  for(let i=0;i<audios.length;i++){
+    if(i>0&&!activeAudio)break;
+    setStatus((chunks.length>1?'▶ '+(i+1)+'/'+chunks.length+' · ':'▶ ')+label,true);
+    await new Promise(res=>{
+      activeAudio=audios[i];
+      activeAudio.playbackRate=Math.min(Math.max(rate,.5),4);
+      activeAudio.onended=res;activeAudio.onerror=res;
+      activeAudio.play().catch(res);
+    });
+  }
+  if(activeAudio)setStatus('Done ✓');
+}
+
+async function speakGoogle(text){
+  await playChunks(chunkText(text),c=>'https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=en&client=gtx&q='+encodeURIComponent(c),'Google');
+}
+
+function speakSystem(text){
+  speechSynthesis.cancel();
+  const voices=speechSynthesis.getVoices();
+  const u=new SpeechSynthesisUtterance(text);
+  const pref=curSysVoice?voices.find(v=>v.name===curSysVoice):null;
+  const eng=voices.find(v=>v.lang.startsWith('en-US'))||voices.find(v=>v.lang.startsWith('en'));
+  const voice=pref||eng||voices[0];
+  if(voice)u.voice=voice;
+  u.rate=parseFloat(rateSlider.value);u.pitch=1;u.volume=1;
+  u.onstart=()=>setStatus('▶ '+(voice?.name||'System'),true);
+  u.onend=()=>setStatus('Done ✓');
+  u.onerror=e=>setStatus('Error: '+e.error);
+  speechSynthesis.speak(u);
+}
+
+speakBtn.onclick=async()=>{
+  const raw=msgBox.value.trim();
+  if(!raw){setStatus('Nothing to say');return;}
+  const text=stripEmoji(raw)||raw;
+  try{
+    if(curEngine==='google') await speakGoogle(text);
+    else speakSystem(text);
+  }catch(e){setStatus('Trying system…');speakSystem(text);}
+};
+
+stopBtn.onclick=()=>{
+  if(activeAudio){activeAudio.pause();activeAudio=null;}
+  speechSynthesis.cancel();setStatus('Stopped');
+};
+
+rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';};
+
+/* ═══ GRID ═══ */
+function mergeWords(cat){
+  const out={};
+  Object.entries(DEFAULT_CATEGORIES[cat]||{}).forEach(([w,e])=>out[w]=e);
+  const p=data.profiles[data.currentProfile];
+  if(p){
+    Object.entries(p.words||{}).forEach(([w,e])=>out[w]=e);
+    Object.entries((p.customCategories||{})[cat]||{}).forEach(([w,e])=>out[w]=e);
+  }
+  return out;
+}
+
+function buildGrid(filter=''){
+  gridTitle.textContent=curCat;wordGrid.innerHTML='';
+  Object.entries(mergeWords(curCat))
+    .filter(([w])=>!filter||w.toLowerCase().includes(filter.toLowerCase()))
+    .forEach(([w,e])=>{
+      const btn=document.createElement('button');
+      btn.className='word-btn';btn.type='button';
+      btn.innerHTML='<span class="word-emoji">'+(e||'')+'</span><span class="word-text">'+w+'</span>';
+      btn.onclick=()=>{msgBox.value=msgBox.value?(msgBox.value.trimEnd()+' '+w):w;updatePredictions();};
+      wordGrid.appendChild(btn);
+    });
+}
+wordSearch.addEventListener('input',e=>buildGrid(e.target.value));
+
+/* ═══ CATS ═══ */
+function buildCats(){
+  catWrap.innerHTML='';
+  const cats=[...Object.keys(DEFAULT_CATEGORIES)];
+  const p=data.profiles[data.currentProfile];
+  if(p?.customCategories)cats.push(...Object.keys(p.customCategories));
+  [...new Set(cats)].forEach(cat=>{
+    const b=document.createElement('button');
+    b.className='cat-btn'+(cat===curCat?' active':'');
+    b.textContent=cat;b.type='button';
+    b.onclick=()=>{curCat=cat;buildCats();buildGrid(wordSearch.value);};
+    catWrap.appendChild(b);
+  });
+}
+
+/* ═══ PREDICTIONS ═══ */
+function allWords(){
+  const s=new Set();
+  Object.values(DEFAULT_CATEGORIES).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
+  Object.values(data.profiles).forEach(p=>{
+    Object.keys(p.words||{}).forEach(w=>s.add(w));
+    Object.values(p.customCategories||{}).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
+  });
+  return[...s];
+}
+function updatePredictions(){
+  predictions.innerHTML='';
+  const last=msgBox.value.trim().split(/\s+/).pop().toLowerCase();
+  if(!last)return;
+  allWords().filter(w=>w.toLowerCase().startsWith(last)&&w.toLowerCase()!==last).slice(0,6)
+    .forEach(m=>{
+      const li=document.createElement('li');li.textContent=m;
+      li.onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr[arr.length-1]=m;msgBox.value=arr.join(' ');predictions.innerHTML='';};
+      predictions.appendChild(li);
+    });
+}
+msgBox.addEventListener('input',updatePredictions);
+clearBtn.onclick=()=>{msgBox.value='';predictions.innerHTML='';setStatus('Ready');};
+bsBtn.onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr.pop();msgBox.value=arr.join(' ');updatePredictions();};
+
+/* ═══ ADD WORD / CAT ═══ */
+$('addWordBtn').onclick=()=>{
+  if(!data.currentProfile)return alert('Create a profile first');
+  const w=prompt('Word:');if(!w)return;
+  const e=prompt('Emoji (optional):','❓')||'';
+  const cats=[...Object.keys(DEFAULT_CATEGORIES),...Object.keys(data.profiles[data.currentProfile].customCategories||{})];
+  let cat=prompt('Category:\n'+cats.join(', '),curCat)||'Custom';
+  const p=data.profiles[data.currentProfile];
+  if(!p.customCategories)p.customCategories={};
+  if(DEFAULT_CATEGORIES[cat]){p.words=p.words||{};p.words[w]=e;}
+  else{p.customCategories[cat]=p.customCategories[cat]||{};p.customCategories[cat][w]=e;}
+  save();buildCats();buildGrid();refreshPD();
+};
+$('addCatBtn').onclick=()=>{
+  if(!data.currentProfile)return alert('Create a profile first');
+  const n=prompt('Category name:');if(!n)return;
+  const p=data.profiles[data.currentProfile];
+  p.customCategories=p.customCategories||{};p.customCategories[n]={};
+  save();buildCats();
+};
+
+/* ═══ PROFILES ═══ */
+function refreshPS(){
+  profileSel.innerHTML='';
+  Object.keys(data.profiles).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;profileSel.appendChild(o);});
+  if(data.currentProfile)profileSel.value=data.currentProfile;
+  refreshPD();
+}
+function refreshPD(){
+  if(!data.currentProfile){profileData.textContent='No profile';return;}
+  const p=data.profiles[data.currentProfile];
+  const total=Object.values(DEFAULT_CATEGORIES).reduce((a,c)=>a+Object.keys(c).length,0);
+  profileData.innerHTML='<b>'+data.currentProfile+'</b><br>Custom words: '+Object.keys(p.words||{}).length+'<br>Custom cats: '+Object.keys(p.customCategories||{}).length+'<br>Built-in: '+total;
+}
+profileSel.onchange=e=>{data.currentProfile=e.target.value;save();buildCats();buildGrid();refreshPD();};
+$('addProfileBtn').onclick=()=>{const n=prompt('Profile name:');if(!n)return;data.profiles[n]={words:{},customCategories:{}};data.currentProfile=n;save();refreshPS();buildCats();buildGrid();};
+$('delProfileBtn').onclick=()=>{if(!data.currentProfile||!confirm('Delete "'+data.currentProfile+'"?'))return;delete data.profiles[data.currentProfile];data.currentProfile=Object.keys(data.profiles)[0]||null;save();refreshPS();buildCats();buildGrid();};
+
+/* ═══ SETTINGS ═══ */
+function openSettings(){$('settingsOverlay').classList.add('open');buildSysVoiceList();}
+function closeSettings(){$('settingsOverlay').classList.remove('open');}
+
+// Engine cards
+$('engineGrid').querySelectorAll('.engine-card').forEach(card=>{
+  card.onclick=()=>{
+    curEngine=card.dataset.eng;data.engine=curEngine;save();
+    $('engineGrid').querySelectorAll('.engine-card').forEach(c=>c.classList.remove('active'));
+    card.classList.add('active');
+    enginePill.textContent='🎙️ '+(ENG_NAMES[curEngine]||curEngine);
+    $('sysPickerWrap').classList.toggle('show',curEngine==='system');
+  };
+});
+// Restore saved engine
+const savedCard=$('engineGrid').querySelector('[data-eng="'+curEngine+'"]');
+if(savedCard)savedCard.click();
+
+// System voices
+function buildSysVoiceList(){
+  const vl=$('sysVoiceList');vl.innerHTML='';
+  const voices=speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
+  if(!voices.length){vl.innerHTML='<div style="padding:10px;color:#999;font-size:13px">No voices found</div>';return;}
+  voices.forEach(v=>{
+    const row=document.createElement('div');row.className='v-row'+(v.name===curSysVoice?' sel':'');
+    row.innerHTML='<span class="v-name">'+v.name+'</span><span class="v-lang">'+v.lang+'</span><button class="v-play">▶</button>';
+    row.querySelector('.v-play').onclick=e=>{e.stopPropagation();speechSynthesis.cancel();const u=new SpeechSynthesisUtterance('Hello, I am '+v.name);u.voice=v;speechSynthesis.speak(u);};
+    row.onclick=()=>{curSysVoice=v.name;data.sysVoice=v.name;save();vl.querySelectorAll('.v-row').forEach(r=>r.classList.remove('sel'));row.classList.add('sel');};
+    vl.appendChild(row);
+  });
+}
+speechSynthesis.onvoiceschanged=buildSysVoiceList;
+setTimeout(buildSysVoiceList,400);
+
+// Color swatches
+$('swatchRow').querySelectorAll('.swatch').forEach(sw=>{
+  sw.onclick=()=>{
+    applyAccent(sw.dataset.a,sw.dataset.d);
+    $('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');
+    data.accent=sw.dataset.a;data.accentDark=sw.dataset.d;save();
+    $('accentPicker').value=sw.dataset.a;
+  };
+});
+$('accentPicker').oninput=e=>{applyAccent(e.target.value,e.target.value);$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));data.accent=e.target.value;data.accentDark=e.target.value;save();};
+$('bgPicker').oninput=e=>{document.body.style.background=e.target.value;data.bg=e.target.value;save();};
+function applyAccent(a,d){
+  document.documentElement.style.setProperty('--accent',a);
+  document.documentElement.style.setProperty('--accent-dark',d);
+  document.documentElement.style.setProperty('--accent-light',a+'28');
+}
+
+/* ═══ EXPORT/IMPORT ═══ */
+function doExportFn(){const code=b64e(data);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(code).then(()=>alert('Copied!'));else prompt('Copy:',code);$('importArea').value=code;}
+function doImportFn(){const txt=$('importArea').value.trim();if(!txt)return alert('Paste code first');try{const p=b64d(txt);if(p?.profiles){Object.assign(data,p);save();init();alert('Imported!');}else alert('Invalid code');}catch(e){alert('Import failed');}}
+$('doExport').onclick=doExportFn;
+$('doImport').onclick=doImportFn;
+$('exportBtn').onclick=doExportFn;
+$('importTopBtn').onclick=()=>{const c=prompt('Paste code:');if(!c)return;$('importArea').value=c;doImportFn();};
+
+/* ═══ INIT ═══ */
+function init(){
+  if(!Object.keys(data.profiles).length){data.profiles={Default:{words:{},customCategories:{}}};data.currentProfile='Default';save();}
+  if(!data.currentProfile)data.currentProfile=Object.keys(data.profiles)[0];
+  if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
+  if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
+  if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
+  refreshPS();buildCats();buildGrid();
+}
+init();
+</script>
+</body>
+</html>
