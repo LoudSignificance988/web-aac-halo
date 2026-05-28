@@ -209,7 +209,7 @@ select,button,input,textarea{font-family:inherit}
     <div class="subtitle">Thanks Kaelynn Partlow · Ivan's build</div>
   </div>
   <div class="hdr-right">
-    <button class="icon-btn" id="enginePill" onclick="openSettings()">🎙️ Natural</button>
+    <button class="icon-btn" id="enginePill" onclick="openSettings()">🎙️ Google</button>
     <button class="portal-badge" id="portalBtn" onclick="openPortalPrompt()">🔒 Parent Portal</button>
     <!-- Google sign-in renders here -->
     <div id="googleSigninWrap"></div>
@@ -290,7 +290,7 @@ select,button,input,textarea{font-family:inherit}
       <div class="s-label">🎙️ Voice Engine</div>
       <div class="engine-grid" id="engineGrid">
         <div class="engine-card active" data-eng="google">
-          <span class="e-icon">🗣️</span><div class="e-name">Natural</div><div class="e-sub">Best device voice · Free</div>
+          <span class="e-icon">🌐</span><div class="e-name">Google</div><div class="e-sub">Free · Natural · Online</div>
         </div>
         <div class="engine-card" data-eng="system">
           <span class="e-icon">📱</span><div class="e-name">System</div><div class="e-sub">Device voices · Offline</div>
@@ -476,8 +476,8 @@ select,button,input,textarea{font-family:inherit}
 /* ═══ GOOGLE SIGN-IN ═══
    Replace YOUR_CLIENT_ID below with your actual Google OAuth client ID
    from https://console.cloud.google.com → APIs & Services → Credentials
-   ================================================================= */\
-   const GOOGLE_CLIENT_ID =
+   ================================================================= */
+const GOOGLE_CLIENT_ID =
   "72438990824-cjaup5i6r86dth4g5cjuggf8equa6h42.apps.googleusercontent.com";
 
 let haloGoogleUser = null;
@@ -686,83 +686,77 @@ const msgBox=$('message'),predictions=$('predictions'),speakBtn=$('speakBtn'),
       wordSearch=$('wordSearch'),catWrap=$('catWrap'),profileSel=$('profileSelect'),
       profileData=$('profileData'),enginePill=$('enginePill');
 
-/* ═══ TTS ═══
-   "google" engine slot now uses Web Speech API with the best available
-   English voice — works fully offline and on GitHub Pages with no 400s.
-   ResponsiveVoice and Puter are still available as alternatives.
-   ================================================================= */
-const ENG_NAMES={google:'Natural',system:'System',responsive:'ResponsiveVoice',puter:'Puter AI'};
+/* ═══ TTS — fixed client=tw-ob for GitHub Pages ═══ */
+const ENG_NAMES={google:'Google',system:'System',responsive:'ResponsiveVoice',puter:'Puter AI'};
 
 function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
 function stripEmoji(s){return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d\uFE0F]/gu,'').replace(/\s+/g,' ').trim();}
-
+function chunkText(t,max=150){
+  const words=t.split(' '),out=[];let cur='';
+  for(const w of words){
+    if((cur+' '+w).trim().length>max){if(cur)out.push(cur.trim());cur=w;}
+    else cur=cur?cur+' '+w:w;
+  }
+  if(cur.trim())out.push(cur.trim());
+  return out;
+}
 let activeAudio=null;
-let activeSpeech=null; // tracks current SpeechSynthesisUtterance
 
-/* Pick the best available English voice */
-function bestVoice(){
-  const voices=speechSynthesis.getVoices();
-  // Priority: saved preference → en-US → any en → first available
-  if(curSysVoice){const v=voices.find(v=>v.name===curSysVoice);if(v)return v;}
-  return voices.find(v=>v.lang==='en-US'&&!v.localService===false)  // prefer local en-US
-      || voices.find(v=>v.lang==='en-US')
-      || voices.find(v=>v.lang.startsWith('en'))
-      || voices[0]
-      || null;
+async function speakGoogle(text){
+  const chunks=chunkText(text);
+  const rate=parseFloat(rateSlider.value);
+  for(let i=0;i<chunks.length;i++){
+    if(i>0&&!activeAudio)break;
+    setStatus((chunks.length>1?'▶ '+(i+1)+'/'+chunks.length+' · ':'▶ ')+'Google',true);
+    await new Promise(res=>{
+      const url='https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=en-us&client=tw-ob&q='+encodeURIComponent(chunks[i]);
+      const a=new Audio(url);
+      activeAudio=a;
+      a.playbackRate=Math.min(Math.max(rate,0.5),4);
+      a.onended=res;
+      a.onerror=()=>{activeAudio=null;speakSystem(chunks[i]);res();};
+      a.play().catch(()=>{activeAudio=null;speakSystem(chunks[i]);res();});
+    });
+  }
+  activeAudio=null;
+  setStatus('Done ✓');
 }
 
-/* Main "Natural" engine — Web Speech API, best voice available */
-function speakNatural(text){
-  return new Promise(res=>{
-    speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(text);
-    const voice=bestVoice();
-    if(voice)u.voice=voice;
-    u.rate=parseFloat(rateSlider.value);
-    u.pitch=1;u.volume=1;
-    u.onstart=()=>setStatus('▶ '+(voice?.name||'Natural'),true);
-    u.onend=()=>{setStatus('Done ✓');activeSpeech=null;res();};
-    u.onerror=e=>{setStatus('TTS error: '+e.error);activeSpeech=null;res();};
-    activeSpeech=u;
-    speechSynthesis.speak(u);
-  });
-}
-
-/* System engine — same as Natural but labelled separately so user can
-   still pick a specific voice from the voice list */
 function speakSystem(text){
-  return speakNatural(text);
+  speechSynthesis.cancel();
+  const voices=speechSynthesis.getVoices();
+  const u=new SpeechSynthesisUtterance(text);
+  const pref=curSysVoice?voices.find(v=>v.name===curSysVoice):null;
+  const eng=voices.find(v=>v.lang.startsWith('en-US'))||voices.find(v=>v.lang.startsWith('en'));
+  const voice=pref||eng||voices[0];
+  if(voice)u.voice=voice;
+  u.rate=parseFloat(rateSlider.value);u.pitch=1;u.volume=1;
+  u.onstart=()=>setStatus('▶ '+(voice?.name||'System'),true);
+  u.onend=()=>setStatus('Done ✓');
+  u.onerror=e=>setStatus('Error: '+e.error);
+  speechSynthesis.speak(u);
 }
 
 function speakResponsive(text){
-  return new Promise(res=>{
-    if(typeof responsiveVoice==='undefined'){
-      setStatus('RV not loaded — using Natural');
-      speakNatural(text).then(res);return;
-    }
-    setStatus('▶ ResponsiveVoice',true);
-    responsiveVoice.speak(text,'UK English Female',{
-      rate:Math.max(0.1,parseFloat(rateSlider.value)-0.5),
-      onend:()=>{setStatus('Done ✓');res();},
-      onerror:()=>{setStatus('RV error — using Natural');speakNatural(text).then(res);}
-    });
+  if(typeof responsiveVoice==='undefined'){setStatus('RV not loaded — using System');speakSystem(text);return;}
+  setStatus('▶ ResponsiveVoice',true);
+  responsiveVoice.speak(text,'UK English Female',{
+    rate:Math.max(0,parseFloat(rateSlider.value)-0.5),
+    onend:()=>setStatus('Done ✓'),
+    onerror:()=>{setStatus('RV error — using System');speakSystem(text);}
   });
 }
 
 async function speakPuter(text){
-  if(typeof puter==='undefined'||!puter.ai){
-    setStatus('Puter unavailable — using Natural');
-    await speakNatural(text);return;
-  }
+  if(typeof puter==='undefined'){setStatus('Puter not loaded — using System');speakSystem(text);return;}
   try{
     setStatus('▶ Puter AI',true);
     const audio=await puter.ai.txt2speech(text);
     activeAudio=audio;
     audio.playbackRate=Math.min(Math.max(parseFloat(rateSlider.value),.5),4);
     audio.onended=()=>{setStatus('Done ✓');activeAudio=null;};
-    audio.onerror=()=>{setStatus('Puter error — using Natural');activeAudio=null;speakNatural(text);};
     audio.play();
-  }catch(e){setStatus('Puter error — using Natural');await speakNatural(text);}
+  }catch(e){setStatus('Puter error — using System');speakSystem(text);}
 }
 
 speakBtn.onclick=async()=>{
@@ -771,16 +765,16 @@ speakBtn.onclick=async()=>{
   const text=stripEmoji(raw)||raw;
   if(!text.trim()){setStatus('Nothing to say');return;}
   try{
-    if(curEngine==='google')        await speakNatural(text);
-    else if(curEngine==='system')   await speakSystem(text);
-    else if(curEngine==='responsive') await speakResponsive(text);
-    else if(curEngine==='puter')    await speakPuter(text);
-  }catch(e){setStatus('Falling back…');await speakNatural(text);}
+    if(curEngine==='google') await speakGoogle(text);
+    else if(curEngine==='system') speakSystem(text);
+    else if(curEngine==='responsive') speakResponsive(text);
+    else if(curEngine==='puter') await speakPuter(text);
+  }catch(e){setStatus('Falling back to System…');speakSystem(text);}
 };
 
 stopBtn.onclick=()=>{
   if(activeAudio){activeAudio.pause();activeAudio.src='';activeAudio=null;}
-  speechSynthesis.cancel();activeSpeech=null;
+  speechSynthesis.cancel();
   if(typeof responsiveVoice!=='undefined')try{responsiveVoice.cancel();}catch(e){}
   setStatus('Stopped');
 };
