@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Halo AAC</title>
 <link rel="icon" href="data:,"/>
+<!-- ResponsiveVoice -->
+<script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
+<!-- Puter.js -->
+<script src="https://js.puter.com/v2/"></script>
 <style>
 :root{
   --accent:#2c7be5;
@@ -46,6 +50,7 @@ select,button,input,textarea{font-family:inherit}
 .btn:active{transform:scale(.95);opacity:.85}
 .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
 .btn.ghost:active{background:var(--accent-light)}
+.btn.danger{background:#dc2626;border-color:#dc2626}
 
 /* PROFILE ROW */
 .profile-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
@@ -99,7 +104,6 @@ select,button,input,textarea{font-family:inherit}
 .speak-row{display:flex;gap:6px;margin-bottom:8px}
 .speak-row .btn{flex:1;font-size:14px;padding:11px 8px}
 
-/* RATE SLIDER — constrained so it never overflows */
 .rate-wrap{display:flex;align-items:center;gap:8px}
 .rate-wrap label{font-size:12px;color:var(--muted);flex-shrink:0}
 .rate-wrap input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
@@ -122,7 +126,7 @@ select,button,input,textarea{font-family:inherit}
 }
 #wordSearch:focus{outline:none;border-color:var(--accent)}
 
-/* SETTINGS SHEET (slides up from bottom) */
+/* SETTINGS SHEET */
 #settingsOverlay{
   display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
   z-index:300;align-items:flex-end;justify-content:center
@@ -174,549 +178,78 @@ select,button,input,textarea{font-family:inherit}
 .two-btn{display:flex;gap:8px}
 .two-btn .btn{flex:1;padding:10px}
 
-.bg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px}
-.bg-card{padding:10px 6px;border-radius:9px;cursor:pointer;text-align:center;font-size:12px;font-weight:600;border:2px solid transparent;transition:all .13s;background:#f0f0f0;color:#333}
-.bg-card.active{border-color:#333;box-shadow:0 0 0 2px rgba(0,0,0,.15)}
-.bg-card:active{transform:scale(.96)}
-
 #profileData{font-size:13px;color:#555;line-height:1.8;margin-top:6px}
 
-/* ═══ MOBILE ≤ 640 ═══ */
-@media(max-width:640px){
-  header h1{font-size:15px}
-  .subtitle{display:none}
-  main{padding:8px}
-  .panel{flex-direction:column}
-  .left{flex:none;width:100%;order:1}
-  .right{order:2;width:100%}
-  #wordGrid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:5px}
-  .word-btn{height:70px}
-  .word-emoji{font-size:19px}
-  .word-text{font-size:11px}
-  .speak-row .btn{padding:13px 8px;font-size:15px}
-  .profile-row .btn{padding:7px 8px;font-size:12px}
-  #settingsPanel{max-height:94vh}
+/* ═══ MODAL OVERLAY (wizard + portal) ═══ */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:500;align-items:center;justify-content:center;padding:16px;
 }
-@media(min-width:641px) and (max-width:900px){
-  .left{flex:0 0 260px}
-  #wordGrid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:#fff;border-radius:20px;width:100%;max-width:440px;
+  padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.18);
+  max-height:90vh;overflow-y:auto;
+}
+.modal-box h2{font-size:20px;font-weight:800;margin-bottom:6px;color:#111}
+.modal-box p{font-size:14px;color:#555;line-height:1.6;margin-bottom:16px}
+.modal-step{display:none}
+.modal-step.active{display:block}
+.big-choice{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.choice-btn{
+  border:2px solid #e8e8e8;border-radius:12px;padding:14px 16px;
+  cursor:pointer;text-align:left;background:#fafafa;transition:all .13s;
+  font-size:15px;font-weight:600;
+}
+.choice-btn:hover{border-color:var(--accent);background:var(--accent-light)}
+.choice-btn .sub{font-size:12px;font-weight:400;color:#888;margin-top:2px;display:block}
+.pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.pack-card{
+  border:2px solid #e8e8e8;border-radius:12px;padding:14px 12px;
+  cursor:pointer;text-align:center;background:#fafafa;transition:all .13s;
+}
+.pack-card:hover,.pack-card.sel{border-color:var(--accent);background:var(--accent-light)}
+.pack-card .pack-icon{font-size:28px;display:block;margin-bottom:6px}
+.pack-card .pack-name{font-size:14px;font-weight:700}
+.pack-card .pack-desc{font-size:11px;color:#888;margin-top:3px}
+.modal-input{
+  width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #ddd;
+  font-size:14px;margin-bottom:12px;
+}
+.modal-input:focus{outline:none;border-color:var(--accent)}
+.modal-btn-row{display:flex;gap:8px;margin-top:4px}
+.modal-btn-row .btn{flex:1;padding:12px}
+.modal-err{color:#dc2626;font-size:13px;margin-bottom:10px;display:none}
+.modal-err.show{display:block}
+
+/* PORTAL */
+#portalOverlay .modal-box{max-width:520px}
+.portal-tabs{display:flex;gap:0;border-bottom:2px solid #f0f0f0;margin-bottom:16px}
+.ptab{
+  padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;color:#888;
+}
+.ptab.active{border-color:var(--accent);color:var(--accent)}
+.ptab-panel{display:none}
+.ptab-panel.active{display:block}
+
+/* PORTAL WORD TABLE */
+.word-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+.word-table th{text-align:left;padding:7px 8px;background:#f8f9fb;font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px}
+.word-table td{padding:7px 8px;border-top:1px solid #f0f0f0;vertical-align:middle}
+.del-word-btn{border:0;background:none;cursor:pointer;color:#dc2626;font-size:16px;padding:2px 6px;border-radius:5px}
+.del-word-btn:hover{background:#fef2f2}
+
+/* DICT LOOKUP */
+.dict-lookup{display:flex;gap:8px;margin-bottom:12px}
+.dict-lookup input{flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid #ddd;font-size:13px}
+.dict-lookup input:focus{outline:none;border-color:var(--accent)}
+.dict-result{
+  border:1.5px solid #e8e8e8;border-radius:
 }
 </style>
 </head>
 <body>
+<!-- ... your existing HTML body content (header, main, etc.) will go here ... -->
 
-<header>
-  <div>
-    <h1>Halo AAC</h1>
-    <div class="subtitle">Thanks Kaelynn Partlow — Ivan's build</div>
-  </div>
-  <div class="hdr-right">
-    <button class="icon-btn" id="enginePill" onclick="openSettings()">🎙️ Google</button>
-    <button class="icon-btn" onclick="openSettings()">⚙️</button>
-  </div>
-</header>
-
-<main>
-  <div class="profile-row">
-    <select id="profileSelect"></select>
-    <button class="btn ghost" id="addProfileBtn">+ Profile</button>
-    <button class="btn ghost" id="delProfileBtn">Delete</button>
-    <button class="btn ghost" id="exportBtn" style="margin-left:auto">Export</button>
-    <button class="btn" id="importTopBtn">Import</button>
-  </div>
-
-  <div id="catWrap"></div>
-
-  <div class="cat-actions">
-    <button class="btn" id="addWordBtn">+ Word</button>
-    <button class="btn" id="addCatBtn">+ Category</button>
-    <button class="btn ghost" id="clearBtn">Clear</button>
-  </div>
-
-  <div class="panel">
-    <div class="left">
-      <div class="card">
-        <textarea id="message" readonly placeholder="Tap words to build message…"></textarea>
-        <ul id="predictions"></ul>
-        <div id="ttsBar"><div class="dot" id="dot"></div><span id="ttsStatus">Ready</span></div>
-        <div class="speak-row">
-          <button class="btn" id="speakBtn">▶ Speak</button>
-          <button class="btn ghost" id="stopBtn">■ Stop</button>
-          <button class="btn ghost" id="bsBtn">⌫</button>
-        </div>
-        <div class="rate-wrap">
-          <label for="rateSlider">Speed</label>
-          <input type="range" id="rateSlider" min="0.5" max="3.5" step="0.1" value="1.1">
-          <span class="val" id="rateVal">1.1×</span>
-        </div>
-      </div>
-      <div class="card">
-        <strong>Profile</strong>
-        <div id="profileData">No profile</div>
-      </div>
-    </div>
-
-    <div class="right">
-      <input type="search" id="wordSearch" placeholder="🔍 Search words…">
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <strong id="gridTitle">Words</strong>
-          <span style="font-size:12px;color:var(--muted)">Tap to add</span>
-        </div>
-        <div id="wordGrid"></div>
-      </div>
-    </div>
-  </div>
-</main>
-
-<!-- SETTINGS SHEET -->
-<div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
-  <div id="settingsPanel">
-    <div class="drag-handle"></div>
-    <div class="s-title">⚙️ Settings</div>
-
-    <div class="s-section">
-      <div class="s-label">🎙️ Voice Engine</div>
-      <div class="engine-grid" id="engineGrid">
-        <div class="engine-card active" data-eng="google">
-          <span class="e-icon">🌐</span>
-          <div class="e-name">Google</div>
-          <div class="e-sub">Free · Natural · Online</div>
-        </div>
-        <div class="engine-card" data-eng="system">
-          <span class="e-icon">📱</span>
-          <div class="e-name">System</div>
-          <div class="e-sub">Device voices · Offline</div>
-        </div>
-      </div>
-      <div id="sysPickerWrap">
-        <div class="s-label" style="margin-top:10px;margin-bottom:4px">System Voice</div>
-        <div id="sysVoiceList"></div>
-      </div>
-    </div>
-
-    <div class="s-section">
-      <div class="s-label">🎨 Theme Color</div>
-      <div class="swatch-row" id="swatchRow">
-        <div class="swatch active" data-a="#2c7be5" data-d="#0b63d6" style="background:#2c7be5"></div>
-        <div class="swatch" data-a="#7c3aed" data-d="#5b21b6" style="background:#7c3aed"></div>
-        <div class="swatch" data-a="#059669" data-d="#047857" style="background:#059669"></div>
-        <div class="swatch" data-a="#dc2626" data-d="#b91c1c" style="background:#dc2626"></div>
-        <div class="swatch" data-a="#d97706" data-d="#b45309" style="background:#d97706"></div>
-        <div class="swatch" data-a="#0891b2" data-d="#0e7490" style="background:#0891b2"></div>
-        <div class="swatch" data-a="#db2777" data-d="#be185d" style="background:#db2777"></div>
-        <div class="swatch" data-a="#334155" data-d="#0f172a" style="background:#334155"></div>
-      </div>
-      <div class="color-row">
-        <label><input type="color" id="bgPicker" value="#f0f2f5"> Solid color</label>
-        <label><input type="color" id="accentPicker" value="#2c7be5"> Accent</label>
-      </div>
-      <div class="s-label" style="margin-top:14px;margin-bottom:8px">🖼️ Background Style</div>
-      <div class="bg-grid" id="bgGrid">
-        <div class="bg-card active" data-bg="solid" title="Solid color">⬜ Solid</div>
-        <div class="bg-card" data-bg="linear-gradient(135deg,#667eea 0%,#764ba2 100%)" title="Purple dream" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff">Purple</div>
-        <div class="bg-card" data-bg="linear-gradient(135deg,#f093fb 0%,#f5576c 100%)" title="Pink sunset" style="background:linear-gradient(135deg,#f093fb,#f5576c);color:#fff">Pink</div>
-        <div class="bg-card" data-bg="linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)" title="Ocean" style="background:linear-gradient(135deg,#4facfe,#00f2fe);color:#fff">Ocean</div>
-        <div class="bg-card" data-bg="linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)" title="Mint" style="background:linear-gradient(135deg,#43e97b,#38f9d7);color:#fff">Mint</div>
-        <div class="bg-card" data-bg="linear-gradient(135deg,#fa709a 0%,#fee140 100%)" title="Peach" style="background:linear-gradient(135deg,#fa709a,#fee140);color:#fff">Peach</div>
-        <div class="bg-card" data-bg="linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)" title="Lavender" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)">Lavender</div>
-        <div class="bg-card" data-bg="linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)" title="Sand" style="background:linear-gradient(135deg,#ffecd2,#fcb69f)">Sand</div>
-        <div class="bg-card" data-bg="linear-gradient(135deg,#2d3748 0%,#1a202c 100%)" title="Dark" style="background:linear-gradient(135deg,#2d3748,#1a202c);color:#fff">Dark</div>
-      </div>
-      <div style="margin-top:10px">
-        <div class="s-label" style="margin-bottom:6px">🖼️ Upload Custom PNG / Image</div>
-        <input type="file" id="bgFileInput" accept="image/*" style="display:none">
-        <button id="bgUploadBtn" style="width:100%;padding:11px;border-radius:8px;background:var(--accent-light);border:1.5px solid var(--accent);color:var(--accent);font-weight:600;cursor:pointer;font-size:13px">📁 Choose PNG / Image File</button>
-        <div id="bgFileName" style="margin-top:6px;font-size:12px;color:#888;text-align:center"></div>
-        <button id="bgImgClear" style="width:100%;padding:8px;border-radius:8px;background:none;border:1.5px solid #ddd;color:#888;font-size:12px;cursor:pointer;margin-top:5px">✕ Clear Background</button>
-      </div>
-    </div>
-
-    <div class="s-section">
-      <div class="s-label">💾 Data</div>
-      <div class="two-btn">
-        <button class="btn ghost" id="doExport">Export Code</button>
-        <button class="btn" id="doImport">Import Code</button>
-      </div>
-      <textarea id="importArea" placeholder="Paste export code here…"></textarea>
-    </div>
-
-    <button class="btn" style="width:100%;padding:13px;font-size:15px" onclick="closeSettings()">Done ✓</button>
-  </div>
-</div>
-
-<script>
-/* ═══ WORD DATA ═══ */
-const DEFAULT_CATEGORIES = {
-  "Food & Drink":{"Apple":"🍎","Banana":"🍌","Bread":"🍞","Milk":"🥛","Water":"💧","Juice":"🧃","Rice":"🍚","Meat":"🥩","Cheese":"🧀","Egg":"🥚","Soup":"🥣","Cake":"🍰","Cookie":"🍪","Pizza":"🍕","Burger":"🍔","Fries":"🍟","Fish":"🐟","Pasta":"🍝","Salad":"🥗","Yogurt":"🫙","Coffee":"☕","Tea":"🍵","Soda":"🥤","Snack":"🍿","Sandwich":"🥪","Taco":"🌮","Sushi":"🍣","Noodles":"🍜","Candy":"🍬","Butter":"🧈","Honey":"🍯","Cereal":"🥣","Pancake":"🥞","Waffle":"🧇","Smoothie":"🥤","Ice cream":"🍦","Popcorn":"🍿","Steak":"🥩","Corn":"🌽"},
-  "Home":{"House":"🏠","Bedroom":"🛏️","Kitchen":"🍳","Bathroom":"🚽","Door":"🚪","Window":"🪟","Chair":"🪑","Table":"🛋️","Light":"💡","Stairs":"🪜","Bed":"🛏️","Sofa":"🛋️","Sink":"🚰","Mirror":"🪞","TV":"📺","Fridge":"🧊","Oven":"🔥","Phone":"📱","Keys":"🔑","Garage":"🏠","Laundry":"🧺","Closet":"🚪","Shelf":"📚","Lamp":"💡","Shower":"🚿","Tub":"🛁","Garden":"🌿","Yard":"🌳","Vacuum":"🧹","Blanket":"🛏️","Pillow":"😴"},
-  "Places":{"School":"🏫","Park":"🏞️","Store":"🏪","Office":"🏢","Hospital":"🏥","Library":"📚","Beach":"🏖️","Airport":"✈️","Market":"🛒","Restaurant":"🍴","Station":"🚉","Bank":"🏦","Theatre":"🎭","Church":"⛪","Gym":"🏋️","Playground":"🛝","Zoo":"🦁","Museum":"🏛️","Hotel":"🏨","Farm":"🚜","Mall":"🛍️","Clinic":"🩺","Pharmacy":"💊","Cafe":"☕","Bakery":"🥐","Stadium":"🏟️","City":"🌆","Forest":"🌲","Mountain":"⛰️","Lake":"🌊","Island":"🏝️"},
-  "Feelings":{"Happy":"😊","Sad":"😢","Angry":"😡","Tired":"😴","Excited":"🤩","Scared":"😱","Calm":"😌","Surprised":"😲","Bored":"😐","Proud":"😌","Lonely":"😔","Worried":"😟","Joyful":"😁","Confused":"😕","Shy":"😳","Relaxed":"😎","Hungry":"🤤","Thirsty":"😋","Sick":"🤒","Okay":"👌","Frustrated":"😤","Grateful":"🙏","Hopeful":"🌟","Nervous":"😬","Embarrassed":"😳","Content":"😊","Overwhelmed":"😵","Disappointed":"😞","Relieved":"😮‍💨","Love":"❤️","Pain":"💢","Anxious":"😰","Energetic":"⚡","Peaceful":"☮️","Loved":"🥰","Unsafe":"⚠️","Safe":"🛡️"},
-  "People":{"I":"👤","You":"🫵","Mom":"👩‍🦰","Dad":"👨‍🦰","Brother":"👦","Sister":"👧","Friend":"🧑‍🤝‍🧑","Teacher":"🧑‍🏫","Doctor":"🩺","Baby":"👶","Grandma":"👵","Grandpa":"👴","Neighbor":"🙋","Boss":"🧑‍💼","Nurse":"👩‍⚕️","Therapist":"🧑‍⚕️","Aide":"🙋","Caregiver":"🤲","We":"👫","They":"👥","He":"🧑","She":"👩","Family":"👨‍👩‍👧","Everyone":"🫂"},
-  "Actions":{"Go":"🏃","Stop":"✋","Come":"👐","Look":"👀","Listen":"👂","Speak":"🗣️","Eat":"🍽️","Drink":"🥤","Play":"🎮","Read":"📖","Write":"✏️","Open":"🔓","Close":"🔒","Give":"🎁","Take":"🤲","Help":"🆘","Wait":"⏳","Wash":"🧼","Call":"📞","Walk":"🚶","Run":"🏃","Sit":"🪑","Stand":"🧍","Lie down":"🛌","Sleep":"😴","Wake up":"⏰","Jump":"🤸","Sing":"🎤","Dance":"💃","Hug":"🤗","Cry":"😭","Laugh":"😂","Smile":"😊","Wave":"👋","Clap":"👏"},
-  "Needs":{"Help":"🆘","Bathroom":"🚽","Hungry":"🤤","Thirsty":"😋","Doctor":"🩺","Rest":"🛌","Sleep":"😴","Water":"💧","Food":"🍽️","Money":"💵","Phone":"📱","Charge":"🔌","Warm":"♨️","Cold":"❄️","Medicine":"💊","Transport":"🚗","Clothes":"👕","Blanket":"🛏️","Shoes":"👟","Pain relief":"💢","Ambulance":"🚑","Emergency":"🆘","Quiet":"🤫","Comfort":"🤗","Air":"💨","Glasses":"👓","Wheelchair":"♿","Bathroom NOW":"🚨","Break":"⏸️","Privacy":"🔒","Calm down":"😮‍💨"},
-  "Animals":{"Dog":"🐶","Cat":"🐱","Bird":"🐦","Fish":"🐟","Horse":"🐴","Cow":"🐄","Pig":"🐖","Sheep":"🐑","Rabbit":"🐇","Monkey":"🐒","Lion":"🦁","Tiger":"🐯","Elephant":"🐘","Bear":"🐻","Frog":"🐸","Duck":"🦆","Goat":"🐐","Deer":"🦌","Whale":"🐋","Dolphin":"🐬","Turtle":"🐢","Butterfly":"🦋","Bee":"🐝","Owl":"🦉","Eagle":"🦅","Penguin":"🐧","Fox":"🦊","Giraffe":"🦒","Panda":"🐼","Shark":"🦈"},
-  "Things":{"Book":"📚","Phone":"📱","Computer":"💻","Pen":"🖊️","Bag":"👜","Shoes":"👟","Watch":"⌚","Camera":"📷","Cup":"☕","Plate":"🍽️","Fork":"🍴","Spoon":"🥄","Pencil":"✏️","Paper":"📄","Backpack":"🎒","Umbrella":"☂️","Toy":"🧸","Keys":"🔑","Scissors":"✂️","Bottle":"🍶","Bowl":"🥣","Wallet":"👛","Earbuds":"🎧","Charger":"🔌","Tablet":"📱","Remote":"📺","Controller":"🎮","Ball":"⚽","Bike":"🚲","Clock":"⏰","Notebook":"📓"},
-  "Weather":{"Sunny":"☀️","Cloudy":"☁️","Rain":"🌧️","Snow":"❄️","Wind":"💨","Hot":"🔥","Cold":"🥶","Storm":"⛈️","Fog":"🌫️","Thunder":"⚡","Rainbow":"🌈","Blizzard":"🌨️","Clear":"🌤️","Freezing":"🧊","Tornado":"🌪️","Flood":"🌊","Hurricane":"🌀","Heatwave":"🌡️","Sunrise":"🌅","Sunset":"🌇","Night":"🌙","Morning":"🌄","Warm":"🌤️","Windy":"💨"},
-  "School":{"Class":"🏫","Homework":"📝","Test":"✏️","Lunch":"🍱","Recess":"🛝","Teacher":"🧑‍🏫","Pencil":"✏️","Book":"📚","Desk":"🪑","Gym":"🏋️","Art":"🎨","Music":"🎵","Math":"➕","Reading":"📖","Science":"🔬","History":"📜","Computer":"💻","Library":"📚","Cafeteria":"🍽️","Bus":"🚌","Nurse":"💊","Assignment":"📝","Study":"📖","Grade":"🅰️","Break":"⏸️","Drama":"🎭","PE":"⚽","Field trip":"🚌","Graduate":"🎓"},
-  "Health":{"Pain":"💢","Doctor":"🩺","Medicine":"💊","Hospital":"🏥","Ambulance":"🚑","Headache":"🤕","Fever":"🌡️","Nausea":"🤢","Dizzy":"😵","Tired":"😴","Sore":"💢","Allergy":"🤧","Cough":"🤧","Sneeze":"🤧","Cold":"🥶","Flu":"🤒","Burn":"🔥","Cut":"🩹","Bruise":"💜","Surgery":"🔪","Check-up":"🩺","Therapy":"🧠","Wheelchair":"♿","Crutches":"🦯","Glasses":"👓","Oxygen":"💨","Pulse":"💓"},
-  "Questions":{"What":"❓","Where":"📍","When":"⏰","Who":"👤","Why":"🤔","How":"🔧","Can I":"🙋","Can you":"🫵","Yes":"✅","No":"❌","Maybe":"🤷","I don't know":"🤷","I need":"🆘","I want":"✋","I like":"👍","I don't like":"👎","I feel":"💭","Please":"🙏","Thank you":"🙏","Sorry":"😔","Help me":"🆘","Wait":"⏳","Repeat":"🔁","Slower":"🐢","Louder":"📢","More":"➕","Less":"➖","Different":"🔄","Same":"🟰","Better":"⬆️","Worse":"⬇️"},
-  "Social":{"Hello":"👋","Goodbye":"👋","Good morning":"🌅","Good night":"🌙","How are you":"🙋","Fine":"👍","Great":"🌟","Bad":"👎","Okay":"👌","Please":"🙏","Thank you":"🙏","You're welcome":"😊","Sorry":"😔","Excuse me":"🙋","Let's go":"🏃","See you later":"👋","Miss you":"💔","Love you":"❤️","Happy birthday":"🎂","Congratulations":"🎉","Good job":"👏","I agree":"✅","I disagree":"❌","Really":"😮","Wow":"🤩","No problem":"👍","Sure":"✅","Never mind":"🤷","I'm ready":"✅","Come with me":"🤝"},
-  "Time":{"Now":"⏱️","Later":"⏰","Soon":"⌛","Today":"📅","Tomorrow":"🌅","Yesterday":"⬅️","Morning":"🌄","Afternoon":"☀️","Evening":"🌆","Night":"🌙","Monday":"📅","Tuesday":"📅","Wednesday":"📅","Thursday":"📅","Friday":"📅","Saturday":"📅","Sunday":"📅","Weekend":"🎉","Holiday":"🎉","This week":"📅","Next week":"📅","Hour":"⏰","Minute":"⏱️","Early":"🌅","Late":"🌙"},
-  "Transport":{"Car":"🚗","Bus":"🚌","Train":"🚂","Plane":"✈️","Bike":"🚲","Walk":"🚶","Taxi":"🚕","Truck":"🚛","Boat":"⛵","Scooter":"🛴","Subway":"🚇","Ferry":"⛴️","Helicopter":"🚁","Ambulance":"🚑","Motorcycle":"🏍️","Wheelchair":"♿","Left":"⬅️","Right":"➡️","Stop":"🛑","Go":"🟢","Straight":"⬆️","Ticket":"🎫","GPS":"📍"}
-};
-
-/* ═══ STORAGE ═══ */
-const KEY='halo_aac_v1';
-let data=(()=>{try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}})()
-  ||{profiles:{},currentProfile:null,engine:'google',sysVoice:null,accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5'};
-function save(){localStorage.setItem(KEY,JSON.stringify(data));}
-function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
-function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
-
-/* ═══ STATE ═══ */
-let curCat=Object.keys(DEFAULT_CATEGORIES)[0];
-let curEngine=data.engine||'google';
-let curSysVoice=data.sysVoice||null;
-
-/* ═══ DOM ═══ */
-const $=id=>document.getElementById(id);
-const msgBox=$('message'),predictions=$('predictions'),speakBtn=$('speakBtn'),
-      stopBtn=$('stopBtn'),bsBtn=$('bsBtn'),clearBtn=$('clearBtn'),
-      rateSlider=$('rateSlider'),rateVal=$('rateVal'),
-      dot=$('dot'),ttsStatus=$('ttsStatus'),
-      wordGrid=$('wordGrid'),gridTitle=$('gridTitle'),wordSearch=$('wordSearch'),
-      catWrap=$('catWrap'),profileSel=$('profileSelect'),profileData=$('profileData'),
-      enginePill=$('enginePill');
-
-/* ═══ TTS ═══ */
-const ENG_NAMES={google:'Google',system:'System'};
-
-function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
-function stripEmoji(s){return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d\uFE0F]/gu,'').replace(/\s+/g,' ').trim();}
-
-function chunkText(t,max=180){
-  const words=t.split(' '),out=[];let cur='';
-  for(const w of words){
-    if((cur+' '+w).trim().length>max){if(cur)out.push(cur.trim());cur=w;}
-    else cur=cur?cur+' '+w:w;
-  }
-  if(cur.trim())out.push(cur.trim());
-  return out;
-}
-
-let activeAudio=null;
-
-async function playChunks(chunks,urlFn,label){
-  const rate=parseFloat(rateSlider.value);
-  const audios=chunks.map(c=>{const a=new Audio(urlFn(c));a.preload='auto';a.load();return a;});
-  for(let i=0;i<audios.length;i++){
-    if(i>0&&!activeAudio)break;
-    setStatus((chunks.length>1?'▶ '+(i+1)+'/'+chunks.length+' · ':'▶ ')+label,true);
-    await new Promise(res=>{
-      activeAudio=audios[i];
-      activeAudio.playbackRate=Math.min(Math.max(rate,.5),4);
-      activeAudio.onended=res;activeAudio.onerror=res;
-      activeAudio.play().catch(res);
-    });
-  }
-  if(activeAudio)setStatus('Done ✓');
-}
-
-async function speakGoogle(text){
-  // tw-ob works on hosted domains (GitHub Pages etc), gtx works locally
-  const mkUrl=(c,client)=>'https://translate.google.com/translate_tts?ie=UTF-8&tl=en&client='+client+'&q='+encodeURIComponent(c);
-  const chunks=chunkText(text);
-  const rate=parseFloat(rateSlider.value);
-  const audios=chunks.map(c=>{
-    const a=new Audio(mkUrl(c,'tw-ob'));a.preload='auto';a.load();return{a,c};
-  });
-  for(let i=0;i<audios.length;i++){
-    if(i>0&&!activeAudio)break;
-    setStatus((chunks.length>1?'▶ '+(i+1)+'/'+chunks.length+' · ':'▶ ')+'Google',true);
-    await new Promise(res=>{
-      let audio=audios[i].a;
-      audio.playbackRate=Math.min(Math.max(rate,.5),4);
-      activeAudio=audio;
-      // if tw-ob fails, retry with gtx
-      audio.onerror=()=>{
-        const a2=new Audio(mkUrl(audios[i].c,'gtx'));
-        a2.playbackRate=Math.min(Math.max(rate,.5),4);
-        activeAudio=a2;
-        a2.onended=res;a2.onerror=res;
-        a2.play().catch(res);
-      };
-      audio.onended=res;
-      audio.play().catch(()=>{
-        const a2=new Audio(mkUrl(audios[i].c,'gtx'));
-        a2.playbackRate=Math.min(Math.max(rate,.5),4);
-        activeAudio=a2;
-        a2.onended=res;a2.onerror=res;
-        a2.play().catch(res);
-      });
-    });
-  }
-  if(activeAudio)setStatus('Done ✓');
-}
-
-function speakSystem(text){
-  speechSynthesis.cancel();
-  const voices=speechSynthesis.getVoices();
-  const u=new SpeechSynthesisUtterance(text);
-  const pref=curSysVoice?voices.find(v=>v.name===curSysVoice):null;
-  const eng=voices.find(v=>v.lang.startsWith('en-US'))||voices.find(v=>v.lang.startsWith('en'));
-  const voice=pref||eng||voices[0];
-  if(voice)u.voice=voice;
-  u.rate=parseFloat(rateSlider.value);u.pitch=1;u.volume=1;
-  u.onstart=()=>setStatus('▶ '+(voice?.name||'System'),true);
-  u.onend=()=>setStatus('Done ✓');
-  u.onerror=e=>setStatus('Error: '+e.error);
-  speechSynthesis.speak(u);
-}
-
-speakBtn.onclick=async()=>{
-  const raw=msgBox.value.trim();
-  if(!raw){setStatus('Nothing to say');return;}
-  const text=stripEmoji(raw)||raw;
-  try{
-    if(curEngine==='google') await speakGoogle(text);
-    else speakSystem(text);
-  }catch(e){setStatus('Trying system…');speakSystem(text);}
-};
-
-stopBtn.onclick=()=>{
-  if(activeAudio){activeAudio.pause();activeAudio=null;}
-  speechSynthesis.cancel();setStatus('Stopped');
-};
-
-rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';};
-
-/* ═══ GRID ═══ */
-function mergeWords(cat){
-  const out={};
-  Object.entries(DEFAULT_CATEGORIES[cat]||{}).forEach(([w,e])=>out[w]=e);
-  const p=data.profiles[data.currentProfile];
-  if(p){
-    Object.entries(p.words||{}).forEach(([w,e])=>out[w]=e);
-    Object.entries((p.customCategories||{})[cat]||{}).forEach(([w,e])=>out[w]=e);
-  }
-  return out;
-}
-
-function buildGrid(filter=''){
-  gridTitle.textContent=curCat;wordGrid.innerHTML='';
-  Object.entries(mergeWords(curCat))
-    .filter(([w])=>!filter||w.toLowerCase().includes(filter.toLowerCase()))
-    .forEach(([w,e])=>{
-      const btn=document.createElement('button');
-      btn.className='word-btn';btn.type='button';
-      btn.innerHTML='<span class="word-emoji">'+(e||'')+'</span><span class="word-text">'+w+'</span>';
-      btn.onclick=()=>{msgBox.value=msgBox.value?(msgBox.value.trimEnd()+' '+w):w;updatePredictions();};
-      wordGrid.appendChild(btn);
-    });
-}
-wordSearch.addEventListener('input',e=>buildGrid(e.target.value));
-
-/* ═══ CATS ═══ */
-function buildCats(){
-  catWrap.innerHTML='';
-  const cats=[...Object.keys(DEFAULT_CATEGORIES)];
-  const p=data.profiles[data.currentProfile];
-  if(p?.customCategories)cats.push(...Object.keys(p.customCategories));
-  [...new Set(cats)].forEach(cat=>{
-    const b=document.createElement('button');
-    b.className='cat-btn'+(cat===curCat?' active':'');
-    b.textContent=cat;b.type='button';
-    b.onclick=()=>{curCat=cat;buildCats();buildGrid(wordSearch.value);};
-    catWrap.appendChild(b);
-  });
-}
-
-/* ═══ PREDICTIONS ═══ */
-function allWords(){
-  const s=new Set();
-  Object.values(DEFAULT_CATEGORIES).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
-  Object.values(data.profiles).forEach(p=>{
-    Object.keys(p.words||{}).forEach(w=>s.add(w));
-    Object.values(p.customCategories||{}).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
-  });
-  return[...s];
-}
-function updatePredictions(){
-  predictions.innerHTML='';
-  const last=msgBox.value.trim().split(/\s+/).pop().toLowerCase();
-  if(!last)return;
-  allWords().filter(w=>w.toLowerCase().startsWith(last)&&w.toLowerCase()!==last).slice(0,6)
-    .forEach(m=>{
-      const li=document.createElement('li');li.textContent=m;
-      li.onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr[arr.length-1]=m;msgBox.value=arr.join(' ');predictions.innerHTML='';};
-      predictions.appendChild(li);
-    });
-}
-msgBox.addEventListener('input',updatePredictions);
-clearBtn.onclick=()=>{msgBox.value='';predictions.innerHTML='';setStatus('Ready');};
-bsBtn.onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr.pop();msgBox.value=arr.join(' ');updatePredictions();};
-
-/* ═══ ADD WORD / CAT ═══ */
-$('addWordBtn').onclick=()=>{
-  if(!data.currentProfile)return alert('Create a profile first');
-  const w=prompt('Word:');if(!w)return;
-  const e=prompt('Emoji (optional):','❓')||'';
-  const cats=[...Object.keys(DEFAULT_CATEGORIES),...Object.keys(data.profiles[data.currentProfile].customCategories||{})];
-  let cat=prompt('Category:\n'+cats.join(', '),curCat)||'Custom';
-  const p=data.profiles[data.currentProfile];
-  if(!p.customCategories)p.customCategories={};
-  if(DEFAULT_CATEGORIES[cat]){p.words=p.words||{};p.words[w]=e;}
-  else{p.customCategories[cat]=p.customCategories[cat]||{};p.customCategories[cat][w]=e;}
-  save();buildCats();buildGrid();refreshPD();
-};
-$('addCatBtn').onclick=()=>{
-  if(!data.currentProfile)return alert('Create a profile first');
-  const n=prompt('Category name:');if(!n)return;
-  const p=data.profiles[data.currentProfile];
-  p.customCategories=p.customCategories||{};p.customCategories[n]={};
-  save();buildCats();
-};
-
-/* ═══ PROFILES ═══ */
-function refreshPS(){
-  profileSel.innerHTML='';
-  Object.keys(data.profiles).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;profileSel.appendChild(o);});
-  if(data.currentProfile)profileSel.value=data.currentProfile;
-  refreshPD();
-}
-function refreshPD(){
-  if(!data.currentProfile){profileData.textContent='No profile';return;}
-  const p=data.profiles[data.currentProfile];
-  const total=Object.values(DEFAULT_CATEGORIES).reduce((a,c)=>a+Object.keys(c).length,0);
-  profileData.innerHTML='<b>'+data.currentProfile+'</b><br>Custom words: '+Object.keys(p.words||{}).length+'<br>Custom cats: '+Object.keys(p.customCategories||{}).length+'<br>Built-in: '+total;
-}
-profileSel.onchange=e=>{data.currentProfile=e.target.value;save();buildCats();buildGrid();refreshPD();};
-$('addProfileBtn').onclick=()=>{const n=prompt('Profile name:');if(!n)return;data.profiles[n]={words:{},customCategories:{}};data.currentProfile=n;save();refreshPS();buildCats();buildGrid();};
-$('delProfileBtn').onclick=()=>{if(!data.currentProfile||!confirm('Delete "'+data.currentProfile+'"?'))return;delete data.profiles[data.currentProfile];data.currentProfile=Object.keys(data.profiles)[0]||null;save();refreshPS();buildCats();buildGrid();};
-
-/* ═══ SETTINGS ═══ */
-function openSettings(){$('settingsOverlay').classList.add('open');buildSysVoiceList();}
-function closeSettings(){$('settingsOverlay').classList.remove('open');}
-
-// Engine cards
-$('engineGrid').querySelectorAll('.engine-card').forEach(card=>{
-  card.onclick=()=>{
-    curEngine=card.dataset.eng;data.engine=curEngine;save();
-    $('engineGrid').querySelectorAll('.engine-card').forEach(c=>c.classList.remove('active'));
-    card.classList.add('active');
-    enginePill.textContent='🎙️ '+(ENG_NAMES[curEngine]||curEngine);
-    $('sysPickerWrap').classList.toggle('show',curEngine==='system');
-  };
-});
-// Restore saved engine
-const savedCard=$('engineGrid').querySelector('[data-eng="'+curEngine+'"]');
-if(savedCard)savedCard.click();
-
-// System voices
-function buildSysVoiceList(){
-  const vl=$('sysVoiceList');vl.innerHTML='';
-  const voices=speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
-  if(!voices.length){vl.innerHTML='<div style="padding:10px;color:#999;font-size:13px">No voices found</div>';return;}
-  voices.forEach(v=>{
-    const row=document.createElement('div');row.className='v-row'+(v.name===curSysVoice?' sel':'');
-    row.innerHTML='<span class="v-name">'+v.name+'</span><span class="v-lang">'+v.lang+'</span><button class="v-play">▶</button>';
-    row.querySelector('.v-play').onclick=e=>{e.stopPropagation();speechSynthesis.cancel();const u=new SpeechSynthesisUtterance('Hello, I am '+v.name);u.voice=v;speechSynthesis.speak(u);};
-    row.onclick=()=>{curSysVoice=v.name;data.sysVoice=v.name;save();vl.querySelectorAll('.v-row').forEach(r=>r.classList.remove('sel'));row.classList.add('sel');};
-    vl.appendChild(row);
-  });
-}
-speechSynthesis.onvoiceschanged=buildSysVoiceList;
-setTimeout(buildSysVoiceList,400);
-
-// Color swatches
-$('swatchRow').querySelectorAll('.swatch').forEach(sw=>{
-  sw.onclick=()=>{
-    applyAccent(sw.dataset.a,sw.dataset.d);
-    $('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
-    sw.classList.add('active');
-    data.accent=sw.dataset.a;data.accentDark=sw.dataset.d;save();
-    $('accentPicker').value=sw.dataset.a;
-  };
-});
-$('accentPicker').oninput=e=>{applyAccent(e.target.value,e.target.value);$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));data.accent=e.target.value;data.accentDark=e.target.value;save();};
-$('bgPicker').oninput=e=>{applyBg(e.target.value,'solid');data.bg=e.target.value;data.bgStyle='solid';save();};
-function applyAccent(a,d){
-  document.documentElement.style.setProperty('--accent',a);
-  document.documentElement.style.setProperty('--accent-dark',d);
-  document.documentElement.style.setProperty('--accent-light',a+'28');
-}
-function applyBg(val,style){
-  if(style==='solid'){
-    document.body.style.background=val;
-    document.body.style.backgroundImage='none';
-    document.body.style.backgroundSize='';
-  } else if(style==='gradient'){
-    document.body.style.background=val;
-    document.body.style.backgroundAttachment='fixed';
-  } else if(style==='image'){
-    document.body.style.background='url("'+val+'") center/cover fixed';
-  }
-}
-// Background grid cards
-$('bgGrid').querySelectorAll('.bg-card').forEach(card=>{
-  card.onclick=()=>{
-    $('bgGrid').querySelectorAll('.bg-card').forEach(c=>c.classList.remove('active'));
-    card.classList.add('active');
-    const bg=card.dataset.bg;
-    if(bg==='solid'){
-      applyBg($('bgPicker').value,'solid');
-      data.bgStyle='solid';data.bgVal=$('bgPicker').value;
-    } else {
-      applyBg(bg,'gradient');
-      data.bgStyle='gradient';data.bgVal=bg;
-    }
-    save();
-  };
-});
-// Image file upload
-$('bgUploadBtn').onclick=()=>$('bgFileInput').click();
-$('bgFileInput').onchange=e=>{
-  const file=e.target.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const dataUrl=ev.target.result;
-    applyBg(dataUrl,'image');
-    // store in localStorage as base64 (saved across sessions)
-    data.bgStyle='image';data.bgVal=dataUrl;save();
-    $('bgFileName').textContent='✓ '+file.name;
-    $('bgGrid').querySelectorAll('.bg-card').forEach(c=>c.classList.remove('active'));
-  };
-  reader.readAsDataURL(file);
-};
-$('bgImgClear').onclick=()=>{
-  applyBg('#f0f2f5','solid');
-  data.bgStyle='solid';data.bgVal='#f0f2f5';save();
-  $('bgPicker').value='#f0f2f5';
-  $('bgImgUrl').value='';
-  $('bgGrid').querySelectorAll('.bg-card').forEach((c,i)=>c.classList.toggle('active',i===0));
-};
-
-/* ═══ EXPORT/IMPORT ═══ */
-function doExportFn(){const code=b64e(data);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(code).then(()=>alert('Copied!'));else prompt('Copy:',code);$('importArea').value=code;}
-function doImportFn(){const txt=$('importArea').value.trim();if(!txt)return alert('Paste code first');try{const p=b64d(txt);if(p?.profiles){Object.assign(data,p);save();init();alert('Imported!');}else alert('Invalid code');}catch(e){alert('Import failed');}}
-$('doExport').onclick=doExportFn;
-$('doImport').onclick=doImportFn;
-$('exportBtn').onclick=doExportFn;
-$('importTopBtn').onclick=()=>{const c=prompt('Paste code:');if(!c)return;$('importArea').value=c;doImportFn();};
-
-/* ═══ INIT ═══ */
-function init(){
-  if(!Object.keys(data.profiles).length){data.profiles={Default:{words:{},customCategories:{}}};data.currentProfile='Default';save();}
-  if(!data.currentProfile)data.currentProfile=Object.keys(data.profiles)[0];
-  if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
-  if(data.bgStyle&&data.bgVal) applyBg(data.bgVal,data.bgStyle);
-  else if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
-  if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
-  refreshPS();buildCats();buildGrid();
-}
-init();
-</script>
-</body>
-</html>
+<!--No response
