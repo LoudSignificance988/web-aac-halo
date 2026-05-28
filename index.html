@@ -9,152 +9,98 @@
 <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
 <!-- Puter.js -->
 <script src="https://js.puter.com/v2/"></script>
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
-  --accent:#2c7be5;
-  --accent-dark:#0b63d6;
-  --accent-light:#deeaff;
-  --bg:#f0f2f5;
-  --card:#fff;
-  --muted:#777;
-  --radius:12px;
+  --accent:#2c7be5;--accent-dark:#0b63d6;--accent-light:#deeaff;
+  --bg:#f0f2f5;--card:#fff;--muted:#777;--radius:12px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
-
-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 14px;height:54px;
-  background:linear-gradient(90deg,var(--accent-dark),var(--accent));
-  color:#fff;position:sticky;top:0;z-index:200;
-  box-shadow:0 2px 10px rgba(0,0,0,0.2);
-}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:54px;
+  background:linear-gradient(90deg,var(--accent-dark),var(--accent));color:#fff;
+  position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,0.2);}
 header h1{font-size:17px;font-weight:700;white-space:nowrap}
 .subtitle{font-size:10px;opacity:.8;margin-top:1px}
-.hdr-right{display:flex;gap:6px;align-items:center}
-.icon-btn{
-  background:rgba(255,255,255,.18);border:0;color:#fff;
-  font-size:13px;font-weight:700;cursor:pointer;padding:7px 10px;border-radius:8px;
-  line-height:1;transition:background .12s;white-space:nowrap
-}
+.hdr-right{display:flex;gap:6px;align-items:center;flex-wrap:nowrap}
+.icon-btn{background:rgba(255,255,255,.18);border:0;color:#fff;font-size:13px;font-weight:700;
+  cursor:pointer;padding:7px 10px;border-radius:8px;line-height:1;transition:background .12s;white-space:nowrap}
 .icon-btn:active{background:rgba(255,255,255,.35)}
+.portal-badge{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;
+  background:rgba(255,255,255,.18);font-size:12px;font-weight:700;cursor:pointer;color:#fff;
+  border:0;white-space:nowrap;}
+.portal-badge:active{background:rgba(255,255,255,.35)}
+
+/* Google sign-in area in header */
+#googleSigninWrap{display:flex;align-items:center;}
+#googleLogoutBtn{display:none;background:rgba(255,255,255,.18);border:0;color:#fff;
+  font-size:11px;font-weight:700;cursor:pointer;padding:5px 9px;border-radius:8px;white-space:nowrap;}
+#googleLogoutBtn:active{background:rgba(255,255,255,.35)}
 
 main{padding:10px;max-width:1100px;margin:0 auto}
-
 select,button,input,textarea{font-family:inherit}
-.btn{
-  background:var(--accent);border:0;color:#fff;
-  padding:9px 13px;border-radius:9px;cursor:pointer;
-  font-size:13px;font-weight:600;transition:opacity .12s,transform .08s;white-space:nowrap
-}
+.btn{background:var(--accent);border:0;color:#fff;padding:9px 13px;border-radius:9px;cursor:pointer;
+  font-size:13px;font-weight:600;transition:opacity .12s,transform .08s;white-space:nowrap}
 .btn:active{transform:scale(.95);opacity:.85}
 .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
 .btn.ghost:active{background:var(--accent-light)}
 .btn.danger{background:#dc2626;border-color:#dc2626}
-
-/* PROFILE ROW */
 .profile-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
 .profile-row select{padding:7px 9px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;flex:1;min-width:80px;max-width:180px}
-
-/* CATEGORY BAR */
-#catWrap{
-  display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding:8px 10px;
-  background:var(--card);border-radius:var(--radius);
-  box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:9px;
-}
+#catWrap{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  padding:8px 10px;background:var(--card);border-radius:var(--radius);
+  box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:9px;}
 #catWrap::-webkit-scrollbar{display:none}
-.cat-btn{
-  background:transparent;border:1.5px solid #ddd;
-  padding:6px 13px;border-radius:999px;cursor:pointer;
-  font-size:13px;font-weight:500;white-space:nowrap;flex-shrink:0;transition:all .12s
-}
+.cat-btn{background:transparent;border:1.5px solid #ddd;padding:6px 13px;border-radius:999px;
+  cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;flex-shrink:0;transition:all .12s}
 .cat-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-
 .cat-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;align-items:center}
 .cat-actions .btn{padding:8px 11px;font-size:12px}
-
-/* PANEL */
 .panel{display:flex;gap:10px;align-items:flex-start}
 .left{flex:0 0 290px;display:flex;flex-direction:column;gap:10px}
 .right{flex:1;min-width:0}
-
 .card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
-
-#message{
-  width:100%;padding:10px;border-radius:8px;border:1.5px solid #ddd;
-  font-size:16px;min-height:58px;resize:none;background:#f8f9fb;line-height:1.5;display:block
-}
+#message{width:100%;padding:10px;border-radius:8px;border:1.5px solid #ddd;font-size:16px;
+  min-height:58px;resize:none;background:#f8f9fb;line-height:1.5;display:block}
 #message:focus{outline:none;border-color:var(--accent)}
-
 #predictions{list-style:none;max-height:100px;overflow-y:auto;border-radius:6px;margin-top:5px}
 #predictions li{padding:7px 10px;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px}
 #predictions li:hover{background:var(--accent-light)}
-
-/* TTS STATUS */
-#ttsBar{
-  display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;
-  background:var(--accent-light);border:1px solid #b8d0f7;
-  margin:8px 0;font-size:12px;color:var(--accent);font-weight:600
-}
+#ttsBar{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;
+  background:var(--accent-light);border:1px solid #b8d0f7;margin:8px 0;font-size:12px;color:var(--accent);font-weight:600}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
 .dot.on{animation:pulse .7s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.55)}}
-
 .speak-row{display:flex;gap:6px;margin-bottom:8px}
 .speak-row .btn{flex:1;font-size:14px;padding:11px 8px}
-
 .rate-wrap{display:flex;align-items:center;gap:8px}
 .rate-wrap label{font-size:12px;color:var(--muted);flex-shrink:0}
 .rate-wrap input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
 .rate-wrap .val{font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;width:28px;text-align:right}
-
-/* WORD GRID */
 #wordGrid{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
-.word-btn{
-  background:#fff;border:1.5px solid #eee;padding:6px 4px;
-  border-radius:10px;cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;height:80px;transition:all .1s;touch-action:manipulation
-}
+.word-btn{background:#fff;border:1.5px solid #eee;padding:6px 4px;border-radius:10px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px;
+  transition:all .1s;touch-action:manipulation}
 .word-btn:active{transform:scale(.93);border-color:var(--accent);background:var(--accent-light)}
 .word-emoji{font-size:22px;display:block;margin-bottom:4px;line-height:1}
 .word-text{font-size:12px;font-weight:600;text-align:center;line-height:1.2;word-break:break-word}
-
-#wordSearch{
-  padding:7px 12px;border-radius:999px;border:1.5px solid #ddd;
-  font-size:13px;width:100%;display:block;margin-bottom:9px
-}
+#wordSearch{padding:7px 12px;border-radius:999px;border:1.5px solid #ddd;font-size:13px;width:100%;display:block;margin-bottom:9px}
 #wordSearch:focus{outline:none;border-color:var(--accent)}
-
-/* SETTINGS SHEET */
-#settingsOverlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
-  z-index:300;align-items:flex-end;justify-content:center
-}
+#settingsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end;justify-content:center}
 #settingsOverlay.open{display:flex}
-#settingsPanel{
-  background:#fff;border-radius:20px 20px 0 0;
-  width:100%;max-width:540px;max-height:92vh;overflow-y:auto;
-  padding:16px 18px 36px;
-}
+#settingsPanel{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding:16px 18px 36px;}
 .drag-handle{width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 14px}
 .s-title{font-size:16px;font-weight:700;margin-bottom:14px}
 .s-section{margin-bottom:22px}
 .s-label{font-size:11px;font-weight:700;color:#aaa;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
-
-/* ENGINE GRID */
 .engine-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.engine-card{
-  border:2px solid #e8e8e8;border-radius:10px;padding:10px 8px;
-  cursor:pointer;text-align:center;transition:all .13s;background:#fafafa
-}
+.engine-card{border:2px solid #e8e8e8;border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .13s;background:#fafafa}
 .engine-card.active{border-color:var(--accent);background:var(--accent-light)}
 .engine-card:active{transform:scale(.96)}
 .e-icon{font-size:20px;display:block;margin-bottom:3px}
 .e-name{font-size:13px;font-weight:700}
 .e-sub{font-size:11px;color:#999;margin-top:2px}
-
-/* SYSTEM VOICE LIST */
 #sysPickerWrap{display:none;margin-top:10px}
 #sysPickerWrap.show{display:block}
 #sysVoiceList{max-height:180px;overflow-y:auto;border:1px solid #eee;border-radius:8px;margin-top:6px}
@@ -164,8 +110,6 @@ select,button,input,textarea{font-family:inherit}
 .v-name{flex:1;font-size:13px;font-weight:500}
 .v-lang{font-size:11px;color:#ccc}
 .v-play{border:0;background:var(--accent);color:#fff;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;flex-shrink:0}
-
-/* COLOR SWATCHES */
 .swatch-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .12s;flex-shrink:0}
 .swatch:active{transform:scale(1.2)}
@@ -173,103 +117,66 @@ select,button,input,textarea{font-family:inherit}
 .color-row{display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap}
 .color-row label{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
 .color-row input[type=color]{width:36px;height:36px;border-radius:8px;border:1.5px solid #ddd;padding:2px;cursor:pointer;background:none}
-
 #importArea{width:100%;padding:9px;border-radius:8px;border:1.5px solid #ddd;font-size:12px;min-height:65px;resize:none;margin-top:8px}
 .two-btn{display:flex;gap:8px}
 .two-btn .btn{flex:1;padding:10px}
-
 #profileData{font-size:13px;color:#555;line-height:1.8;margin-top:6px}
 
-/* ═══ MODAL OVERLAY (wizard + portal) ═══ */
-.modal-overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
-  z-index:500;align-items:center;justify-content:center;padding:16px;
-}
+/* Google profile card inside settings */
+.google-card{display:flex;align-items:center;gap:10px;padding:10px;background:#f8f9fb;border-radius:10px;border:1.5px solid #eee;margin-bottom:10px}
+.google-card img{width:36px;height:36px;border-radius:50%;flex-shrink:0}
+.google-card-info{flex:1;min-width:0}
+.google-card-info strong{font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.google-card-info span{font-size:11px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:16px;}
 .modal-overlay.open{display:flex}
-.modal-box{
-  background:#fff;border-radius:20px;width:100%;max-width:440px;
-  padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.18);
-  max-height:90vh;overflow-y:auto;
-}
+.modal-box{background:#fff;border-radius:20px;width:100%;max-width:440px;padding:28px 24px;
+  box-shadow:0 8px 40px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto;}
 .modal-box h2{font-size:20px;font-weight:800;margin-bottom:6px;color:#111}
 .modal-box p{font-size:14px;color:#555;line-height:1.6;margin-bottom:16px}
 .modal-step{display:none}
 .modal-step.active{display:block}
 .big-choice{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
-.choice-btn{
-  border:2px solid #e8e8e8;border-radius:12px;padding:14px 16px;
-  cursor:pointer;text-align:left;background:#fafafa;transition:all .13s;
-  font-size:15px;font-weight:600;
-}
+.choice-btn{border:2px solid #e8e8e8;border-radius:12px;padding:14px 16px;cursor:pointer;
+  text-align:left;background:#fafafa;transition:all .13s;font-size:15px;font-weight:600;}
 .choice-btn:hover{border-color:var(--accent);background:var(--accent-light)}
 .choice-btn .sub{font-size:12px;font-weight:400;color:#888;margin-top:2px;display:block}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-.pack-card{
-  border:2px solid #e8e8e8;border-radius:12px;padding:14px 12px;
-  cursor:pointer;text-align:center;background:#fafafa;transition:all .13s;
-}
+.pack-card{border:2px solid #e8e8e8;border-radius:12px;padding:14px 12px;cursor:pointer;text-align:center;background:#fafafa;transition:all .13s;}
 .pack-card:hover,.pack-card.sel{border-color:var(--accent);background:var(--accent-light)}
 .pack-card .pack-icon{font-size:28px;display:block;margin-bottom:6px}
 .pack-card .pack-name{font-size:14px;font-weight:700}
 .pack-card .pack-desc{font-size:11px;color:#888;margin-top:3px}
-.modal-input{
-  width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #ddd;
-  font-size:14px;margin-bottom:12px;
-}
+.modal-input{width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #ddd;font-size:14px;margin-bottom:12px;}
 .modal-input:focus{outline:none;border-color:var(--accent)}
 .modal-btn-row{display:flex;gap:8px;margin-top:4px}
 .modal-btn-row .btn{flex:1;padding:12px}
 .modal-err{color:#dc2626;font-size:13px;margin-bottom:10px;display:none}
 .modal-err.show{display:block}
-
-/* PORTAL */
 #portalOverlay .modal-box{max-width:520px}
 .portal-tabs{display:flex;gap:0;border-bottom:2px solid #f0f0f0;margin-bottom:16px}
-.ptab{
-  padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;
-  border-bottom:2px solid transparent;margin-bottom:-2px;color:#888;
-}
+.ptab{padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:#888;}
 .ptab.active{border-color:var(--accent);color:var(--accent)}
 .ptab-panel{display:none}
 .ptab-panel.active{display:block}
-
-/* PORTAL WORD TABLE */
 .word-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
 .word-table th{text-align:left;padding:7px 8px;background:#f8f9fb;font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px}
 .word-table td{padding:7px 8px;border-top:1px solid #f0f0f0;vertical-align:middle}
 .del-word-btn{border:0;background:none;cursor:pointer;color:#dc2626;font-size:16px;padding:2px 6px;border-radius:5px}
 .del-word-btn:hover{background:#fef2f2}
-
-/* DICT LOOKUP */
 .dict-lookup{display:flex;gap:8px;margin-bottom:12px}
 .dict-lookup input{flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid #ddd;font-size:13px}
 .dict-lookup input:focus{outline:none;border-color:var(--accent)}
-.dict-result{
-  border:1.5px solid #e8e8e8;border-radius:10px;padding:12px;
-  margin-bottom:12px;display:none;background:#fafafa;
-}
+.dict-result{border:1.5px solid #e8e8e8;border-radius:10px;padding:12px;margin-bottom:12px;display:none;background:#fafafa;}
 .dict-result.show{display:block}
 .dict-word{font-size:16px;font-weight:800;margin-bottom:4px}
 .dict-def{font-size:12px;color:#666;line-height:1.5;margin-bottom:10px}
 .emoji-pick-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.emoji-opt{
-  font-size:22px;padding:4px 6px;border-radius:8px;cursor:pointer;
-  border:2px solid transparent;transition:all .1s;
-}
+.emoji-opt{font-size:22px;padding:4px 6px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .1s;}
 .emoji-opt.sel{border-color:var(--accent);background:var(--accent-light)}
 .cat-pick{padding:8px 10px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;width:100%;margin-bottom:10px}
 .cat-pick:focus{outline:none;border-color:var(--accent)}
-
-/* PORTAL LOCK BADGE */
-.portal-badge{
-  display:flex;align-items:center;gap:5px;padding:5px 10px;
-  border-radius:999px;background:rgba(255,255,255,.18);
-  font-size:12px;font-weight:700;cursor:pointer;color:#fff;
-  border:0;white-space:nowrap;
-}
-.portal-badge:active{background:rgba(255,255,255,.35)}
-
-/* MOBILE */
 @media(max-width:640px){
   header h1{font-size:15px}
   .subtitle{display:none}
@@ -286,6 +193,7 @@ select,button,input,textarea{font-family:inherit}
   #settingsPanel{max-height:94vh}
   .pack-grid{grid-template-columns:1fr 1fr}
   .engine-grid{grid-template-columns:1fr 1fr}
+  #googleLogoutBtn{font-size:10px;padding:4px 7px}
 }
 @media(min-width:641px) and (max-width:900px){
   .left{flex:0 0 260px}
@@ -301,8 +209,11 @@ select,button,input,textarea{font-family:inherit}
     <div class="subtitle">Thanks Kaelynn Partlow · Ivan's build</div>
   </div>
   <div class="hdr-right">
-    <button class="icon-btn" id="enginePill" onclick="openSettings()">🎙️ Google</button>
+    <button class="icon-btn" id="enginePill" onclick="openSettings()">🎙️ Natural</button>
     <button class="portal-badge" id="portalBtn" onclick="openPortalPrompt()">🔒 Parent Portal</button>
+    <!-- Google sign-in renders here -->
+    <div id="googleSigninWrap"></div>
+    <button id="googleLogoutBtn" onclick="haloGoogleSignOut()">Sign out</button>
     <button class="icon-btn" onclick="openSettings()">⚙️</button>
   </div>
 </header>
@@ -317,6 +228,11 @@ select,button,input,textarea{font-family:inherit}
   </div>
 
   <div id="catWrap"></div>
+
+  <div class="cat-actions">
+    <button class="btn" id="addWordBtn">+ Word</button>
+    <button class="btn ghost" id="clearMsgBtn">Clear</button>
+  </div>
 
   <div class="panel">
     <div class="left">
@@ -360,28 +276,30 @@ select,button,input,textarea{font-family:inherit}
     <div class="drag-handle"></div>
     <div class="s-title">⚙️ Settings</div>
 
+    <!-- Google account section -->
+    <div class="s-section">
+      <div class="s-label">👤 Google Account</div>
+      <div id="googleProfile"></div>
+      <div id="googleSigninWrap2" style="margin-top:6px"></div>
+      <p style="font-size:11px;color:#aaa;margin-top:8px;line-height:1.5">
+        Sign in to back up your words and settings. Data is stored locally in your browser — sign-in saves a local backup keyed to your account.
+      </p>
+    </div>
+
     <div class="s-section">
       <div class="s-label">🎙️ Voice Engine</div>
       <div class="engine-grid" id="engineGrid">
         <div class="engine-card active" data-eng="google">
-          <span class="e-icon">🌐</span>
-          <div class="e-name">Google</div>
-          <div class="e-sub">Free · Natural · Online</div>
+          <span class="e-icon">🗣️</span><div class="e-name">Natural</div><div class="e-sub">Best device voice · Free</div>
         </div>
         <div class="engine-card" data-eng="system">
-          <span class="e-icon">📱</span>
-          <div class="e-name">System</div>
-          <div class="e-sub">Device voices · Offline</div>
+          <span class="e-icon">📱</span><div class="e-name">System</div><div class="e-sub">Device voices · Offline</div>
         </div>
         <div class="engine-card" data-eng="responsive">
-          <span class="e-icon">🔊</span>
-          <div class="e-name">ResponsiveVoice</div>
-          <div class="e-sub">Cross-device · Free</div>
+          <span class="e-icon">🔊</span><div class="e-name">ResponsiveVoice</div><div class="e-sub">Cross-device · Free</div>
         </div>
         <div class="engine-card" data-eng="puter">
-          <span class="e-icon">✨</span>
-          <div class="e-name">Puter AI</div>
-          <div class="e-sub">OpenAI TTS · Free</div>
+          <span class="e-icon">✨</span><div class="e-name">Puter AI</div><div class="e-sub">OpenAI TTS · Free</div>
         </div>
       </div>
       <div id="sysPickerWrap">
@@ -421,11 +339,9 @@ select,button,input,textarea{font-family:inherit}
   </div>
 </div>
 
-<!-- ══════════════ SETUP WIZARD ══════════════ -->
+<!-- SETUP WIZARD -->
 <div class="modal-overlay" id="wizardOverlay">
   <div class="modal-box">
-
-    <!-- Step 1: Who's here? -->
     <div class="modal-step active" id="wStep1">
       <h2>👋 Welcome to Halo AAC</h2>
       <p>Before we start, who is setting up this device?</p>
@@ -440,31 +356,21 @@ select,button,input,textarea{font-family:inherit}
         </button>
       </div>
     </div>
-
-    <!-- Step 2a: Pick word pack (shown for both, but with different next step) -->
     <div class="modal-step" id="wStep2">
       <h2>📦 Choose a Word Pack</h2>
       <p>Pick the word set that best fits everyday needs. Parents can add more words later.</p>
       <div class="pack-grid" id="packGrid">
         <div class="pack-card sel" data-pack="essential" onclick="selectPack(this)">
-          <span class="pack-icon">⭐</span>
-          <div class="pack-name">Essential</div>
-          <div class="pack-desc">Yes, no, please, help + basics</div>
+          <span class="pack-icon">⭐</span><div class="pack-name">Essential</div><div class="pack-desc">Yes, no, please, help + basics</div>
         </div>
         <div class="pack-card" data-pack="school" onclick="selectPack(this)">
-          <span class="pack-icon">🏫</span>
-          <div class="pack-name">School</div>
-          <div class="pack-desc">Classroom, social, feelings</div>
+          <span class="pack-icon">🏫</span><div class="pack-name">School</div><div class="pack-desc">Classroom, social, feelings</div>
         </div>
         <div class="pack-card" data-pack="home" onclick="selectPack(this)">
-          <span class="pack-icon">🏠</span>
-          <div class="pack-name">Home</div>
-          <div class="pack-desc">Daily routines, needs, family</div>
+          <span class="pack-icon">🏠</span><div class="pack-name">Home</div><div class="pack-desc">Daily routines, needs, family</div>
         </div>
         <div class="pack-card" data-pack="all" onclick="selectPack(this)">
-          <span class="pack-icon">🌐</span>
-          <div class="pack-name">Everything</div>
-          <div class="pack-desc">All words (parent unlock)</div>
+          <span class="pack-icon">🌐</span><div class="pack-name">Everything</div><div class="pack-desc">All words (parent unlock)</div>
         </div>
       </div>
       <div class="modal-btn-row">
@@ -472,8 +378,6 @@ select,button,input,textarea{font-family:inherit}
         <button class="btn" onclick="wStep2Next()">Continue →</button>
       </div>
     </div>
-
-    <!-- Step 3: Set password (parent path only) -->
     <div class="modal-step" id="wStep3">
       <h2>🔒 Create a Parent Password</h2>
       <p>This password protects the Parent Portal where you can add or remove words.</p>
@@ -485,8 +389,6 @@ select,button,input,textarea{font-family:inherit}
         <button class="btn" onclick="wFinish()">Finish Setup ✓</button>
       </div>
     </div>
-
-    <!-- Step 3b: Child path — just finish -->
     <div class="modal-step" id="wStep3b">
       <h2>🎉 All set!</h2>
       <p>You're ready to go. Tap any word card to start building sentences.</p>
@@ -495,11 +397,10 @@ select,button,input,textarea{font-family:inherit}
         <button class="btn" onclick="wFinishChild()">Let's go! 🚀</button>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ══════════════ PORTAL PASSWORD PROMPT ══════════════ -->
+<!-- PORTAL PASSWORD PROMPT -->
 <div class="modal-overlay" id="portalPromptOverlay">
   <div class="modal-box">
     <h2>🔒 Parent Portal</h2>
@@ -513,21 +414,18 @@ select,button,input,textarea{font-family:inherit}
   </div>
 </div>
 
-<!-- ══════════════ PARENTAL PORTAL ══════════════ -->
+<!-- PARENTAL PORTAL -->
 <div class="modal-overlay" id="portalOverlay">
   <div class="modal-box">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h2 style="margin:0">👨‍👩‍👧 Parent Portal</h2>
       <button class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="closePortal()">Close ✕</button>
     </div>
-
     <div class="portal-tabs">
       <div class="ptab active" onclick="switchTab(this,'tabAdd')">➕ Add Word</div>
       <div class="ptab" onclick="switchTab(this,'tabManage')">📋 Manage Words</div>
       <div class="ptab" onclick="switchTab(this,'tabSettings')">⚙️ Portal Settings</div>
     </div>
-
-    <!-- TAB: Add Word -->
     <div class="ptab-panel active" id="tabAdd">
       <p style="font-size:13px;color:#666;margin-bottom:12px">Look up a word using the dictionary, choose an emoji, then add it.</p>
       <div class="dict-lookup">
@@ -545,20 +443,16 @@ select,button,input,textarea{font-family:inherit}
       </div>
       <div id="addWordMsg" style="font-size:13px;color:var(--accent);margin-top:8px;display:none"></div>
     </div>
-
-    <!-- TAB: Manage Words -->
     <div class="ptab-panel" id="tabManage">
       <p style="font-size:13px;color:#666;margin-bottom:10px">All words currently visible to the user. Delete to remove.</p>
       <input type="search" id="portalSearch" placeholder="🔍 Filter words…" style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;margin-bottom:10px" oninput="buildWordTable()"/>
       <div style="max-height:320px;overflow-y:auto">
-        <table class="word-table" id="wordTable">
+        <table class="word-table">
           <thead><tr><th>Emoji</th><th>Word</th><th>Category</th><th></th></tr></thead>
           <tbody id="wordTableBody"></tbody>
         </table>
       </div>
     </div>
-
-    <!-- TAB: Portal Settings -->
     <div class="ptab-panel" id="tabSettings">
       <p style="font-size:13px;color:#666;margin-bottom:12px">Change your parent password or reset the word pack.</p>
       <div class="s-label">Change Password</div>
@@ -575,11 +469,142 @@ select,button,input,textarea{font-family:inherit}
         <div class="pack-card" data-pack="all" onclick="selectPortalPack(this)"><span class="pack-icon">🌐</span><div class="pack-name">Everything</div></div>
       </div>
     </div>
-
   </div>
 </div>
 
 <script>
+/* ═══ GOOGLE SIGN-IN ═══
+   Replace YOUR_CLIENT_ID below with your actual Google OAuth client ID
+   from https://console.cloud.google.com → APIs & Services → Credentials
+   ================================================================= */\
+   const GOOGLE_CLIENT_ID =
+  "72438990824-cjaup5i6r86dth4g5cjuggf8equa6h42.apps.googleusercontent.com";
+
+let haloGoogleUser = null;
+
+function initGoogleSignIn(){
+  if(!window.google) return;
+
+  // Header button (small pill)
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleGoogleLogin
+  });
+
+  google.accounts.id.renderButton(
+    $('googleSigninWrap'),
+    { theme:'outline', size:'small', text:'signin_with', shape:'pill' }
+  );
+
+  // Settings panel button (larger)
+  if($('googleSigninWrap2') && !haloGoogleUser){
+    google.accounts.id.renderButton(
+      $('googleSigninWrap2'),
+      { theme:'outline', size:'medium', text:'signin_with', shape:'pill' }
+    );
+  }
+
+  // Restore session from localStorage
+  const saved = localStorage.getItem('haloGoogleUser');
+  if(saved){
+    haloGoogleUser = JSON.parse(saved);
+    updateGoogleUI();
+  }
+}
+
+function handleGoogleLogin(response){
+  // Decode the JWT credential (header.payload.signature)
+  const payload = JSON.parse(atob(response.credential.split('.')[1]));
+  haloGoogleUser = {
+    name: payload.name,
+    email: payload.email,
+    picture: payload.picture
+  };
+  localStorage.setItem('haloGoogleUser', JSON.stringify(haloGoogleUser));
+  saveHaloCloud();
+  updateGoogleUI();
+}
+
+function haloGoogleSignOut(){
+  if(window.google) google.accounts.id.disableAutoSelect();
+  haloGoogleUser = null;
+  localStorage.removeItem('haloGoogleUser');
+  // Reset header wrap back to sign-in button
+  $('googleSigninWrap').innerHTML = '';
+  $('googleLogoutBtn').style.display = 'none';
+  // Reset settings panel
+  const gp = $('googleProfile');
+  if(gp) gp.innerHTML = '';
+  const w2 = $('googleSigninWrap2');
+  if(w2) w2.innerHTML = '';
+  // Re-render buttons
+  initGoogleSignIn();
+}
+
+function updateGoogleUI(){
+  if(!haloGoogleUser) return;
+
+  // Header: replace sign-in button with user name
+  $('googleSigninWrap').innerHTML =
+    '<span style="font-size:12px;font-weight:700;color:#fff;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+    haloGoogleUser.name + '</span>';
+  $('googleLogoutBtn').style.display = 'inline-block';
+
+  // Settings panel: show profile card
+  const gp = $('googleProfile');
+  if(gp){
+    gp.innerHTML =
+      '<div class="google-card">' +
+      '<img src="' + haloGoogleUser.picture + '" alt="avatar" onerror="this.style.display=\'none\'">' +
+      '<div class="google-card-info">' +
+      '<strong>' + haloGoogleUser.name + '</strong>' +
+      '<span>' + haloGoogleUser.email + '</span>' +
+      '</div></div>';
+  }
+  // Hide the second sign-in button since user is now signed in
+  const w2 = $('googleSigninWrap2');
+  if(w2) w2.innerHTML = '';
+}
+
+function saveHaloCloud(){
+  if(!haloGoogleUser) return;
+  // Saves a local backup keyed to the user's email.
+  // For real cloud sync, replace this with a Firestore/Supabase write.
+  const backup = {
+    savedAt: new Date().toISOString(),
+    profiles: data.profiles || {},
+    customWords: data.customWords || {},
+    removedWords: data.removedWords || {},
+    wordPack: data.wordPack,
+    portalHash: data.portalHash,
+    engine: data.engine,
+    accent: data.accent,
+    accentDark: data.accentDark,
+    bg: data.bg
+  };
+  localStorage.setItem(
+    'haloCloudBackup_' + haloGoogleUser.email,
+    JSON.stringify(backup)
+  );
+}
+
+function loadHaloCloud(){
+  if(!haloGoogleUser) return;
+  const raw = localStorage.getItem('haloCloudBackup_' + haloGoogleUser.email);
+  if(!raw) return;
+  try{
+    const backup = JSON.parse(raw);
+    // Merge backup into data (backup wins for cloud keys)
+    ['profiles','customWords','removedWords','wordPack','portalHash','engine','accent','accentDark','bg']
+      .forEach(k=>{ if(backup[k] !== undefined) data[k] = backup[k]; });
+    save();
+    init();
+  }catch(e){}
+}
+
+// Run Google Sign-In init after GSI script loads
+window.onload = () => setTimeout(initGoogleSignIn, 500);
+
 /* ═══ WORD PACKS ═══ */
 const PACKS={
   essential:{
@@ -615,7 +640,7 @@ const PACKS={
     "Things":{"Book":"📚","Phone":"📱","Computer":"💻","Pen":"🖊️","Bag":"👜","Shoes":"👟","Watch":"⌚","Cup":"☕","Plate":"🍽️","Backpack":"🎒","Umbrella":"☂️","Toy":"🧸","Keys":"🔑","Scissors":"✂️","Bottle":"🍶","Wallet":"👛","Charger":"🔌","Tablet":"📱","Ball":"⚽","Bike":"🚲"},
     "Questions":{"What":"❓","Where":"📍","When":"⏰","Who":"👤","Why":"🤔","How":"🔧","Yes":"✅","No":"❌","Maybe":"🤷","I don't know":"🤷","Please":"🙏","Thank you":"🙏","Sorry":"😔","Help me":"🆘","Wait":"⏳","Repeat":"🔁","More":"➕","Less":"➖"},
     "Social":{"Hello":"👋","Goodbye":"👋","Good morning":"🌅","Good night":"🌙","Please":"🙏","Thank you":"🙏","Sorry":"😔","Excuse me":"🙋","Love you":"❤️","Good job":"👍","I agree":"✅","I disagree":"❌","Come with me":"🤝"},
-    "Time":{"Now":"ⱱ️","Later":"⏰","Soon":"⌛","Today":"📅","Tomorrow":"🌅","Yesterday":"⬅️","Morning":"🌄","Afternoon":"☀️","Evening":"🌆","Night":"🌙","Weekend":"🎉"},
+    "Time":{"Now":"⏱️","Later":"⏰","Soon":"⌛","Today":"📅","Tomorrow":"🌅","Yesterday":"⬅️","Morning":"🌄","Afternoon":"☀️","Evening":"🌆","Night":"🌙","Weekend":"🎉"},
     "Transport":{"Car":"🚗","Bus":"🚌","Train":"🚂","Plane":"✈️","Bike":"🚲","Walk":"🚶","Taxi":"🚕","Truck":"🚛","Ambulance":"🚑","Wheelchair":"♿"},
     "Weather":{"Sunny":"☀️","Cloudy":"☁️","Rain":"🌧️","Snow":"❄️","Hot":"🔥","Cold":"🥶","Storm":"⛈️","Rainbow":"🌈","Wind":"💨"},
     "School":{"Class":"🏫","Homework":"📝","Test":"✏️","Lunch":"🍱","Recess":"🛝","Teacher":"🧑‍🫁","Pencil":"✏️","Book":"📚","Desk":"🪑","Art":"🎨","Music":"🎵","Math":"➕","Reading":"📖","Science":"🔬","Computer":"💻","Bus":"🚌"},
@@ -623,7 +648,6 @@ const PACKS={
   }
 };
 
-/* Emoji suggestion map for dictionary lookup */
 const EMOJI_MAP={
   happy:"😊",sad:"😢",angry:"😡",love:"❤️",food:"🍽️",water:"💧",home:"🏠",
   school:"🏫",play:"🎮",sleep:"😴",run:"🏃",walk:"🚶",eat:"🍽️",drink:"🥤",
@@ -647,130 +671,131 @@ let data=(()=>{try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null
 function save(){localStorage.setItem(KEY,JSON.stringify(data));}
 function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
 function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
-
-/* Simple hash (not crypto, just a deterrent) */
 function simpleHash(s){let h=0;for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;return h.toString(36);}
+function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
 /* ═══ STATE ═══ */
-let curCat=null;
-let curEngine=data.engine||'google';
-let curSysVoice=data.sysVoice||null;
-let wizardRole='parent';
-let wizardPack='essential';
-let selectedEmoji='❓';
-let dictWord='';
+let curCat=null,curEngine=data.engine||'google',curSysVoice=data.sysVoice||null;
+let wizardRole='parent',wizardPack='essential',selectedEmoji='❓',dictWord='';
 
 /* ═══ DOM ═══ */
 const $=id=>document.getElementById(id);
 const msgBox=$('message'),predictions=$('predictions'),speakBtn=$('speakBtn'),
-      stopBtn=$('stopBtn'),bsBtn=$('bsBtn'),
-      rateSlider=$('rateSlider'),rateVal=$('rateVal'),
-      dot=$('dot'),ttsStatus=$('ttsStatus'),
-      wordGrid=$('wordGrid'),gridTitle=$('gridTitle'),wordSearch=$('wordSearch'),
-      catWrap=$('catWrap'),profileSel=$('profileSelect'),profileData=$('profileData'),
-      enginePill=$('enginePill');
+      stopBtn=$('stopBtn'),bsBtn=$('bsBtn'),rateSlider=$('rateSlider'),rateVal=$('rateVal'),
+      dot=$('dot'),ttsStatus=$('ttsStatus'),wordGrid=$('wordGrid'),gridTitle=$('gridTitle'),
+      wordSearch=$('wordSearch'),catWrap=$('catWrap'),profileSel=$('profileSelect'),
+      profileData=$('profileData'),enginePill=$('enginePill');
 
-/* ═══ TTS ═══ */
-const ENG_NAMES={google:'Google',system:'System',responsive:'ResponsiveVoice',puter:'Puter AI'};
+/* ═══ TTS ═══
+   "google" engine slot now uses Web Speech API with the best available
+   English voice — works fully offline and on GitHub Pages with no 400s.
+   ResponsiveVoice and Puter are still available as alternatives.
+   ================================================================= */
+const ENG_NAMES={google:'Natural',system:'System',responsive:'ResponsiveVoice',puter:'Puter AI'};
 
 function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
 function stripEmoji(s){return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d\uFE0F]/gu,'').replace(/\s+/g,' ').trim();}
-function chunkText(t,max=180){
-  const words=t.split(' '),out=[];let cur='';
-  for(const w of words){
-    if((cur+' '+w).trim().length>max){if(cur)out.push(cur.trim());cur=w;}
-    else cur=cur?cur+' '+w:w;
-  }
-  if(cur.trim())out.push(cur.trim());
-  return out;
-}
+
 let activeAudio=null;
-async function playChunks(chunks,urlFn,label){
-  const rate=parseFloat(rateSlider.value);
-  const audios=chunks.map(c=>{const a=new Audio(urlFn(c));a.preload='auto';a.load();return a;});
-  for(let i=0;i<audios.length;i++){
-    if(i>0&&!activeAudio)break;
-    setStatus((chunks.length>1?'▶ '+(i+1)+'/'+chunks.length+' · ':'▶ ')+label,true);
-    await new Promise(res=>{
-      activeAudio=audios[i];
-      activeAudio.playbackRate=Math.min(Math.max(rate,.5),4);
-      activeAudio.onended=res;activeAudio.onerror=res;
-      activeAudio.play().catch(res);
-    });
-  }
-  if(activeAudio)setStatus('Done ✓');
-}
-async function speakGoogle(text){
-  await playChunks(chunkText(text),c=>'https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=en&client=gtx&q='+encodeURIComponent(c),'Google');
-}
-function speakSystem(text){
-  speechSynthesis.cancel();
+let activeSpeech=null; // tracks current SpeechSynthesisUtterance
+
+/* Pick the best available English voice */
+function bestVoice(){
   const voices=speechSynthesis.getVoices();
-  const u=new SpeechSynthesisUtterance(text);
-  const pref=curSysVoice?voices.find(v=>v.name===curSysVoice):null;
-  const eng=voices.find(v=>v.lang.startsWith('en-US'))||voices.find(v=>v.lang.startsWith('en'));
-  const voice=pref||eng||voices[0];
-  if(voice)u.voice=voice;
-  u.rate=parseFloat(rateSlider.value);u.pitch=1;u.volume=1;
-  u.onstart=()=>setStatus('▶ '+(voice?.name||'System'),true);
-  u.onend=()=>setStatus('Done ✓');
-  u.onerror=e=>setStatus('Error: '+e.error);
-  speechSynthesis.speak(u);
+  // Priority: saved preference → en-US → any en → first available
+  if(curSysVoice){const v=voices.find(v=>v.name===curSysVoice);if(v)return v;}
+  return voices.find(v=>v.lang==='en-US'&&!v.localService===false)  // prefer local en-US
+      || voices.find(v=>v.lang==='en-US')
+      || voices.find(v=>v.lang.startsWith('en'))
+      || voices[0]
+      || null;
 }
-function speakResponsive(text){
-  if(typeof responsiveVoice==='undefined'){setStatus('ResponsiveVoice not loaded');return;}
-  setStatus('▶ ResponsiveVoice',true);
-  responsiveVoice.speak(text,'UK English Female',{
-    rate:parseFloat(rateSlider.value)-0.5,
-    onend:()=>setStatus('Done ✓'),
-    onerror:()=>setStatus('RV Error')
+
+/* Main "Natural" engine — Web Speech API, best voice available */
+function speakNatural(text){
+  return new Promise(res=>{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    const voice=bestVoice();
+    if(voice)u.voice=voice;
+    u.rate=parseFloat(rateSlider.value);
+    u.pitch=1;u.volume=1;
+    u.onstart=()=>setStatus('▶ '+(voice?.name||'Natural'),true);
+    u.onend=()=>{setStatus('Done ✓');activeSpeech=null;res();};
+    u.onerror=e=>{setStatus('TTS error: '+e.error);activeSpeech=null;res();};
+    activeSpeech=u;
+    speechSynthesis.speak(u);
   });
 }
+
+/* System engine — same as Natural but labelled separately so user can
+   still pick a specific voice from the voice list */
+function speakSystem(text){
+  return speakNatural(text);
+}
+
+function speakResponsive(text){
+  return new Promise(res=>{
+    if(typeof responsiveVoice==='undefined'){
+      setStatus('RV not loaded — using Natural');
+      speakNatural(text).then(res);return;
+    }
+    setStatus('▶ ResponsiveVoice',true);
+    responsiveVoice.speak(text,'UK English Female',{
+      rate:Math.max(0.1,parseFloat(rateSlider.value)-0.5),
+      onend:()=>{setStatus('Done ✓');res();},
+      onerror:()=>{setStatus('RV error — using Natural');speakNatural(text).then(res);}
+    });
+  });
+}
+
 async function speakPuter(text){
-  if(typeof puter==='undefined'){setStatus('Puter not loaded');speakGoogle(text);return;}
+  if(typeof puter==='undefined'||!puter.ai){
+    setStatus('Puter unavailable — using Natural');
+    await speakNatural(text);return;
+  }
   try{
     setStatus('▶ Puter AI',true);
     const audio=await puter.ai.txt2speech(text);
     activeAudio=audio;
     audio.playbackRate=Math.min(Math.max(parseFloat(rateSlider.value),.5),4);
-    audio.onended=()=>setStatus('Done ✓');
+    audio.onended=()=>{setStatus('Done ✓');activeAudio=null;};
+    audio.onerror=()=>{setStatus('Puter error — using Natural');activeAudio=null;speakNatural(text);};
     audio.play();
-  }catch(e){setStatus('Puter error, falling back');speakGoogle(text);}
+  }catch(e){setStatus('Puter error — using Natural');await speakNatural(text);}
 }
 
 speakBtn.onclick=async()=>{
   const raw=msgBox.value.trim();
   if(!raw){setStatus('Nothing to say');return;}
   const text=stripEmoji(raw)||raw;
+  if(!text.trim()){setStatus('Nothing to say');return;}
   try{
-    if(curEngine==='google') await speakGoogle(text);
-    else if(curEngine==='system') speakSystem(text);
-    else if(curEngine==='responsive') speakResponsive(text);
-    else if(curEngine==='puter') await speakPuter(text);
-  }catch(e){setStatus('Trying system…');speakSystem(text);}
+    if(curEngine==='google')        await speakNatural(text);
+    else if(curEngine==='system')   await speakSystem(text);
+    else if(curEngine==='responsive') await speakResponsive(text);
+    else if(curEngine==='puter')    await speakPuter(text);
+  }catch(e){setStatus('Falling back…');await speakNatural(text);}
 };
+
 stopBtn.onclick=()=>{
-  if(activeAudio){activeAudio.pause();activeAudio=null;}
-  speechSynthesis.cancel();
-  if(typeof responsiveVoice!=='undefined')responsiveVoice.cancel();
+  if(activeAudio){activeAudio.pause();activeAudio.src='';activeAudio=null;}
+  speechSynthesis.cancel();activeSpeech=null;
+  if(typeof responsiveVoice!=='undefined')try{responsiveVoice.cancel();}catch(e){}
   setStatus('Stopped');
 };
-rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';};
-$('clearBtn2') // placeholder — clear handled below
+rateSlider.oninput=()=>rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';
 
-/* ═══ BUILD WORD SET ═══ */
+/* ═══ WORDS ═══ */
 function getActiveWords(){
-  /* Merge base pack + customWords, minus removedWords */
   const pack=PACKS[data.wordPack||'essential'];
   const merged={};
   Object.entries(pack).forEach(([cat,words])=>{
     merged[cat]={};
     Object.entries(words).forEach(([w,e])=>{
-      const key=cat+'::'+w;
-      if(!data.removedWords||!data.removedWords[key]) merged[cat][w]=e;
+      if(!data.removedWords||!data.removedWords[cat+'::'+w]) merged[cat][w]=e;
     });
   });
-  /* Add custom words */
   if(data.customWords){
     Object.entries(data.customWords).forEach(([cat,words])=>{
       if(!merged[cat])merged[cat]={};
@@ -781,8 +806,7 @@ function getActiveWords(){
 }
 
 function buildGrid(filter=''){
-  const words=getActiveWords();
-  const catWords=words[curCat]||{};
+  const catWords=(getActiveWords()[curCat])||{};
   gridTitle.textContent=curCat||'Words';
   wordGrid.innerHTML='';
   Object.entries(catWords)
@@ -815,8 +839,7 @@ function buildCats(){
 /* ═══ PREDICTIONS ═══ */
 function allWords(){
   const s=new Set();
-  const words=getActiveWords();
-  Object.values(words).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
+  Object.values(getActiveWords()).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
   return[...s];
 }
 function updatePredictions(){
@@ -831,12 +854,8 @@ function updatePredictions(){
     });
 }
 msgBox.addEventListener('input',updatePredictions);
-document.getElementById('catWrap').addEventListener('click',()=>{}); // catWrap clear handled in buildCats
-
-/* clear + backspace */
-document.addEventListener('DOMContentLoaded',()=>{});
-const clearBtnEl=document.querySelector('.cat-actions .btn.ghost');
-// wire up clear and backspace via IDs set below
+$('clearMsgBtn').onclick=()=>{msgBox.value='';predictions.innerHTML='';setStatus('Ready');};
+bsBtn.onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr.pop();msgBox.value=arr.join(' ');updatePredictions();};
 
 /* ═══ PROFILES ═══ */
 function refreshPS(){
@@ -849,9 +868,10 @@ function refreshPD(){
   if(!data.currentProfile){profileData.textContent='No profile';return;}
   const words=getActiveWords();
   const total=Object.values(words).reduce((a,c)=>a+Object.keys(c).length,0);
-  profileData.innerHTML='<b>'+data.currentProfile+'</b><br>Pack: '+capitalize(data.wordPack||'essential')+'<br>Visible words: '+total+'<br>Custom added: '+Object.values(data.customWords||{}).reduce((a,c)=>a+Object.keys(c).length,0);
+  const custom=Object.values(data.customWords||{}).reduce((a,c)=>a+Object.keys(c).length,0);
+  const cloudLine=haloGoogleUser?'<br>☁️ '+haloGoogleUser.name:'<br>💾 Local only';
+  profileData.innerHTML='<b>'+data.currentProfile+'</b><br>Pack: '+capitalize(data.wordPack||'essential')+'<br>Words: '+total+'<br>Custom: '+custom+cloudLine;
 }
-function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 profileSel.onchange=e=>{data.currentProfile=e.target.value;save();buildCats();buildGrid();refreshPD();};
 $('addProfileBtn').onclick=()=>{const n=prompt('Profile name:');if(!n)return;data.profiles[n]={};data.currentProfile=n;save();refreshPS();buildCats();buildGrid();};
 $('delProfileBtn').onclick=()=>{if(!data.currentProfile||!confirm('Delete "'+data.currentProfile+'"?'))return;delete data.profiles[data.currentProfile];data.currentProfile=Object.keys(data.profiles)[0]||null;save();refreshPS();buildCats();buildGrid();};
@@ -915,47 +935,25 @@ $('importTopBtn').onclick=()=>{const c=prompt('Paste code:');if(!c)return;$('imp
 /* ═══ WIZARD ═══ */
 function showStep(id){document.querySelectorAll('.modal-step').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
 function wGoStep2(role){wizardRole=role;showStep('wStep2');}
-function wBack(){
-  const active=document.querySelector('.modal-step.active');
-  if(active.id==='wStep2')showStep('wStep1');
-  else if(active.id==='wStep3')showStep('wStep2');
-}
-function selectPack(el){
-  document.querySelectorAll('.pack-card').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  wizardPack=el.dataset.pack;
-}
-function wStep2Next(){
-  if(wizardRole==='parent') showStep('wStep3');
-  else showStep('wStep3b');
-}
+function wBack(){const a=document.querySelector('.modal-step.active');if(a.id==='wStep2')showStep('wStep1');else if(a.id==='wStep3')showStep('wStep2');}
+function selectPack(el){document.querySelectorAll('#packGrid .pack-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');wizardPack=el.dataset.pack;}
+function wStep2Next(){if(wizardRole==='parent')showStep('wStep3');else showStep('wStep3b');}
 function wFinish(){
   const p1=$('pw1').value,p2=$('pw2').value;
   if(!p1||p1!==p2){$('pwErr').classList.add('show');return;}
   $('pwErr').classList.remove('show');
-  data.portalHash=simpleHash(p1);
-  data.wordPack=wizardPack;
-  data.setup=true;
-  save();
-  $('wizardOverlay').classList.remove('open');
-  buildCats();buildGrid();refreshPD();
+  data.portalHash=simpleHash(p1);data.wordPack=wizardPack;data.setup=true;
+  save();$('wizardOverlay').classList.remove('open');buildCats();buildGrid();refreshPD();
 }
 function wFinishChild(){
-  data.wordPack=wizardPack;
-  data.setup=true;
-  save();
-  $('wizardOverlay').classList.remove('open');
-  buildCats();buildGrid();refreshPD();
+  data.wordPack=wizardPack;data.setup=true;
+  save();$('wizardOverlay').classList.remove('open');buildCats();buildGrid();refreshPD();
 }
 
 /* ═══ PORTAL ═══ */
 function openPortalPrompt(){
-  if(!data.portalHash){
-    // No password set — open portal directly (or prompt to set one)
-    if(confirm('No parent password is set yet. Open portal anyway?')){openPortal();} return;
-  }
-  $('portalPwErr').classList.remove('show');
-  $('portalPwInput').value='';
+  if(!data.portalHash){if(confirm('No parent password set. Open portal anyway?'))openPortal();return;}
+  $('portalPwErr').classList.remove('show');$('portalPwInput').value='';
   $('portalPromptOverlay').classList.add('open');
   setTimeout(()=>$('portalPwInput').focus(),100);
 }
@@ -963,19 +961,14 @@ function closePortalPrompt(){$('portalPromptOverlay').classList.remove('open');}
 function checkPortalPw(){
   const val=$('portalPwInput').value;
   if(simpleHash(val)===data.portalHash){closePortalPrompt();openPortal();}
-  else{$('portalPwErr').classList.add('show');}
+  else $('portalPwErr').classList.add('show');
 }
 $('portalPwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPortalPw();});
 
 function openPortal(){
-  // Reset to first tab
-  switchTab(document.querySelector('.ptab.active'),'tabAdd');
   document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',i===0));
   document.querySelectorAll('.ptab-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
-  // Populate cat picker
-  populateCatPicker();
-  buildWordTable();
-  updatePackLabel();
+  populateCatPicker();buildWordTable();updatePackLabel();
   $('portalOverlay').classList.add('open');
 }
 function closePortal(){$('portalOverlay').classList.remove('open');}
@@ -983,44 +976,33 @@ function closePortal(){$('portalOverlay').classList.remove('open');}
 function switchTab(el,panelId){
   document.querySelectorAll('.ptab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.ptab-panel').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
-  $(panelId).classList.add('active');
+  el.classList.add('active');$(panelId).classList.add('active');
   if(panelId==='tabManage')buildWordTable();
   if(panelId==='tabSettings')updatePackLabel();
 }
 
-/* ── Dictionary lookup ── */
 async function lookupWord(){
-  const w=$('dictInput').value.trim().toLowerCase();
-  if(!w)return;
-  dictWord=w;
+  const w=$('dictInput').value.trim().toLowerCase();if(!w)return;dictWord=w;
   try{
     const res=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w));
     const json=await res.json();
     if(!Array.isArray(json)||!json[0]){showDictResult(w,'No definition found.');return;}
     const entry=json[0];
-    const def=entry.meanings?.[0]?.definitions?.[0]?.definition||'No definition found.';
-    showDictResult(entry.word||w,def);
-  }catch(e){showDictResult(w,'Could not reach dictionary. You can still add the word.');}
+    showDictResult(entry.word||w,entry.meanings?.[0]?.definitions?.[0]?.definition||'No definition found.');
+  }catch(e){showDictResult(w,'Dictionary unavailable. You can still add the word.');}
 }
 
 function showDictResult(word,def){
-  $('dictWordTitle').textContent=word;
-  $('dictDef').textContent=def;
-  // Suggest emojis
+  $('dictWordTitle').textContent=word;$('dictDef').textContent=def;
   const row=$('emojiPickRow');row.innerHTML='';
   const lower=word.toLowerCase();
-  // Find matching emojis
   const suggestions=[];
   Object.entries(EMOJI_MAP).forEach(([k,e])=>{if(lower.includes(k)||k.includes(lower))suggestions.push(e);});
-  // Add a few generic ones
   ['❓','🔤','💬','⭐','🌟','🎯'].forEach(e=>{if(!suggestions.includes(e))suggestions.push(e);});
   const shown=[...new Set(suggestions)].slice(0,10);
   selectedEmoji=shown[0]||'❓';
   shown.forEach((e,i)=>{
-    const span=document.createElement('span');
-    span.className='emoji-opt'+(i===0?' sel':'');
-    span.textContent=e;
+    const span=document.createElement('span');span.className='emoji-opt'+(i===0?' sel':'');span.textContent=e;
     span.onclick=()=>{selectedEmoji=e;row.querySelectorAll('.emoji-opt').forEach(s=>s.classList.remove('sel'));span.classList.add('sel');};
     row.appendChild(span);
   });
@@ -1040,84 +1022,61 @@ function confirmAddWord(){
   if(!data.customWords)data.customWords={};
   if(!data.customWords[cat])data.customWords[cat]={};
   data.customWords[cat][word]=selectedEmoji;
-  // Remove from removedWords if it was there
-  if(data.removedWords){delete data.removedWords[cat+'::'+word];}
-  save();
-  buildCats();buildGrid();refreshPD();
-  const msg=$('addWordMsg');
-  msg.textContent='✓ "'+word+'" added to '+cat+'!';
-  msg.style.display='block';
+  if(data.removedWords)delete data.removedWords[cat+'::'+word];
+  save();buildCats();buildGrid();refreshPD();
+  const msg=$('addWordMsg');msg.textContent='✓ "'+word+'" added to '+cat+'!';msg.style.display='block';
   setTimeout(()=>msg.style.display='none',2500);
-  $('dictResult').classList.remove('show');
-  $('dictInput').value='';
-  dictWord='';
+  $('dictResult').classList.remove('show');$('dictInput').value='';dictWord='';
+  // Auto-save cloud backup if signed in
+  saveHaloCloud();
 }
 
-/* ── Word table (manage tab) ── */
 function buildWordTable(){
   const body=$('wordTableBody');body.innerHTML='';
   const filter=$('portalSearch').value.toLowerCase();
-  const words=getActiveWords();
   const rows=[];
-  Object.entries(words).forEach(([cat,catWords])=>{
-    Object.entries(catWords).forEach(([w,e])=>{
-      if(!filter||w.toLowerCase().includes(filter))rows.push({cat,w,e});
-    });
+  Object.entries(getActiveWords()).forEach(([cat,catWords])=>{
+    Object.entries(catWords).forEach(([w,e])=>{if(!filter||w.toLowerCase().includes(filter))rows.push({cat,w,e});});
   });
   rows.sort((a,b)=>a.w.localeCompare(b.w));
+  if(!rows.length){body.innerHTML='<tr><td colspan="4" style="padding:12px;color:#999;text-align:center">No words found</td></tr>';return;}
   rows.forEach(({cat,w,e})=>{
     const tr=document.createElement('tr');
     tr.innerHTML='<td>'+e+'</td><td>'+w+'</td><td style="color:#999;font-size:12px">'+cat+'</td><td><button class="del-word-btn" title="Remove">🗑️</button></td>';
     tr.querySelector('.del-word-btn').onclick=()=>removeWord(cat,w);
     body.appendChild(tr);
   });
-  if(!rows.length){body.innerHTML='<tr><td colspan="4" style="padding:12px;color:#999;text-align:center">No words found</td></tr>';}
 }
 
 function removeWord(cat,word){
   if(!confirm('Remove "'+word+'" from '+cat+'?'))return;
-  // If it's a custom word, delete from customWords
   if(data.customWords?.[cat]?.[word]!==undefined){
     delete data.customWords[cat][word];
     if(!Object.keys(data.customWords[cat]).length)delete data.customWords[cat];
-  } else {
-    // Mark as removed from pack
+  }else{
     if(!data.removedWords)data.removedWords={};
     data.removedWords[cat+'::'+word]=true;
   }
-  save();
-  buildWordTable();
-  buildCats();buildGrid();refreshPD();
+  save();buildWordTable();buildCats();buildGrid();refreshPD();
+  saveHaloCloud();
 }
 
-/* ── Portal settings ── */
 function updatePackLabel(){
   $('currentPackLabel').textContent=capitalize(data.wordPack||'essential');
-  document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
-    c.classList.toggle('sel',c.dataset.pack===data.wordPack);
-  });
+  document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>c.classList.toggle('sel',c.dataset.pack===data.wordPack));
 }
 function selectPortalPack(el){
   document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>c.classList.remove('sel'));
-  el.classList.add('sel');
-  data.wordPack=el.dataset.pack;
-  save();
-  updatePackLabel();
-  buildCats();buildGrid();refreshPD();
+  el.classList.add('sel');data.wordPack=el.dataset.pack;save();updatePackLabel();buildCats();buildGrid();refreshPD();
 }
 function changePassword(){
   const p1=$('newPw1').value,p2=$('newPw2').value;
   if(!p1||p1!==p2){$('changePwErr').classList.add('show');return;}
   $('changePwErr').classList.remove('show');
-  data.portalHash=simpleHash(p1);save();
-  $('newPw1').value='';$('newPw2').value='';
-  alert('Password updated!');
+  data.portalHash=simpleHash(p1);save();$('newPw1').value='';$('newPw2').value='';alert('Password updated!');
 }
 
-/* ── Portal pack grid clicks ── */
-document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
-  c.onclick=()=>selectPortalPack(c);
-});
+$('addWordBtn').onclick=()=>openPortalPrompt();
 
 /* ═══ INIT ═══ */
 function init(){
@@ -1126,31 +1085,9 @@ function init(){
   if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
   if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
   if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
-  refreshPS();buildCats();buildGrid();refreshPD();
-
-  // Wire clear & backspace buttons (they are in the .cat-actions div)
-  document.querySelectorAll('.cat-actions .btn').forEach(b=>{
-    if(b.id==='addWordBtn'||b.id==='addCatBtn')return;
-    if(b.textContent.trim()==='Clear'){b.onclick=()=>{msgBox.value='';predictions.innerHTML='';setStatus('Ready');};}
-  });
-  // The backspace btn is in speak-row
-  $('bsBtn').onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr.pop();msgBox.value=arr.join(' ');updatePredictions();};
-
-  // Show wizard on first visit
-  if(!data.setup){
-    $('wizardOverlay').classList.add('open');
-  }
+  refreshPS();buildCats();buildGrid();
+  if(!data.setup)$('wizardOverlay').classList.add('open');
 }
-
-// Hide add word / add cat from main UI (portal handles it)
-$('addWordBtn').onclick=()=>openPortalPrompt();
-$('addCatBtn').style.display='none'; // Categories come from pack
-
-// Clear button
-document.querySelectorAll('.cat-actions .btn.ghost').forEach(b=>{
-  if(b.textContent.trim()==='Clear')b.onclick=()=>{msgBox.value='';predictions.innerHTML='';setStatus('Ready');};
-});
-
 init();
 </script>
 </body>
