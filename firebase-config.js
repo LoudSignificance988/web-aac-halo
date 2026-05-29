@@ -1,72 +1,60 @@
 // Firebase Configuration for Halo AAC
-// Using Firebase Compat SDK for broad compatibility
-// Replace these values with your Firebase project credentials from:
-// https://console.firebase.google.com → Project Settings → Your apps
+// Using Firebase Modular SDK v9+
+// Your actual Firebase project credentials
 
-const FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getStorage, ref, uploadString, getBytes, getDownloadURL, listAll } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB79mC7YqkZeNvdowRFkbBfu53PV2Qo7pk",
+  authDomain: "halo-add.firebaseapp.com",
+  projectId: "halo-add",
+  storageBucket: "halo-add.firebasestorage.app",
+  messagingSenderId: "144851220987",
+  appId: "1:144851220987:web:bd57adec75e2daafea335e",
+  measurementId: "G-4SYHLHX63S"
 };
 
-// Firebase state
-let firebaseApp = null;
-let firebaseStorage = null;
-let firebaseAuth = null;
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const storage = getStorage(app);
+
 let firebaseSyncEnabled = false;
 
-function initFirebase() {
-  if (typeof firebase === 'undefined') {
-    console.warn('Firebase SDK not loaded yet');
-    return false;
-  }
-  
-  try {
-    firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
-    firebaseStorage = firebase.storage();
-    firebaseAuth = firebase.auth();
+// Monitor authentication state
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log('✓ Firebase user authenticated:', user.email);
+    haloGoogleUser = {
+      name: user.displayName || user.email,
+      email: user.email,
+      picture: user.photoURL || ''
+    };
+    firebaseSyncEnabled = true;
+    updateGoogleUI();
     
-    // Monitor authentication state
-    firebaseAuth.onAuthStateChanged(user => {
-      if (user) {
-        console.log('Firebase user authenticated:', user.email);
-        haloGoogleUser = {
-          name: user.displayName || user.email,
-          email: user.email,
-          picture: user.photoURL || ''
-        };
-        firebaseSyncEnabled = true;
-        // Auto-load user data from Firebase on login
-        loadUserDataFromFirebase().then(firebaseData => {
-          if (firebaseData) {
-            mergeFirebaseData(firebaseData);
-            buildCats();
-            buildGrid();
-            refreshPD();
-            refreshPS();
-          }
-        });
-      } else {
-        console.log('Firebase user logged out');
-        firebaseSyncEnabled = false;
+    // Auto-load user data from Firebase on login
+    loadUserDataFromFirebase().then(firebaseData => {
+      if (firebaseData) {
+        mergeFirebaseData(firebaseData);
+        buildCats();
+        buildGrid();
+        refreshPD();
+        refreshPS();
+        setStatus('✓ Synced from cloud');
       }
     });
-    
-    console.log('Firebase initialized successfully');
-    return true;
-  } catch (e) {
-    console.error('Firebase initialization error:', e);
-    return false;
+  } else {
+    console.log('ℹ Firebase user logged out');
+    firebaseSyncEnabled = false;
   }
-}
+});
 
 // Save complete user data to Firebase Storage
 async function saveUserDataToFirebase() {
-  if (!firebaseStorage || !haloGoogleUser || !firebaseSyncEnabled) {
-    console.warn('Firebase not ready or user not authenticated');
+  if (!storage || !haloGoogleUser || !firebaseSyncEnabled) {
     return false;
   }
 
@@ -87,13 +75,12 @@ async function saveUserDataToFirebase() {
       setup: data.setup || false
     };
     
-    const fileRef = firebaseStorage.ref(`users/${haloGoogleUser.email}/data.json`);
-    await fileRef.putString(JSON.stringify(userDataBlob), 'raw', { 
-      contentType: 'application/json',
-      cacheControl: 'public, max-age=3600'
+    const fileRef = ref(storage, `users/${haloGoogleUser.email}/data.json`);
+    await uploadString(fileRef, JSON.stringify(userDataBlob, null, 2), 'raw', { 
+      contentType: 'application/json'
     });
     
-    console.log('✓ User data synced to Firebase');
+    console.log('✓ Synced to Firebase');
     return true;
   } catch (e) {
     console.error('Firebase sync error:', e);
@@ -103,25 +90,24 @@ async function saveUserDataToFirebase() {
 
 // Load user data from Firebase Storage
 async function loadUserDataFromFirebase() {
-  if (!firebaseStorage || !haloGoogleUser) {
-    console.warn('Firebase not ready or user not authenticated');
+  if (!storage || !haloGoogleUser) {
     return null;
   }
 
   try {
-    const fileRef = firebaseStorage.ref(`users/${haloGoogleUser.email}/data.json`);
+    const fileRef = ref(storage, `users/${haloGoogleUser.email}/data.json`);
     
     // Get download URL and fetch the file
-    const url = await fileRef.getDownloadURL();
+    const url = await getDownloadURL(fileRef);
     const res = await fetch(url);
     const content = await res.text();
     const userDataBlob = JSON.parse(content);
     
-    console.log('✓ User data loaded from Firebase');
+    console.log('✓ Loaded from Firebase');
     return userDataBlob;
   } catch (e) {
     if (e.code === 'storage/object-not-found' || e.message.includes('404')) {
-      console.log('ℹ No existing data in Firebase for this user (first login)');
+      console.log('ℹ First login - no previous data in cloud');
     } else {
       console.error('Firebase load error:', e);
     }
@@ -165,12 +151,3 @@ async function autoSaveToFirebase() {
     await saveUserDataToFirebase();
   }
 }
-
-// Initialize Firebase when page loads
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    if (initFirebase()) {
-      console.log('Firebase SDK is ready for sync');
-    }
-  }, 1000);
-});
