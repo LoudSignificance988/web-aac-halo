@@ -5,156 +5,75 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Halo AAC</title>
 <link rel="icon" href="data:,"/>
-<!-- ResponsiveVoice -->
 <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
-<!-- Puter.js -->
 <script src="https://js.puter.com/v2/"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <style>
-:root{
-  --accent:#2c7be5;
-  --accent-dark:#0b63d6;
-  --accent-light:#deeaff;
-  --bg:#f0f2f5;
-  --card:#fff;
-  --muted:#777;
-  --radius:12px;
-}
+:root{--accent:#2c7be5;--accent-dark:#0b63d6;--accent-light:#deeaff;--bg:#f0f2f5;--card:#fff;--muted:#777;--radius:12px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
-
-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 14px;height:54px;
-  background:linear-gradient(90deg,var(--accent-dark),var(--accent));
-  color:#fff;position:sticky;top:0;z-index:200;
-  box-shadow:0 2px 10px rgba(0,0,0,0.2);
-}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:54px;background:linear-gradient(90deg,var(--accent-dark),var(--accent));color:#fff;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,0.2)}
 header h1{font-size:17px;font-weight:700;white-space:nowrap}
 .subtitle{font-size:10px;opacity:.8;margin-top:1px}
 .hdr-right{display:flex;gap:6px;align-items:center}
-.icon-btn{
-  background:rgba(255,255,255,.18);border:0;color:#fff;
-  font-size:13px;font-weight:700;cursor:pointer;padding:7px 10px;border-radius:8px;
-  line-height:1;transition:background .12s;white-space:nowrap
-}
+.icon-btn{background:rgba(255,255,255,.18);border:0;color:#fff;font-size:13px;font-weight:700;cursor:pointer;padding:7px 10px;border-radius:8px;line-height:1;transition:background .12s;white-space:nowrap}
 .icon-btn:active{background:rgba(255,255,255,.35)}
-
 main{padding:10px;max-width:1100px;margin:0 auto}
-
 select,button,input,textarea{font-family:inherit}
-.btn{
-  background:var(--accent);border:0;color:#fff;
-  padding:9px 13px;border-radius:9px;cursor:pointer;
-  font-size:13px;font-weight:600;transition:opacity .12s,transform .08s;white-space:nowrap
-}
+.btn{background:var(--accent);border:0;color:#fff;padding:9px 13px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;transition:opacity .12s,transform .08s;white-space:nowrap}
 .btn:active{transform:scale(.95);opacity:.85}
 .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
 .btn.ghost:active{background:var(--accent-light)}
 .btn.danger{background:#dc2626;border-color:#dc2626}
-
-/* PROFILE ROW */
 .profile-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
 .profile-row select{padding:7px 9px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;flex:1;min-width:80px;max-width:180px}
-
-/* CATEGORY BAR */
-#catWrap{
-  display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;
-  scrollbar-width:none;padding:8px 10px;
-  background:var(--card);border-radius:var(--radius);
-  box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:9px;
-}
+#catWrap{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:8px 10px;background:var(--card);border-radius:var(--radius);box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:9px}
 #catWrap::-webkit-scrollbar{display:none}
-.cat-btn{
-  background:transparent;border:1.5px solid #ddd;
-  padding:6px 13px;border-radius:999px;cursor:pointer;
-  font-size:13px;font-weight:500;white-space:nowrap;flex-shrink:0;transition:all .12s
-}
+.cat-btn{background:transparent;border:1.5px solid #ddd;padding:6px 13px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;flex-shrink:0;transition:all .12s}
 .cat-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-
 .cat-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px;align-items:center}
 .cat-actions .btn{padding:8px 11px;font-size:12px}
-
-/* PANEL */
 .panel{display:flex;gap:10px;align-items:flex-start}
 .left{flex:0 0 290px;display:flex;flex-direction:column;gap:10px}
 .right{flex:1;min-width:0}
-
 .card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
-
-#message{
-  width:100%;padding:10px;border-radius:8px;border:1.5px solid #ddd;
-  font-size:16px;min-height:58px;resize:none;background:#f8f9fb;line-height:1.5;display:block
-}
+#message{width:100%;padding:10px;border-radius:8px;border:1.5px solid #ddd;font-size:16px;min-height:58px;resize:none;background:#f8f9fb;line-height:1.5;display:block}
 #message:focus{outline:none;border-color:var(--accent)}
-
 #predictions{list-style:none;max-height:100px;overflow-y:auto;border-radius:6px;margin-top:5px}
 #predictions li{padding:7px 10px;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px}
 #predictions li:hover{background:var(--accent-light)}
-
-/* TTS STATUS */
-#ttsBar{
-  display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;
-  background:var(--accent-light);border:1px solid #b8d0f7;
-  margin:8px 0;font-size:12px;color:var(--accent);font-weight:600
-}
+#ttsBar{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--accent-light);border:1px solid #b8d0f7;margin:8px 0;font-size:12px;color:var(--accent);font-weight:600}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
 .dot.on{animation:pulse .7s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.55)}}
-
 .speak-row{display:flex;gap:6px;margin-bottom:8px}
 .speak-row .btn{flex:1;font-size:14px;padding:11px 8px}
-
 .rate-wrap{display:flex;align-items:center;gap:8px}
 .rate-wrap label{font-size:12px;color:var(--muted);flex-shrink:0}
 .rate-wrap input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
 .rate-wrap .val{font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;width:28px;text-align:right}
-
-/* WORD GRID */
 #wordGrid{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
-.word-btn{
-  background:#fff;border:1.5px solid #eee;padding:6px 4px;
-  border-radius:10px;cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;height:80px;transition:all .1s;touch-action:manipulation
-}
+.word-btn{background:#fff;border:1.5px solid #eee;padding:6px 4px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px;transition:all .1s;touch-action:manipulation}
 .word-btn:active{transform:scale(.93);border-color:var(--accent);background:var(--accent-light)}
 .word-emoji{font-size:22px;display:block;margin-bottom:4px;line-height:1}
 .word-text{font-size:12px;font-weight:600;text-align:center;line-height:1.2;word-break:break-word}
-
-#wordSearch{
-  padding:7px 12px;border-radius:999px;border:1.5px solid #ddd;
-  font-size:13px;width:100%;display:block;margin-bottom:9px
-}
+#wordSearch{padding:7px 12px;border-radius:999px;border:1.5px solid #ddd;font-size:13px;width:100%;display:block;margin-bottom:9px}
 #wordSearch:focus{outline:none;border-color:var(--accent)}
-
-/* SETTINGS SHEET */
-#settingsOverlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
-  z-index:300;align-items:flex-end;justify-content:center
-}
+#settingsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end;justify-content:center}
 #settingsOverlay.open{display:flex}
-#settingsPanel{
-  background:#fff;border-radius:20px 20px 0 0;
-  width:100%;max-width:540px;max-height:92vh;overflow-y:auto;
-  padding:16px 18px 36px;
-}
+#settingsPanel{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding:16px 18px 36px}
 .drag-handle{width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 14px}
 .s-title{font-size:16px;font-weight:700;margin-bottom:14px}
 .s-section{margin-bottom:22px}
 .s-label{font-size:11px;font-weight:700;color:#aaa;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
-
-/* ENGINE GRID */
 .engine-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.engine-card{
-  border:2px solid #e8e8e8;border-radius:10px;padding:10px 8px;
-  cursor:pointer;text-align:center;transition:all .13s;background:#fafafa
-}
+.engine-card{border:2px solid #e8e8e8;border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .13s;background:#fafafa}
 .engine-card.active{border-color:var(--accent);background:var(--accent-light)}
 .engine-card:active{transform:scale(.96)}
 .e-icon{font-size:20px;display:block;margin-bottom:3px}
 .e-name{font-size:13px;font-weight:700}
 .e-sub{font-size:11px;color:#999;margin-top:2px}
-
-/* SYSTEM VOICE LIST */
 #sysPickerWrap{display:none;margin-top:10px}
 #sysPickerWrap.show{display:block}
 #sysVoiceList{max-height:180px;overflow-y:auto;border:1px solid #eee;border-radius:8px;margin-top:6px}
@@ -164,8 +83,6 @@ select,button,input,textarea{font-family:inherit}
 .v-name{flex:1;font-size:13px;font-weight:500}
 .v-lang{font-size:11px;color:#ccc}
 .v-play{border:0;background:var(--accent);color:#fff;padding:3px 8px;border-radius:5px;font-size:11px;cursor:pointer;flex-shrink:0}
-
-/* COLOR SWATCHES */
 .swatch-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 .swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:transform .12s;flex-shrink:0}
 .swatch:active{transform:scale(1.2)}
@@ -173,103 +90,60 @@ select,button,input,textarea{font-family:inherit}
 .color-row{display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap}
 .color-row label{display:flex;align-items:center;gap:6px;font-size:12px;color:#666}
 .color-row input[type=color]{width:36px;height:36px;border-radius:8px;border:1.5px solid #ddd;padding:2px;cursor:pointer;background:none}
-
 #importArea{width:100%;padding:9px;border-radius:8px;border:1.5px solid #ddd;font-size:12px;min-height:65px;resize:none;margin-top:8px}
 .two-btn{display:flex;gap:8px}
 .two-btn .btn{flex:1;padding:10px}
-
 #profileData{font-size:13px;color:#555;line-height:1.8;margin-top:6px}
-
-/* ═══ MODAL OVERLAY (wizard + portal) ═══ */
-.modal-overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
-  z-index:500;align-items:center;justify-content:center;padding:16px;
-}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex}
-.modal-box{
-  background:#fff;border-radius:20px;width:100%;max-width:440px;
-  padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.18);
-  max-height:90vh;overflow-y:auto;
-}
+.modal-box{background:#fff;border-radius:20px;width:100%;max-width:440px;padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto}
 .modal-box h2{font-size:20px;font-weight:800;margin-bottom:6px;color:#111}
 .modal-box p{font-size:14px;color:#555;line-height:1.6;margin-bottom:16px}
 .modal-step{display:none}
 .modal-step.active{display:block}
 .big-choice{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
-.choice-btn{
-  border:2px solid #e8e8e8;border-radius:12px;padding:14px 16px;
-  cursor:pointer;text-align:left;background:#fafafa;transition:all .13s;
-  font-size:15px;font-weight:600;
-}
+.choice-btn{border:2px solid #e8e8e8;border-radius:12px;padding:14px 16px;cursor:pointer;text-align:left;background:#fafafa;transition:all .13s;font-size:15px;font-weight:600}
 .choice-btn:hover{border-color:var(--accent);background:var(--accent-light)}
 .choice-btn .sub{font-size:12px;font-weight:400;color:#888;margin-top:2px;display:block}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
-.pack-card{
-  border:2px solid #e8e8e8;border-radius:12px;padding:14px 12px;
-  cursor:pointer;text-align:center;background:#fafafa;transition:all .13s;
-}
+.pack-card{border:2px solid #e8e8e8;border-radius:12px;padding:14px 12px;cursor:pointer;text-align:center;background:#fafafa;transition:all .13s}
 .pack-card:hover,.pack-card.sel{border-color:var(--accent);background:var(--accent-light)}
 .pack-card .pack-icon{font-size:28px;display:block;margin-bottom:6px}
 .pack-card .pack-name{font-size:14px;font-weight:700}
 .pack-card .pack-desc{font-size:11px;color:#888;margin-top:3px}
-.modal-input{
-  width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #ddd;
-  font-size:14px;margin-bottom:12px;
-}
+.modal-input{width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #ddd;font-size:14px;margin-bottom:12px}
 .modal-input:focus{outline:none;border-color:var(--accent)}
 .modal-btn-row{display:flex;gap:8px;margin-top:4px}
 .modal-btn-row .btn{flex:1;padding:12px}
 .modal-err{color:#dc2626;font-size:13px;margin-bottom:10px;display:none}
 .modal-err.show{display:block}
-
-/* PORTAL */
 #portalOverlay .modal-box{max-width:520px}
 .portal-tabs{display:flex;gap:0;border-bottom:2px solid #f0f0f0;margin-bottom:16px}
-.ptab{
-  padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;
-  border-bottom:2px solid transparent;margin-bottom:-2px;color:#888;
-}
+.ptab{padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:#888}
 .ptab.active{border-color:var(--accent);color:var(--accent)}
 .ptab-panel{display:none}
 .ptab-panel.active{display:block}
-
-/* PORTAL WORD TABLE */
 .word-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
 .word-table th{text-align:left;padding:7px 8px;background:#f8f9fb;font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px}
 .word-table td{padding:7px 8px;border-top:1px solid #f0f0f0;vertical-align:middle}
 .del-word-btn{border:0;background:none;cursor:pointer;color:#dc2626;font-size:16px;padding:2px 6px;border-radius:5px}
 .del-word-btn:hover{background:#fef2f2}
-
-/* DICT LOOKUP */
 .dict-lookup{display:flex;gap:8px;margin-bottom:12px}
 .dict-lookup input{flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid #ddd;font-size:13px}
 .dict-lookup input:focus{outline:none;border-color:var(--accent)}
-.dict-result{
-  border:1.5px solid #e8e8e8;border-radius:10px;padding:12px;
-  margin-bottom:12px;display:none;background:#fafafa;
-}
+.dict-result{border:1.5px solid #e8e8e8;border-radius:10px;padding:12px;margin-bottom:12px;display:none;background:#fafafa}
 .dict-result.show{display:block}
 .dict-word{font-size:16px;font-weight:800;margin-bottom:4px}
 .dict-def{font-size:12px;color:#666;line-height:1.5;margin-bottom:10px}
 .emoji-pick-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-.emoji-opt{
-  font-size:22px;padding:4px 6px;border-radius:8px;cursor:pointer;
-  border:2px solid transparent;transition:all .1s;
-}
+.emoji-opt{font-size:22px;padding:4px 6px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .1s}
 .emoji-opt.sel{border-color:var(--accent);background:var(--accent-light)}
 .cat-pick{padding:8px 10px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;width:100%;margin-bottom:10px}
 .cat-pick:focus{outline:none;border-color:var(--accent)}
-
-/* PORTAL LOCK BADGE */
-.portal-badge{
-  display:flex;align-items:center;gap:5px;padding:5px 10px;
-  border-radius:999px;background:rgba(255,255,255,.18);
-  font-size:12px;font-weight:700;cursor:pointer;color:#fff;
-  border:0;white-space:nowrap;
-}
-.portal-badge:active{background:rgba(255,255,255,.35)}
-
-/* MOBILE */
+#syncBadge{display:none;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:11px;font-weight:600;cursor:default;padding:4px 8px;border-radius:6px;white-space:nowrap;align-items:center;gap:4px}
+#syncBadge.show{display:inline-flex}
+#syncBadge.syncing{animation:syncPulse .8s infinite}
+@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.4}}
 @media(max-width:640px){
   header h1{font-size:15px}
   .subtitle{display:none}
@@ -301,9 +175,10 @@ select,button,input,textarea{font-family:inherit}
     <div class="subtitle">Thanks Kaelynn Partlow · Ivan's build</div>
   </div>
   <div class="hdr-right">
+    <span id="syncBadge">☁️</span>
     <button class="icon-btn" id="authBtn" onclick="toggleAuth()">👤 Sign in with Google</button>
     <button class="icon-btn" id="enginePill" onclick="openSettings()">🎙️ Google</button>
-    <button class="portal-badge" id="portalBtn" onclick="openPortalPrompt()">🔒 Parent Portal</button>
+    <button class="icon-btn" onclick="openPortalPrompt()">🔒 Parent Portal</button>
     <button class="icon-btn" onclick="openSettings()">⚙️</button>
   </div>
 </header>
@@ -355,12 +230,10 @@ select,button,input,textarea{font-family:inherit}
   </div>
 </main>
 
-<!-- SETTINGS SHEET -->
 <div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div id="settingsPanel">
     <div class="drag-handle"></div>
     <div class="s-title">⚙️ Settings</div>
-
     <div class="s-section">
       <div class="s-label">🎙️ Voice Engine</div>
       <div class="engine-grid" id="engineGrid">
@@ -390,7 +263,6 @@ select,button,input,textarea{font-family:inherit}
         <div id="sysVoiceList"></div>
       </div>
     </div>
-
     <div class="s-section">
       <div class="s-label">🎨 Theme Color</div>
       <div class="swatch-row" id="swatchRow">
@@ -408,7 +280,11 @@ select,button,input,textarea{font-family:inherit}
         <label><input type="color" id="accentPicker" value="#2c7be5"> Custom accent</label>
       </div>
     </div>
-
+    <div class="s-section">
+      <div class="s-label">☁️ Cloud Sync</div>
+      <p style="font-size:13px;color:#666;margin-bottom:8px" id="cloudStatus">Sign in to sync across devices.</p>
+      <button class="btn" id="cloudAuthBtn" onclick="toggleAuth()" style="width:100%">👤 Sign in with Google</button>
+    </div>
     <div class="s-section">
       <div class="s-label">💾 Data</div>
       <div class="two-btn">
@@ -417,16 +293,12 @@ select,button,input,textarea{font-family:inherit}
       </div>
       <textarea id="importArea" placeholder="Paste export code here…"></textarea>
     </div>
-
     <button class="btn" style="width:100%;padding:13px;font-size:15px" onclick="closeSettings()">Done ✓</button>
   </div>
 </div>
 
-<!-- ══════════════ SETUP WIZARD ══════════════ -->
 <div class="modal-overlay" id="wizardOverlay">
   <div class="modal-box">
-
-    <!-- Step 1: Who's here? -->
     <div class="modal-step active" id="wStep1">
       <h2>👋 Welcome to Halo AAC</h2>
       <p>Before we start, who is setting up this device?</p>
@@ -441,8 +313,6 @@ select,button,input,textarea{font-family:inherit}
         </button>
       </div>
     </div>
-
-    <!-- Step 2a: Pick word pack (shown for both, but with different next step) -->
     <div class="modal-step" id="wStep2">
       <h2>📦 Choose a Word Pack</h2>
       <p>Pick the word set that best fits everyday needs. Parents can add more words later.</p>
@@ -473,8 +343,6 @@ select,button,input,textarea{font-family:inherit}
         <button class="btn" onclick="wStep2Next()">Continue →</button>
       </div>
     </div>
-
-    <!-- Step 3: Set password (parent path only) -->
     <div class="modal-step" id="wStep3">
       <h2>🔒 Create a Parent Password</h2>
       <p>This password protects the Parent Portal where you can add or remove words.</p>
@@ -486,8 +354,6 @@ select,button,input,textarea{font-family:inherit}
         <button class="btn" onclick="wFinish()">Finish Setup ✓</button>
       </div>
     </div>
-
-    <!-- Step 3b: Child path — just finish -->
     <div class="modal-step" id="wStep3b">
       <h2>🎉 All set!</h2>
       <p>You're ready to go. Tap any word card to start building sentences.</p>
@@ -496,11 +362,9 @@ select,button,input,textarea{font-family:inherit}
         <button class="btn" onclick="wFinishChild()">Let's go! 🚀</button>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ══════════════ PORTAL PASSWORD PROMPT ══════════════ -->
 <div class="modal-overlay" id="portalPromptOverlay">
   <div class="modal-box">
     <h2>🔒 Parent Portal</h2>
@@ -514,21 +378,17 @@ select,button,input,textarea{font-family:inherit}
   </div>
 </div>
 
-<!-- ══════════════ PARENTAL PORTAL ══════════════ -->
 <div class="modal-overlay" id="portalOverlay">
   <div class="modal-box">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
       <h2 style="margin:0">👨‍👩‍👧 Parent Portal</h2>
       <button class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="closePortal()">Close ✕</button>
     </div>
-
     <div class="portal-tabs">
       <div class="ptab active" onclick="switchTab(this,'tabAdd')">➕ Add Word</div>
       <div class="ptab" onclick="switchTab(this,'tabManage')">📋 Manage Words</div>
       <div class="ptab" onclick="switchTab(this,'tabSettings')">⚙️ Portal Settings</div>
     </div>
-
-    <!-- TAB: Add Word -->
     <div class="ptab-panel active" id="tabAdd">
       <p style="font-size:13px;color:#666;margin-bottom:12px">Look up a word using the dictionary, choose an emoji, then add it.</p>
       <div class="dict-lookup">
@@ -546,10 +406,8 @@ select,button,input,textarea{font-family:inherit}
       </div>
       <div id="addWordMsg" style="font-size:13px;color:var(--accent);margin-top:8px;display:none"></div>
     </div>
-
-    <!-- TAB: Manage Words -->
     <div class="ptab-panel" id="tabManage">
-      <p style="font-size:13px;color:#666;margin-bottom:10px">All words currently visible to the user. Delete to remove.</p>
+      <p style="font-size:13px;color:#666;margin-bottom:10px">All words currently visible. Delete to remove.</p>
       <input type="search" id="portalSearch" placeholder="🔍 Filter words…" style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;margin-bottom:10px" oninput="buildWordTable()"/>
       <div style="max-height:320px;overflow-y:auto">
         <table class="word-table" id="wordTable">
@@ -558,8 +416,6 @@ select,button,input,textarea{font-family:inherit}
         </table>
       </div>
     </div>
-
-    <!-- TAB: Portal Settings -->
     <div class="ptab-panel" id="tabSettings">
       <p style="font-size:13px;color:#666;margin-bottom:12px">Change your parent password or reset the word pack.</p>
       <div class="s-label">Change Password</div>
@@ -576,17 +432,10 @@ select,button,input,textarea{font-family:inherit}
         <div class="pack-card" data-pack="all" onclick="selectPortalPack(this)"><span class="pack-icon">🌐</span><div class="pack-name">Everything</div></div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-
 <script>
-/* ═══ WORD PACKS ═══ */
 const PACKS={
   essential:{
     "Basics":{"Yes":"✅","No":"❌","Please":"🙏","Thank you":"🙏","Help":"🆘","Stop":"✋","More":"➕","Want":"✋","Sorry":"😔","Okay":"👌"},
@@ -629,7 +478,6 @@ const PACKS={
   }
 };
 
-/* Emoji suggestion map for dictionary lookup */
 const EMOJI_MAP={
   happy:"😊",sad:"😢",angry:"😡",love:"❤️",food:"🍽️",water:"💧",home:"🏠",
   school:"🏫",play:"🎮",sleep:"😴",run:"🏃",walk:"🚶",eat:"🍽️",drink:"🥤",
@@ -644,53 +492,55 @@ const EMOJI_MAP={
   small:"🔽",fast:"⚡",slow:"🐢"
 };
 
-/* ═══ STORAGE ═══ */
 const KEY='halo_aac_v2';
+const CLOUD_KEY='halo_data';
 const DEFAULTS={
   profiles:{},currentProfile:null,engine:'google',sysVoice:null,
   accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5',
   setup:false,portalHash:null,wordPack:'essential',
   customWords:{},removedWords:{}
 };
-window.data=(()=>{try{const r=localStorage.getItem(KEY);return r?{...DEFAULTS,...JSON.parse(r)}:null;}catch(e){return null;}})()
-  ||{...DEFAULTS};
-let data=window.data;
+
+let data=(()=>{
+  try{
+    const r=localStorage.getItem(KEY);
+    return r ? {...DEFAULTS,...JSON.parse(r)} : {...DEFAULTS};
+  }catch(e){
+    return {...DEFAULTS};
+  }
+})();
+
+let _fireUser=null;
+let _cloudTimer=null;
 
 function save(){
-  localStorage.setItem(KEY,JSON.stringify(window.data));
-  syncToFirestore();
+  localStorage.setItem(KEY,JSON.stringify(data));
+  syncToCloud();
 }
-window.save=save;
-function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
-function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
 
-/* ═══ FIREBASE ═══ */
+// ── Firebase Auth (Google) + Puter KV Cloud Sync ──
+
 const FIREBASE_CONFIG={
   apiKey: "AIzaSyB79mC7YqkZeNvdowRFkbBfu53PV2Qo7pk",
   authDomain: "halo-add.firebaseapp.com",
   projectId: "halo-add",
   storageBucket: "halo-add.firebasestorage.app",
   messagingSenderId: "144851220987",
-  appId: "1:144851220987:web:bd57adec75e2daafea335e",
-  measurementId: "G-4SYHLHX63S"
+  appId: "1:144851220987:web:bd57adec75e2daafea335e"
 };
-let _fireApp=null,_fireAuth=null,_fireDb=null;
-let _fireUser=null;
-let _syncTimer=null;
+
+let _fireAuth=null;
 let _fireInitDone=false;
-let _syncing=false;
-let _listenerUnsub=null;
 
 function ensureFirebase(){
   if(_fireInitDone)return true;
   if(typeof firebase==='undefined'){
-    console.warn('Firebase SDK not loaded (adblocker? offline?)');
+    console.warn('Firebase SDK not loaded');
     return false;
   }
   try{
-    _fireApp=firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.initializeApp(FIREBASE_CONFIG);
     _fireAuth=firebase.auth();
-    _fireDb=firebase.firestore();
     _fireAuth.onAuthStateChanged(handleAuth);
     _fireInitDone=true;
     return true;
@@ -702,130 +552,138 @@ function ensureFirebase(){
 
 async function handleAuth(user){
   _fireUser=user;
-  window.haloUser=user?.displayName||user?.email||null;
   updateAuthUI();
   if(user){
-    startSyncListener();
-  }else{
-    if(_listenerUnsub){_listenerUnsub();_listenerUnsub=null;}
+    await loadFromCloud();
   }
 }
 
-function updateAuthUI(){
-  const btn=$('authBtn');
-  if(!btn)return;
+async function toggleAuth(){
   if(_fireUser){
-    const name=_fireUser.displayName||_fireUser.email||'User';
-    btn.innerHTML='👤 '+name+' Sign&nbsp;out';
+    await _fireAuth.signOut();
+    _fireUser=null;
+    updateAuthUI();
+    hideSyncBadge();
   }else{
-    btn.innerHTML='👤 Sign&nbsp;in&nbsp;with&nbsp;Google';
+    await loginGoogle();
   }
-}
-
-function toggleAuth(){
-  if(_fireUser){_fireAuth.signOut();_fireUser=null;updateAuthUI();}
-  else login();
 }
 window.toggleAuth=toggleAuth;
 
-async function login(){
+async function loginGoogle(){
   if(!ensureFirebase()){
-    alert('Sign-in unavailable — Firebase SDK did not load.\nCheck adblocker or network.');
+    alert('Google sign-in not available. Check adblocker or network.');
     return;
   }
   try{
     const prov=new firebase.auth.GoogleAuthProvider();
     await _fireAuth.signInWithPopup(prov);
   }catch(e){
-    console.warn('Login:',e);
-    if(e.code==='auth/popup-blocked')alert('Popup blocked! Allow popups for this site, then try again.');
-    else if(e.code!=='auth/popup-closed-by-user')alert('Sign-in failed: '+e.message);
+    if(e.code==='auth/popup-blocked')alert('Popup blocked! Allow popups then try again.');
+    else if(e.code!=='auth/popup-closed-by-user')console.warn('Sign-in:',e);
   }
 }
-window.login=login;
 
-const SYNC_KEYS=['profiles','currentProfile','customWords','removedWords','wordPack','engine','sysVoice','accent','accentDark','bg','setup'];
-
-function applyRemoteChanges(){
-  if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
-  if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
-  if(data.accent){
-    $('accentPicker').value=data.accent;
-    $('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));
+function updateAuthUI(){
+  const btn=$('authBtn');
+  if(!btn)return;
+  const cBtn=$('cloudAuthBtn');
+  const cStatus=$('cloudStatus');
+  if(_fireUser){
+    const name=_fireUser.displayName||_fireUser.email||'User';
+    btn.innerHTML='👤 '+name+' Sign&nbsp;out';
+    if(cBtn)cBtn.innerHTML='Sign out';
+    if(cStatus)cStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>. Data syncs via Puter.';
+    showSyncBadge('☁️ Synced',false);
+  }else{
+    btn.innerHTML='👤 Sign&nbsp;in&nbsp;with&nbsp;Google';
+    if(cBtn)cBtn.innerHTML='👤 Sign&nbsp;in&nbsp;with&nbsp;Google';
+    if(cStatus)cStatus.innerHTML='Sign in with Google to sync across devices.';
+    hideSyncBadge();
   }
-  if(data.engine)enginePill.textContent='🎙️ '+(ENG_NAMES[data.engine]||data.engine);
-  buildCats();buildGrid(wordSearch.value);refreshPD();refreshPS();
 }
 
-function startSyncListener(){
-  if(!_fireUser||!_fireDb)return;
-  if(_listenerUnsub)_listenerUnsub();
-  // One-time load to merge local + remote
-  _fireDb.collection('users').doc(_fireUser.uid).get().then(snap=>{
-    if(snap.exists){
-      const remote=snap.data();
-      SYNC_KEYS.forEach(k=>{
-        if(remote[k]!==undefined){
-          if(remote[k]&&typeof remote[k]==='object'&&!Array.isArray(remote[k])){
-            data[k]={...(data[k]||{}),...remote[k]};
-          }else{
-            data[k]=remote[k];
-          }
-        }
-      });
-      window.data=data;
-    }
-    save();
-    buildCats();buildGrid();refreshPD();refreshPS();
-  }).catch(e=>console.warn('Firestore load:',e));
-  // Real-time listener for cross-device changes
-  _listenerUnsub=_fireDb.collection('users').doc(_fireUser.uid)
-    .onSnapshot(snap=>{
-      if(!snap.exists||_syncing)return;
-      const remote=snap.data();
-      let changed=false;
-      SYNC_KEYS.forEach(k=>{
-        if(remote[k]!==undefined){
-          const r=remote[k];
-          if(r&&typeof r==='object'&&!Array.isArray(r)){
-            if(JSON.stringify(data[k])!==JSON.stringify(r)){
-              data[k]={...(data[k]||{}),...r};
-              changed=true;
+function showSyncBadge(text,syncing){
+  const b=$('syncBadge');
+  if(!b)return;
+  b.textContent=text;
+  b.classList.add('show');
+  b.classList.toggle('syncing',syncing);
+}
+
+function hideSyncBadge(){
+  const b=$('syncBadge');
+  if(!b)return;
+  b.classList.remove('show');
+}
+
+async function loadFromCloud(){
+  if(typeof puter==='undefined')return;
+  try{
+    showSyncBadge('☁️ Loading…',true);
+    const raw=await puter.kv.get(CLOUD_KEY);
+    if(raw){
+      const cloudData=typeof raw==='string'?JSON.parse(raw):raw;
+      if(cloudData&&cloudData.profiles){
+        Object.keys(cloudData).forEach(k=>{
+          if(cloudData[k]!==undefined&&cloudData[k]!==null){
+            if(typeof cloudData[k]==='object'&&!Array.isArray(cloudData[k])){
+              data[k]={...(data[k]||{}),...cloudData[k]};
+            }else{
+              data[k]=cloudData[k];
             }
-          }else if(data[k]!==r){
-            data[k]=r;
-            changed=true;
           }
-        }
-      });
-      if(changed){
-        window.data=data;
-        localStorage.setItem(KEY,JSON.stringify(window.data));
-        applyRemoteChanges();
+        });
+        localStorage.setItem(KEY,JSON.stringify(data));
       }
-    },err=>console.warn('Sync listener:',err));
+    }
+    showSyncBadge('☁️ Synced',false);
+    buildCats();buildGrid(wordSearch.value);refreshPS();refreshPD();
+  }catch(e){
+    console.warn('Cloud load:',e);
+    showSyncBadge('☁️ Sync error',false);
+  }
 }
 
-function syncToFirestore(){
-  if(!_fireUser||!_fireDb)return;
-  if(_syncTimer)clearTimeout(_syncTimer);
-  _syncTimer=setTimeout(async()=>{
-    _syncing=true;
+function syncToCloud(){
+  if(!_fireUser||typeof puter==='undefined')return;
+  if(_cloudTimer)clearTimeout(_cloudTimer);
+  _cloudTimer=setTimeout(async()=>{
+    showSyncBadge('☁️ Saving…',true);
     try{
-      const payload={};
-      SYNC_KEYS.forEach(k=>{payload[k]=data[k];});
-      await _fireDb.collection('users').doc(_fireUser.uid).set(payload,{merge:true});
-    }catch(e){if(e)console.warn('Firestore sync:',e.message||e);};
-    setTimeout(()=>{_syncing=false;},600);
-  },400);
+      const payload={
+        profiles:data.profiles,
+        currentProfile:data.currentProfile,
+        customWords:data.customWords,
+        removedWords:data.removedWords,
+        wordPack:data.wordPack,
+        engine:data.engine,
+        sysVoice:data.sysVoice,
+        accent:data.accent,
+        accentDark:data.accentDark,
+        bg:data.bg,
+        setup:data.setup,
+        portalHash:data.portalHash
+      };
+      await puter.kv.set(CLOUD_KEY,payload);
+      showSyncBadge('☁️ Synced',false);
+      setTimeout(()=>hideSyncBadge(),2000);
+    }catch(e){
+      console.warn('Cloud sync:',e);
+      showSyncBadge('☁️ Sync error',false);
+    }
+  },500);
 }
 
 ensureFirebase();
 
-/* Simple hash (not crypto, just a deterrent) */
+// ── Rest of app ──
+
+function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
+function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
+
 function simpleHash(s){let h=0;for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;return h.toString(36);}
 
-/* ═══ STATE ═══ */
 let curCat=null;
 let curEngine=data.engine||'google';
 let curSysVoice=data.sysVoice||null;
@@ -834,7 +692,6 @@ let wizardPack='essential';
 let selectedEmoji='❓';
 let dictWord='';
 
-/* ═══ DOM ═══ */
 const $=id=>document.getElementById(id);
 const msgBox=$('message'),predictions=$('predictions'),speakBtn=$('speakBtn'),
       stopBtn=$('stopBtn'),bsBtn=$('bsBtn'),
@@ -844,7 +701,6 @@ const msgBox=$('message'),predictions=$('predictions'),speakBtn=$('speakBtn'),
       catWrap=$('catWrap'),profileSel=$('profileSelect'),profileData=$('profileData'),
       enginePill=$('enginePill');
 
-/* ═══ TTS ═══ */
 const ENG_NAMES={google:'Google',system:'System',responsive:'ResponsiveVoice',puter:'Puter AI'};
 
 function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
@@ -858,6 +714,7 @@ function chunkText(t,max=180){
   if(cur.trim())out.push(cur.trim());
   return out;
 }
+
 let activeAudio=null;
 async function playChunks(chunks,urlFn,label){
   const rate=parseFloat(rateSlider.value);
@@ -874,9 +731,11 @@ async function playChunks(chunks,urlFn,label){
   }
   if(activeAudio)setStatus('Done ✓');
 }
+
 async function speakGoogle(text){
   await playChunks(chunkText(text),c=>'https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=en&client=gtx&q='+encodeURIComponent(c),'Google');
 }
+
 function speakSystem(text){
   speechSynthesis.cancel();
   const voices=speechSynthesis.getVoices();
@@ -891,6 +750,7 @@ function speakSystem(text){
   u.onerror=e=>setStatus('Error: '+e.error);
   speechSynthesis.speak(u);
 }
+
 function speakResponsive(text){
   if(typeof responsiveVoice==='undefined'){setStatus('ResponsiveVoice not loaded');return;}
   setStatus('▶ ResponsiveVoice',true);
@@ -900,6 +760,7 @@ function speakResponsive(text){
     onerror:()=>setStatus('RV Error')
   });
 }
+
 async function speakPuter(text){
   if(typeof puter==='undefined'){setStatus('Puter not loaded');speakGoogle(text);return;}
   try{
@@ -923,16 +784,17 @@ speakBtn.onclick=async()=>{
     else if(curEngine==='puter') await speakPuter(text);
   }catch(e){setStatus('Trying system…');speakSystem(text);}
 };
+
 stopBtn.onclick=()=>{
   if(activeAudio){activeAudio.pause();activeAudio=null;}
   speechSynthesis.cancel();
   if(typeof responsiveVoice!=='undefined')responsiveVoice.cancel();
   setStatus('Stopped');
 };
+
 rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';};
-/* ═══ BUILD WORD SET ═══ */
+
 function getActiveWords(){
-  /* Merge base pack + customWords, minus removedWords */
   const pack=PACKS[data.wordPack||'essential'];
   const merged={};
   Object.entries(pack).forEach(([cat,words])=>{
@@ -942,7 +804,6 @@ function getActiveWords(){
       if(!data.removedWords||!data.removedWords[key]) merged[cat][w]=e;
     });
   });
-  /* Add custom words */
   if(data.customWords){
     Object.entries(data.customWords).forEach(([cat,words])=>{
       if(!merged[cat])merged[cat]={};
@@ -967,6 +828,7 @@ function buildGrid(filter=''){
       wordGrid.appendChild(btn);
     });
 }
+
 wordSearch.addEventListener('input',e=>buildGrid(e.target.value));
 
 function buildCats(){
@@ -984,13 +846,13 @@ function buildCats(){
   });
 }
 
-/* ═══ PREDICTIONS ═══ */
 function allWords(){
   const s=new Set();
   const words=getActiveWords();
   Object.values(words).forEach(c=>Object.keys(c).forEach(w=>s.add(w)));
   return[...s];
 }
+
 function updatePredictions(){
   predictions.innerHTML='';
   const last=msgBox.value.trim().split(/\s+/).pop().toLowerCase();
@@ -1002,33 +864,29 @@ function updatePredictions(){
       predictions.appendChild(li);
     });
 }
+
 msgBox.addEventListener('input',updatePredictions);
-document.getElementById('catWrap').addEventListener('click',()=>{}); // catWrap clear handled in buildCats
 
-/* clear + backspace */
-document.addEventListener('DOMContentLoaded',()=>{});
-const clearBtnEl=document.querySelector('.cat-actions .btn.ghost');
-// wire up clear and backspace via IDs set below
-
-/* ═══ PROFILES ═══ */
 function refreshPS(){
   profileSel.innerHTML='';
   Object.keys(data.profiles).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;profileSel.appendChild(o);});
   if(data.currentProfile)profileSel.value=data.currentProfile;
   refreshPD();
 }
+
 function refreshPD(){
   if(!data.currentProfile){profileData.textContent='No profile';return;}
   const words=getActiveWords();
   const total=Object.values(words).reduce((a,c)=>a+Object.keys(c).length,0);
   profileData.innerHTML='<b>'+data.currentProfile+'</b><br>Pack: '+capitalize(data.wordPack||'essential')+'<br>Visible words: '+total+'<br>Custom added: '+Object.values(data.customWords||{}).reduce((a,c)=>a+Object.keys(c).length,0);
 }
+
 function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+
 profileSel.onchange=e=>{data.currentProfile=e.target.value;save();buildCats();buildGrid();refreshPD();};
 $('addProfileBtn').onclick=()=>{const n=prompt('Profile name:');if(!n)return;data.profiles[n]={};data.currentProfile=n;save();refreshPS();buildCats();buildGrid();};
 $('delProfileBtn').onclick=()=>{if(!data.currentProfile||!confirm('Delete "'+data.currentProfile+'"?'))return;delete data.profiles[data.currentProfile];data.currentProfile=Object.keys(data.profiles)[0]||null;save();refreshPS();buildCats();buildGrid();};
 
-/* ═══ SETTINGS ═══ */
 function openSettings(){$('settingsOverlay').classList.add('open');buildSysVoiceList();}
 function closeSettings(){$('settingsOverlay').classList.remove('open');}
 
@@ -1076,15 +934,13 @@ function applyAccent(a,d){
   document.documentElement.style.setProperty('--accent-light',a+'28');
 }
 
-/* ═══ EXPORT/IMPORT ═══ */
 function doExportFn(){const code=b64e(data);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(code).then(()=>alert('Copied!'));else prompt('Copy:',code);$('importArea').value=code;}
-function doImportFn(){const txt=$('importArea').value.trim();if(!txt)return alert('Paste code first');try{const p=b64d(txt);if(p?.profiles){Object.assign(data,p);save();window.init?.();alert('Imported!');}else alert('Invalid code');}catch(e){alert('Import failed');}}
+function doImportFn(){const txt=$('importArea').value.trim();if(!txt)return alert('Paste code first');try{const p=b64d(txt);if(p?.profiles){Object.assign(data,p);save();buildCats();buildGrid();refreshPS();refreshPD();alert('Imported!');}else alert('Invalid code');}catch(e){alert('Import failed');}}
 $('doExport').onclick=doExportFn;
 $('doImport').onclick=doImportFn;
 $('exportBtn').onclick=doExportFn;
 $('importTopBtn').onclick=()=>{const c=prompt('Paste code:');if(!c)return;$('importArea').value=c;doImportFn();};
 
-/* ═══ WIZARD ═══ */
 function showStep(id){document.querySelectorAll('.modal-step').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
 function wGoStep2(role){wizardRole=role;showStep('wStep2');}
 function wBack(){
@@ -1120,10 +976,8 @@ function wFinishChild(){
   buildCats();buildGrid();refreshPD();
 }
 
-/* ═══ PORTAL ═══ */
 function openPortalPrompt(){
   if(!data.portalHash){
-    // No password set — open portal directly (or prompt to set one)
     if(confirm('No parent password is set yet. Open portal anyway?')){openPortal();} return;
   }
   $('portalPwErr').classList.remove('show');
@@ -1140,11 +994,9 @@ function checkPortalPw(){
 $('portalPwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPortalPw();});
 
 function openPortal(){
-  // Reset to first tab
   switchTab(document.querySelector('.ptab.active'),'tabAdd');
   document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',i===0));
   document.querySelectorAll('.ptab-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
-  // Populate cat picker
   populateCatPicker();
   buildWordTable();
   updatePackLabel();
@@ -1161,7 +1013,6 @@ function switchTab(el,panelId){
   if(panelId==='tabSettings')updatePackLabel();
 }
 
-/* ── Dictionary lookup ── */
 async function lookupWord(){
   const w=$('dictInput').value.trim().toLowerCase();
   if(!w)return;
@@ -1179,13 +1030,10 @@ async function lookupWord(){
 function showDictResult(word,def){
   $('dictWordTitle').textContent=word;
   $('dictDef').textContent=def;
-  // Suggest emojis
   const row=$('emojiPickRow');row.innerHTML='';
   const lower=word.toLowerCase();
-  // Find matching emojis
   const suggestions=[];
   Object.entries(EMOJI_MAP).forEach(([k,e])=>{if(lower.includes(k)||k.includes(lower))suggestions.push(e);});
-  // Add a few generic ones
   ['❓','🔤','💬','⭐','🌟','🎯'].forEach(e=>{if(!suggestions.includes(e))suggestions.push(e);});
   const shown=[...new Set(suggestions)].slice(0,10);
   selectedEmoji=shown[0]||'❓';
@@ -1212,7 +1060,6 @@ function confirmAddWord(){
   if(!data.customWords)data.customWords={};
   if(!data.customWords[cat])data.customWords[cat]={};
   data.customWords[cat][word]=selectedEmoji;
-  // Remove from removedWords if it was there
   if(data.removedWords){delete data.removedWords[cat+'::'+word];}
   save();
   buildCats();buildGrid();refreshPD();
@@ -1225,7 +1072,6 @@ function confirmAddWord(){
   dictWord='';
 }
 
-/* ── Word table (manage tab) ── */
 function buildWordTable(){
   const body=$('wordTableBody');body.innerHTML='';
   const filter=$('portalSearch').value.toLowerCase();
@@ -1248,12 +1094,10 @@ function buildWordTable(){
 
 function removeWord(cat,word){
   if(!confirm('Remove "'+word+'" from '+cat+'?'))return;
-  // If it's a custom word, delete from customWords
   if(data.customWords?.[cat]?.[word]!==undefined){
     delete data.customWords[cat][word];
     if(!Object.keys(data.customWords[cat]).length)delete data.customWords[cat];
   } else {
-    // Mark as removed from pack
     if(!data.removedWords)data.removedWords={};
     data.removedWords[cat+'::'+word]=true;
   }
@@ -1262,7 +1106,6 @@ function removeWord(cat,word){
   buildCats();buildGrid();refreshPD();
 }
 
-/* ── Portal settings ── */
 function updatePackLabel(){
   $('currentPackLabel').textContent=capitalize(data.wordPack||'essential');
   document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
@@ -1286,42 +1129,24 @@ function changePassword(){
   alert('Password updated!');
 }
 
-/* ── Portal pack grid clicks ── */
 document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
   c.onclick=()=>selectPortalPack(c);
 });
 
-/* ═══ INIT ═══ */
 function init(){
   if(!Object.keys(data.profiles).length){data.profiles={Default:{}};data.currentProfile='Default';save();}
   if(!data.currentProfile)data.currentProfile=Object.keys(data.profiles)[0];
   if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
   if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
   if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
+  enginePill.textContent='🎙️ '+(ENG_NAMES[data.engine]||data.engine);
   refreshPS();buildCats();buildGrid();refreshPD();
-
-  // Wire clear & backspace buttons (they are in the .cat-actions div)
-  document.querySelectorAll('.cat-actions .btn').forEach(b=>{
-    if(b.id==='addWordBtn'||b.id==='addCatBtn')return;
-    if(b.textContent.trim()==='Clear'){b.onclick=()=>{msgBox.value='';predictions.innerHTML='';setStatus('Ready');};}
-  });
-  // The backspace btn is in speak-row
   $('bsBtn').onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr.pop();msgBox.value=arr.join(' ');updatePredictions();};
-
-  // Show wizard on first visit
   if(!data.setup){
     $('wizardOverlay').classList.add('open');
   }
 }
 
-// Wire add-word button (if element exists)
-const addWordBtn=$('addWordBtn');
-if(addWordBtn)addWordBtn.onclick=()=>openPortalPrompt();
-const addCatBtn=$('addCatBtn');
-if(addCatBtn)addCatBtn.style.display='none';
-
-window.init=init;
-window.refreshPD=refreshPD;
 init();
 </script>
 </body>
