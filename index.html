@@ -9,6 +9,7 @@
 <script src="https://js.puter.com/v2/"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 :root{--accent:#2c7be5;--accent-dark:#0b63d6;--accent-light:#deeaff;--bg:#f0f2f5;--card:#fff;--muted:#777;--radius:12px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
@@ -493,7 +494,7 @@ const EMOJI_MAP={
 };
 
 const KEY='halo_aac_v2';
-const CLOUD_KEY='halo_data';
+const SYNC_KEYS=['profiles','currentProfile','customWords','removedWords','wordPack','engine','sysVoice','accent','accentDark','bg','setup','portalHash'];
 const DEFAULTS={
   profiles:{},currentProfile:null,engine:'google',sysVoice:null,
   accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5',
@@ -518,7 +519,7 @@ function save(){
   syncToCloud();
 }
 
-// ── Firebase Auth (Google) + Puter KV Cloud Sync ──
+// ── Firebase Auth (Google) + Firestore Cloud Sync ──
 
 const FIREBASE_CONFIG={
   apiKey: "AIzaSyB79mC7YqkZeNvdowRFkbBfu53PV2Qo7pk",
@@ -530,7 +531,9 @@ const FIREBASE_CONFIG={
 };
 
 let _fireAuth=null;
+let _fireDb=null;
 let _fireInitDone=false;
+let _syncing=false;
 
 function ensureFirebase(){
   if(_fireInitDone)return true;
@@ -541,6 +544,7 @@ function ensureFirebase(){
   try{
     firebase.initializeApp(FIREBASE_CONFIG);
     _fireAuth=firebase.auth();
+    _fireDb=firebase.firestore();
     _fireAuth.onAuthStateChanged(handleAuth);
     _fireInitDone=true;
     return true;
@@ -593,7 +597,7 @@ function updateAuthUI(){
     const name=_fireUser.displayName||_fireUser.email||'User';
     btn.innerHTML='👤 '+name+' Sign&nbsp;out';
     if(cBtn)cBtn.innerHTML='Sign out';
-    if(cStatus)cStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>. Data syncs via Puter.';
+    if(cStatus)cStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>. Data syncs to cloud.';
     showSyncBadge('☁️ Synced',false);
   }else{
     btn.innerHTML='👤 Sign&nbsp;in&nbsp;with&nbsp;Google';
@@ -618,24 +622,23 @@ function hideSyncBadge(){
 }
 
 async function loadFromCloud(){
-  if(typeof puter==='undefined')return;
+  if(!_fireUser||!_fireDb)return;
   try{
     showSyncBadge('☁️ Loading…',true);
-    const raw=await puter.kv.get(CLOUD_KEY);
-    if(raw){
-      const cloudData=typeof raw==='string'?JSON.parse(raw):raw;
-      if(cloudData&&cloudData.profiles){
-        Object.keys(cloudData).forEach(k=>{
-          if(cloudData[k]!==undefined&&cloudData[k]!==null){
-            if(typeof cloudData[k]==='object'&&!Array.isArray(cloudData[k])){
-              data[k]={...(data[k]||{}),...cloudData[k]};
-            }else{
-              data[k]=cloudData[k];
-            }
+    const snap=await _fireDb.collection('users').doc(_fireUser.uid).get();
+    if(snap.exists){
+      const remote=snap.data();
+      const keys=['profiles','currentProfile','customWords','removedWords','wordPack','engine','sysVoice','accent','accentDark','bg','setup','portalHash'];
+      keys.forEach(k=>{
+        if(remote[k]!==undefined&&remote[k]!==null){
+          if(remote[k]&&typeof remote[k]==='object'&&!Array.isArray(remote[k])){
+            data[k]={...(data[k]||{}),...remote[k]};
+          }else{
+            data[k]=remote[k];
           }
-        });
-        localStorage.setItem(KEY,JSON.stringify(data));
-      }
+        }
+      });
+      localStorage.setItem(KEY,JSON.stringify(data));
     }
     showSyncBadge('☁️ Synced',false);
     buildCats();buildGrid(wordSearch.value);refreshPS();refreshPD();
@@ -646,31 +649,21 @@ async function loadFromCloud(){
 }
 
 function syncToCloud(){
-  if(!_fireUser||typeof puter==='undefined')return;
+  if(!_fireUser||!_fireDb)return;
   if(_cloudTimer)clearTimeout(_cloudTimer);
   _cloudTimer=setTimeout(async()=>{
+    _syncing=true;
     showSyncBadge('☁️ Saving…',true);
     try{
-      const payload={
-        profiles:data.profiles,
-        currentProfile:data.currentProfile,
-        customWords:data.customWords,
-        removedWords:data.removedWords,
-        wordPack:data.wordPack,
-        engine:data.engine,
-        sysVoice:data.sysVoice,
-        accent:data.accent,
-        accentDark:data.accentDark,
-        bg:data.bg,
-        setup:data.setup,
-        portalHash:data.portalHash
-      };
-      await puter.kv.set(CLOUD_KEY,payload);
+      const payload={};
+      SYNC_KEYS.forEach(k=>{payload[k]=data[k];});
+      await _fireDb.collection('users').doc(_fireUser.uid).set(payload,{merge:true});
       showSyncBadge('☁️ Synced',false);
-      setTimeout(()=>hideSyncBadge(),2000);
+      setTimeout(()=>{hideSyncBadge();_syncing=false;},2000);
     }catch(e){
-      console.warn('Cloud sync:',e);
+      console.warn('Firestore sync:',e);
       showSyncBadge('☁️ Sync error',false);
+      _syncing=false;
     }
   },500);
 }
