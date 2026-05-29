@@ -301,7 +301,7 @@ select,button,input,textarea{font-family:inherit}
     <div class="subtitle">Thanks Kaelynn Partlow · Ivan's build</div>
   </div>
   <div class="hdr-right">
-    <button class="icon-btn" id="authBtn" onclick="toggleAuth()">👤 Sign in</button>
+    <button class="icon-btn" id="authBtn" onclick="toggleAuth()">👤 Sign in with Google</button>
     <button class="icon-btn" id="enginePill" onclick="openSettings()">🎙️ Google</button>
     <button class="portal-badge" id="portalBtn" onclick="openPortalPrompt()">🔒 Parent Portal</button>
     <button class="icon-btn" onclick="openSettings()">⚙️</button>
@@ -718,7 +718,7 @@ function updateAuthUI(){
     const name=_fireUser.displayName||_fireUser.email||'User';
     btn.innerHTML='👤 '+name+' Sign&nbsp;out';
   }else{
-    btn.innerHTML='👤 Sign&nbsp;in';
+    btn.innerHTML='👤 Sign&nbsp;in&nbsp;with&nbsp;Google';
   }
 }
 
@@ -744,7 +744,7 @@ async function login(){
 }
 window.login=login;
 
-const SYNC_KEYS=['profiles','customWords','removedWords','wordPack','engine','accent','accentDark','bg'];
+const SYNC_KEYS=['profiles','currentProfile','customWords','removedWords','wordPack','engine','sysVoice','accent','accentDark','bg','setup'];
 
 function applyRemoteChanges(){
   if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
@@ -776,7 +776,7 @@ function startSyncListener(){
       window.data=data;
     }
     save();
-    buildCats();buildGrid();refreshPD();
+    buildCats();buildGrid();refreshPD();refreshPS();
   }).catch(e=>console.warn('Firestore load:',e));
   // Real-time listener for cross-device changes
   _listenerUnsub=_fireDb.collection('users').doc(_fireUser.uid)
@@ -815,7 +815,7 @@ function syncToFirestore(){
       const payload={};
       SYNC_KEYS.forEach(k=>{payload[k]=data[k];});
       await _fireDb.collection('users').doc(_fireUser.uid).set(payload,{merge:true});
-    }catch(e){/* silent */};
+    }catch(e){if(e)console.warn('Firestore sync:',e.message||e);};
     setTimeout(()=>{_syncing=false;},600);
   },400);
 }
