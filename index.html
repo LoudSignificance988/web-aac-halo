@@ -678,6 +678,8 @@ let _fireApp=null,_fireAuth=null,_fireDb=null;
 let _fireUser=null;
 let _syncTimer=null;
 let _fireInitDone=false;
+let _syncing=false;
+let _listenerUnsub=null;
 
 function ensureFirebase(){
   if(_fireInitDone)return true;
@@ -703,9 +705,9 @@ async function handleAuth(user){
   window.haloUser=user?.displayName||user?.email||null;
   updateAuthUI();
   if(user){
-    await loadFirestore();
-    save();
-    buildCats();buildGrid();refreshPD();
+    startSyncListener();
+  }else{
+    if(_listenerUnsub){_listenerUnsub();_listenerUnsub=null;}
   }
 }
 
@@ -744,10 +746,22 @@ window.login=login;
 
 const SYNC_KEYS=['profiles','customWords','removedWords','wordPack','engine','accent','accentDark','bg'];
 
-async function loadFirestore(){
+function applyRemoteChanges(){
+  if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
+  if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
+  if(data.accent){
+    $('accentPicker').value=data.accent;
+    $('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));
+  }
+  if(data.engine)enginePill.textContent='🎙️ '+(ENG_NAMES[data.engine]||data.engine);
+  buildCats();buildGrid(wordSearch.value);refreshPD();refreshPS();
+}
+
+function startSyncListener(){
   if(!_fireUser||!_fireDb)return;
-  try{
-    const snap=await _fireDb.collection('users').doc(_fireUser.uid).get();
+  if(_listenerUnsub)_listenerUnsub();
+  // One-time load to merge local + remote
+  _fireDb.collection('users').doc(_fireUser.uid).get().then(snap=>{
     if(snap.exists){
       const remote=snap.data();
       SYNC_KEYS.forEach(k=>{
@@ -761,18 +775,48 @@ async function loadFirestore(){
       });
       window.data=data;
     }
-  }catch(e){console.warn('Firestore load:',e);}
+    save();
+    buildCats();buildGrid();refreshPD();
+  }).catch(e=>console.warn('Firestore load:',e));
+  // Real-time listener for cross-device changes
+  _listenerUnsub=_fireDb.collection('users').doc(_fireUser.uid)
+    .onSnapshot(snap=>{
+      if(!snap.exists||_syncing)return;
+      const remote=snap.data();
+      let changed=false;
+      SYNC_KEYS.forEach(k=>{
+        if(remote[k]!==undefined){
+          const r=remote[k];
+          if(r&&typeof r==='object'&&!Array.isArray(r)){
+            if(JSON.stringify(data[k])!==JSON.stringify(r)){
+              data[k]={...(data[k]||{}),...r};
+              changed=true;
+            }
+          }else if(data[k]!==r){
+            data[k]=r;
+            changed=true;
+          }
+        }
+      });
+      if(changed){
+        window.data=data;
+        localStorage.setItem(KEY,JSON.stringify(window.data));
+        applyRemoteChanges();
+      }
+    },err=>console.warn('Sync listener:',err));
 }
 
 function syncToFirestore(){
   if(!_fireUser||!_fireDb)return;
   if(_syncTimer)clearTimeout(_syncTimer);
   _syncTimer=setTimeout(async()=>{
+    _syncing=true;
     try{
       const payload={};
       SYNC_KEYS.forEach(k=>{payload[k]=data[k];});
       await _fireDb.collection('users').doc(_fireUser.uid).set(payload,{merge:true});
     }catch(e){/* silent */};
+    setTimeout(()=>{_syncing=false;},600);
   },400);
 }
 
