@@ -12,7 +12,7 @@
 :root{--accent:#2c7be5;--accent-dark:#0b63d6;--accent-light:#deeaff;--bg:#f0f2f5;--card:#fff;--muted:#777;--radius:12px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
-header{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:54px;background:linear-gradient(90deg,var(--accent-dark),var(--accent));color:#fff;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,0.2)}
+header{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:54px;background:linear-gradient(90deg,var(--accent-dark),var(--accent));color:#fff;position:sticky;top:0;}
 header h1{font-size:17px;font-weight:700;white-space:nowrap}
 .subtitle{font-size:10px;opacity:.8;margin-top:1px}
 .hdr-right{display:flex;gap:6px;align-items:center}
@@ -27,7 +27,7 @@ select,button,input,textarea{font-family:inherit}
 .btn.danger{background:#dc2626;border-color:#dc2626}
 .profile-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
 .profile-row select{padding:7px 9px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;flex:1;min-width:80px;max-width:180px}
-#catWrap{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:8px 10px;background:var(--card);border-radius:var(--radius);box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:9px}
+#catWrap{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:8px 10px;background:var(--card);border-radius:var(--radius);box-shadow:0 1px 6px rgba(0,0,0,.06)}
 #catWrap::-webkit-scrollbar{display:none}
 .cat-btn{background:transparent;border:1.5px solid #ddd;padding:6px 13px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;flex-shrink:0;transition:all .12s}
 .cat-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
@@ -42,7 +42,7 @@ select,button,input,textarea{font-family:inherit}
 #predictions{list-style:none;max-height:100px;overflow-y:auto;border-radius:6px;margin-top:5px}
 #predictions li{padding:7px 10px;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px}
 #predictions li:hover{background:var(--accent-light)}
-#ttsBar{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--accent-light);border:1px solid #b8d0f7;margin:8px 0;font-size:12px;color:var(--accent);font-weight:600}
+#ttsBar{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--accent-light);border:1px solid #b8d0f7;margin:8px 0;font-size:12px;color:var(--accent)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
 .dot.on{animation:pulse .7s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.55)}}
@@ -53,7 +53,7 @@ select,button,input,textarea{font-family:inherit}
 .rate-wrap input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
 .rate-wrap .val{font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;width:28px;text-align:right}
 #wordGrid{display:grid;gap:7px;grid-template-columns:repeat(auto-fill,minmax(100px,1fr))}
-.word-btn{background:#fff;border:1.5px solid #eee;padding:6px 4px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px;transition:all .1s;touch-action:manipulation}
+.word-btn{background:#fff;border:1.5px solid #eee;padding:6px 4px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px;transition:all .12s}
 .word-btn:active{transform:scale(.93);border-color:var(--accent);background:var(--accent-light)}
 .word-emoji{font-size:22px;display:block;margin-bottom:4px;line-height:1}
 .word-text{font-size:12px;font-weight:600;text-align:center;line-height:1.2;word-break:break-word}
@@ -103,7 +103,6 @@ select,button,input,textarea{font-family:inherit}
 .big-choice{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
 .choice-btn{border:2px solid #e8e8e8;border-radius:12px;padding:14px 16px;cursor:pointer;text-align:left;background:#fafafa;transition:all .13s;font-size:15px;font-weight:600}
 .choice-btn:hover{border-color:var(--accent);background:var(--accent-light)}
-.choice-btn .sub{font-size:12px;font-weight:400;color:#888;margin-top:2px;display:block}
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
 .pack-card{border:2px solid #e8e8e8;border-radius:12px;padding:14px 12px;cursor:pointer;text-align:center;background:#fafafa;transition:all .13s}
 .pack-card:hover,.pack-card.sel{border-color:var(--accent);background:var(--accent-light)}
@@ -139,7 +138,7 @@ select,button,input,textarea{font-family:inherit}
 .emoji-opt.sel{border-color:var(--accent);background:var(--accent-light)}
 .cat-pick{padding:8px 10px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;width:100%;margin-bottom:10px}
 .cat-pick:focus{outline:none;border-color:var(--accent)}
-#syncBadge{display:none;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:11px;font-weight:600;cursor:default;padding:4px 8px;border-radius:6px;white-space:nowrap;align-items:center;gap:4px}
+#syncBadge{display:none;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:11px;font-weight:600;cursor:default;padding:4px 8px;border-radius:6px;white-space:nowrap;align-items:center}
 #syncBadge.show{display:inline-flex}
 #syncBadge.syncing{animation:syncPulse .8s infinite}
 @keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -177,6 +176,8 @@ select,button,input,textarea{font-family:inherit}
     <span id="syncBadge">☁️</span>
     <button class="icon-btn" id="authBtn" onclick="toggleAuth()">👤 Sign in with Google</button>
     <button class="icon-btn" onclick="openPortalPrompt()">🔒 Parent Portal</button>
+    <!-- TTS quick link: opens the TTS demo page in a new tab -->
+    <a class="icon-btn" href="features/ai/github-app/tts.html" target="_blank" rel="noopener">🔊 TTS</a>
     <button class="icon-btn" onclick="openSettings()">⚙️</button>
   </div>
 </header>
@@ -391,7 +392,7 @@ select,button,input,textarea{font-family:inherit}
     </div>
     <div class="ptab-panel" id="tabManage">
       <p style="font-size:13px;color:#666;margin-bottom:10px">All words currently visible. Delete to remove.</p>
-      <input type="search" id="portalSearch" placeholder="🔍 Filter words…" style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;margin-bottom:10px" oninput="buildWordTable()"/>
+      <input type="search" id="portalSearch" placeholder="🔍 Filter words…" style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;margin-bottom:10px" />
       <div style="max-height:320px;overflow-y:auto">
         <table class="word-table" id="wordTable">
           <thead><tr><th>Emoji</th><th>Word</th><th>Category</th><th></th></tr></thead>
