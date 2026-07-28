@@ -22,3 +22,4 @@ Tap a category, then a word card to add it to the message bar. Hit **Speak** to 
 ## Credits
 
 Thanks Kaelynn Partlow
+and @Real Autism Mom
