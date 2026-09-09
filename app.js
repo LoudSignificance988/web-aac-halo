@@ -191,20 +191,27 @@ function loadFromCloud(){
       if(snap.exists){
         const remote=snap.data();
         const keys=['profiles','currentProfile','customWords','removedWords','wordPack','sysVoice','accent','accentDark','bg','setup','portalHash'];
+        // FIX: previously object-valued keys (profiles, accent, etc.) were shallow-merged
+        // with local state ({...local,...remote}), which meant a key deleted on the
+        // server (e.g. a removed profile) never actually disappeared locally — the
+        // remote snapshot no longer had that key, so the merge just kept the local
+        // leftover. The cloud copy is the source of truth once signed in, so replace
+        // each field outright instead of merging it.
         keys.forEach(k=>{
           if(remote[k]!==undefined&&remote[k]!==null){
-            if(['customWords','removedWords'].includes(k)){
-              data[k]=remote[k];
-            }else if(remote[k]&&typeof remote[k]==='object'&&!Array.isArray(remote[k])){
-              data[k]={...(data[k]||{}),...remote[k]};
-            }else{
-              data[k]=remote[k];
-            }
+            data[k]=remote[k];
           }
         });
         localStorage.setItem(KEY,JSON.stringify(data));
       }
       showSyncBadge('☁️ Synced',false);
+      // FIX: re-apply theme/background after a cloud update. Previously only the
+      // word grid/profile UI refreshed here, so an accent/background change made on
+      // another device updated `data` in memory but never touched the DOM until the
+      // next full reload — looking like it hadn't synced at all.
+      if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
+      if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
+      if(data.accent)$('accentPicker').value=data.accent;
       buildCats();buildGrid(document.getElementById('wordSearch').value);refreshPS();refreshPD();
     }catch(e){
       console.warn('Cloud load:',e);
@@ -222,7 +229,13 @@ function syncToCloud(){
     try{
       const payload={};
       SYNC_KEYS.forEach(k=>{payload[k]=data[k];});
-      await _fireDb.collection('users').doc(_fireUser.uid).set(payload,{merge:true});
+      // FIX: {merge:true} recursively merges nested map fields in Firestore, so a
+      // deleted key (e.g. `delete data.profiles[x]`) never actually vanished from
+      // the stored document — merge only adds/overwrites keys present in the new
+      // payload, it never removes ones missing from it. `payload` already contains
+      // the full current value of every SYNC_KEYS field, so a plain overwrite (no
+      // merge) is correct and is what actually lets deletions sync.
+      await _fireDb.collection('users').doc(_fireUser.uid).set(payload);
       showSyncBadge('☁️ Synced',false);
       setTimeout(()=>{hideSyncBadge();_syncing=false;},2000);
     }catch(e){
