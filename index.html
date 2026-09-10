@@ -182,6 +182,7 @@ select,button,input,textarea{font-family:inherit}
 <main>
   <div class="profile-row">
     <select id="profileSelect"></select>
+    <button class="btn ghost" id="addProfileBtn">+ Profile</button>
   </div>
 
   <div id="catWrap"></div>
@@ -204,7 +205,7 @@ select,button,input,textarea{font-family:inherit}
         </div>
       </div>
       <div class="card">
-        <strong>Profile</strong>
+        <strong>Profile Info</strong>
         <div id="profileData">No profile</div>
       </div>
     </div>
@@ -417,10 +418,10 @@ select,button,input,textarea{font-family:inherit}
       </div>
 
       <div class="s-label" style="margin-top:16px">Profiles</div>
-      <p style="font-size:13px;color:#666;margin-bottom:8px">Create a new profile or permanently delete an existing one.</p>
+      <p style="font-size:13px;color:#666;margin-bottom:8px">Manage profiles directly from the portal.</p>
       <div class="profile-row" style="margin-bottom:16px">
         <select id="portalProfileSelect" style="flex:1"></select>
-        <button class="btn ghost" id="addProfileBtn">+ Profile</button>
+        <button class="btn ghost" id="portalAddProfileBtn">+ Profile</button>
         <button class="btn ghost" style="color:#dc2626;border-color:#dc2626" onclick="portalDelProfile()">🗑️ Delete</button>
       </div>
 
@@ -498,9 +499,6 @@ const EMOJI_MAP={
 };
 
 const KEY='halo_aac_v2';
-
-// ── FIXED: We no longer sync 'customWords', 'removedWords', 'wordPack' at the global root 
-// because they are now safely nested directly inside 'profiles'. Syncing 'profiles' syncs everything.
 const SYNC_KEYS=['profiles','currentProfile','sysVoice','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice'];
 const DEFAULTS={
   profiles:{},currentProfile:null,sysVoice:null,
@@ -527,8 +525,7 @@ function save(){
 }
 
 // ── Migration Helper ──
-// Safely moves any leftover global words into the current profile 
-// so older accounts don't lose their data after this update.
+// Safely moves any leftover global words from older versions into the current profile 
 function migrateData() {
   if (!data.currentProfile) data.currentProfile = Object.keys(data.profiles)[0] || 'Default';
   if (!data.profiles[data.currentProfile]) data.profiles[data.currentProfile] = {};
@@ -892,7 +889,7 @@ stopBtn.onclick=()=>{
 
 rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';};
 
-// ── FIXED: We now load words strictly from the current profile ──
+// ── FIXED: Reads words ONLY from the current profile ──
 function getActiveWords(){
   const p = data.profiles[data.currentProfile] || {};
   const packName = p.wordPack || 'essential';
@@ -1119,7 +1116,7 @@ function doImportFn(){
     const p=b64d(txt);
     if(p?.profiles){
       Object.assign(data,p);
-      migrateData(); // Force migration in case they import legacy global JSON
+      migrateData(); 
       save();buildCats();buildGrid();refreshPS();refreshPD();alert('Imported!');
     }else alert('Invalid code');
   }catch(e){alert('Import failed');}
@@ -1127,13 +1124,16 @@ function doImportFn(){
 if($('doExport')) $('doExport').onclick=doExportFn;
 if($('doImport')) $('doImport').onclick=doImportFn;
 
-// ── FIXED: When creating a profile, explicitly add containers ──
-if($('addProfileBtn')) $('addProfileBtn').onclick=()=>{
+// ── FIXED: Profile Creation ensures strict containers ──
+function createProfile() {
   const n=prompt('Profile name:');if(!n)return;
   data.profiles[n] = { wordPack: 'essential', customWords: {}, removedWords: {} };
   data.currentProfile = n;
   save();refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();refreshPD();
-};
+  updatePackLabel(); buildWordTable(); populateCatPicker();
+}
+if($('addProfileBtn')) $('addProfileBtn').onclick=createProfile;
+if($('portalAddProfileBtn')) $('portalAddProfileBtn').onclick=createProfile;
 
 function showStep(id){document.querySelectorAll('.modal-step').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
 function wGoStep2(role){wizardRole=role;showStep('wStep2');}
@@ -1160,7 +1160,8 @@ async function wFinish(){
   if(!p1||p1!==p2){$('pwErr').classList.add('show');return;}
   $('pwErr').classList.remove('show');
   
-  data.portalHash = await secureHash(p1);
+  data.portalHash = await secureHash(p1); 
+  
   if (!data.profiles[data.currentProfile]) data.profiles[data.currentProfile] = {};
   data.profiles[data.currentProfile].wordPack = wizardPack;
   data.setup=true;
@@ -1191,6 +1192,7 @@ function closePortalPrompt(){$('portalPromptOverlay').classList.remove('open');}
 
 async function checkPortalPw(){
   const val=$('portalPwInput').value;
+  
   if (data.portalHash && !data.portalHash.includes(':')) {
     if(simpleHash(val) === data.portalHash){
       data.portalHash = await secureHash(val); 
@@ -1232,13 +1234,28 @@ function refreshPortalProfileSelect(){
   Object.keys(data.profiles).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
   if(data.currentProfile)sel.value=data.currentProfile;
 }
+
+// ── FIXED: Portal Profile Selector listener so it ACTUALLY switches profiles inside the portal ──
+if($('portalProfileSelect')) {
+  $('portalProfileSelect').onchange = e => {
+    data.currentProfile = e.target.value;
+    save();
+    updatePackLabel();
+    buildWordTable();
+    populateCatPicker();
+    refreshPS(); 
+    buildCats();
+    buildGrid();
+    refreshPD();
+  };
+}
+
 function portalDelProfile(){
   const sel=$('portalProfileSelect');
   const target=sel?sel.value:data.currentProfile;
   if(!target||!confirm('Delete profile "'+target+'"? This cannot be undone.'))return;
   delete data.profiles[target];
   
-  // Make sure we never delete the very last profile entirely without making a new one
   if(Object.keys(data.profiles).length === 0){
     data.profiles['Default'] = { wordPack: 'essential', customWords: {}, removedWords: {} };
   }
@@ -1246,6 +1263,7 @@ function portalDelProfile(){
   
   save();
   refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();refreshPD();
+  updatePackLabel(); buildWordTable(); populateCatPicker();
 }
 
 function switchTab(el,panelId){
@@ -1291,7 +1309,7 @@ function showDictResult(word,def){
   $('dictResult').classList.add('show');
 }
 
-// ── FIXED: Populate categories from the current profile ──
+// ── FIXED: Populates categories specifically for the selected profile ──
 function populateCatPicker(){
   const sel=$('addWordCat');sel.innerHTML='';
   const p = data.profiles[data.currentProfile] || {};
@@ -1299,7 +1317,7 @@ function populateCatPicker(){
   [...new Set(allCats)].forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
 }
 
-// ── FIXED: Add word to the current profile only ──
+// ── FIXED: Adds words directly to the specific profile you have selected ──
 function confirmAddWord(){
   if(!dictWord&&!$('dictInput').value.trim()){alert('Look up a word first.');return;}
   const word=$('dictWordTitle').textContent||$('dictInput').value.trim();
@@ -1342,7 +1360,7 @@ function buildWordTable(){
   if(!rows.length){body.innerHTML='<tr><td colspan="4" style="padding:12px;color:#999;text-align:center">No words found</td></tr>';}
 }
 
-// ── FIXED: Remove word from the current profile only ──
+// ── FIXED: Removes words ONLY from the selected profile ──
 function removeWord(cat,word){
   if(!confirm('Remove "'+word+'" from '+cat+'?'))return;
   const p = data.profiles[data.currentProfile];
@@ -1380,7 +1398,7 @@ async function changePassword(){
   if(!p1||p1!==p2){$('changePwErr').classList.add('show');return;}
   $('changePwErr').classList.remove('show');
   
-  data.portalHash = await secureHash(p1);
+  data.portalHash = await secureHash(p1); 
   
   save();
   $('newPw1').value='';$('newPw2').value='';
@@ -1392,15 +1410,13 @@ document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
 });
 
 function init(){
-  // If brand new, make sure we have a solid default
   if(!data.profiles || !Object.keys(data.profiles).length){
     data.profiles={Default:{}};
     data.currentProfile='Default';
   }
   if(!data.currentProfile) data.currentProfile=Object.keys(data.profiles)[0];
   
-  // Run the migration cleanup to put everything strictly where it belongs
-  migrateData();
+  migrateData(); 
   save();
 
   if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
