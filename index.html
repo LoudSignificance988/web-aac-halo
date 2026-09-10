@@ -498,12 +498,14 @@ const EMOJI_MAP={
 };
 
 const KEY='halo_aac_v2';
-const SYNC_KEYS=['profiles','currentProfile','customWords','removedWords','wordPack','sysVoice','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice'];
+
+// ── FIXED: We no longer sync 'customWords', 'removedWords', 'wordPack' at the global root 
+// because they are now safely nested directly inside 'profiles'. Syncing 'profiles' syncs everything.
+const SYNC_KEYS=['profiles','currentProfile','sysVoice','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice'];
 const DEFAULTS={
   profiles:{},currentProfile:null,sysVoice:null,
   accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5',
-  setup:false,portalHash:null,wordPack:'essential',
-  customWords:{},removedWords:{},
+  setup:false,portalHash:null,
   ttsEngine:'system',kokoroVoice:'af_heart'
 };
 
@@ -522,6 +524,21 @@ let _cloudTimer=null;
 function save(){
   localStorage.setItem(KEY,JSON.stringify(data));
   syncToCloud();
+}
+
+// ── Migration Helper ──
+// Safely moves any leftover global words into the current profile 
+// so older accounts don't lose their data after this update.
+function migrateData() {
+  if (!data.currentProfile) data.currentProfile = Object.keys(data.profiles)[0] || 'Default';
+  if (!data.profiles[data.currentProfile]) data.profiles[data.currentProfile] = {};
+  
+  if (data.wordPack !== undefined || data.customWords !== undefined || data.removedWords !== undefined) {
+    const p = data.profiles[data.currentProfile];
+    if (data.wordPack !== undefined) { p.wordPack = data.wordPack; delete data.wordPack; }
+    if (data.customWords !== undefined) { p.customWords = data.customWords; delete data.customWords; }
+    if (data.removedWords !== undefined) { p.removedWords = data.removedWords; delete data.removedWords; }
+  }
 }
 
 // ── Firebase Auth (Google) + Firestore Cloud Sync ──
@@ -633,12 +650,12 @@ function loadFromCloud(){
     try{
       if(snap.exists){
         const remote=snap.data();
-        const keys=['profiles','currentProfile','customWords','removedWords','wordPack','sysVoice','accent','accentDark','bg','setup','portalHash'];
-        keys.forEach(k=>{
+        SYNC_KEYS.forEach(k=>{
           if(remote[k]!==undefined&&remote[k]!==null){
             data[k]=remote[k];
           }
         });
+        migrateData(); // Make sure fetched data matches new structure
         localStorage.setItem(KEY,JSON.stringify(data));
       }
       showSyncBadge('☁️ Synced',false);
@@ -683,26 +700,21 @@ function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
 // Fallback legacy hash (for unsecure HTTP context or backward compatibility)
 function simpleHash(s){let h=0;for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;return h.toString(36);}
 
-// New Secure Salted Hash using native Web Crypto API
+// Secure Salted Hash using native Web Crypto API
 async function secureHash(password, saltHex) {
   try {
     if (!window.crypto || !window.crypto.subtle) throw new Error("No Web Crypto API available");
-    
-    // Generate a random 16-byte salt if one wasn't provided
     if (!saltHex) {
       const salt = window.crypto.getRandomValues(new Uint8Array(16));
       saltHex = Array.from(salt).map(b => b.toString(16).padStart(2, '0')).join('');
     }
-    
     const encoder = new TextEncoder();
     const dataToHash = encoder.encode(password + saltHex);
     const hashBuffer = await window.crypto.subtle.digest('SHA-256', dataToHash);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
     return saltHex + ':' + hashHex;
   } catch(e) {
-    // If running over local HTTP (non-secure context), fallback to basic hash so the app doesn't break
     console.warn('Web Crypto API not available (must use HTTPS). Falling back to basic hash.');
     return simpleHash(password);
   }
@@ -880,18 +892,21 @@ stopBtn.onclick=()=>{
 
 rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';};
 
+// ── FIXED: We now load words strictly from the current profile ──
 function getActiveWords(){
-  const pack=PACKS[data.wordPack||'essential'];
-  const merged={};
+  const p = data.profiles[data.currentProfile] || {};
+  const packName = p.wordPack || 'essential';
+  const pack = PACKS[packName];
+  const merged = {};
   Object.entries(pack).forEach(([cat,words])=>{
     merged[cat]={};
     Object.entries(words).forEach(([w,e])=>{
       const key=cat+'::'+w;
-      if(!data.removedWords||!data.removedWords[key]) merged[cat][w]=e;
+      if(!p.removedWords || !p.removedWords[key]) merged[cat][w]=e;
     });
   });
-  if(data.customWords){
-    Object.entries(data.customWords).forEach(([cat,words])=>{
+  if(p.customWords){
+    Object.entries(p.customWords).forEach(([cat,words])=>{
       if(!merged[cat])merged[cat]={};
       Object.entries(words).forEach(([w,e])=>merged[cat][w]=e);
     });
@@ -962,9 +977,10 @@ function refreshPS(){
 
 function refreshPD(){
   if(!data.currentProfile){profileData.textContent='No profile';return;}
+  const p = data.profiles[data.currentProfile] || {};
   const words=getActiveWords();
   const total=Object.values(words).reduce((a,c)=>a+Object.keys(c).length,0);
-  profileData.innerHTML='<b>'+data.currentProfile+'</b><br>Pack: '+capitalize(data.wordPack||'essential')+'<br>Visible words: '+total+'<br>Custom added: '+Object.values(data.customWords||{}).reduce((a,c)=>a+Object.keys(c).length,0);
+  profileData.innerHTML='<b>'+data.currentProfile+'</b><br>Pack: '+capitalize(p.wordPack||'essential')+'<br>Visible words: '+total+'<br>Custom added: '+Object.values(p.customWords||{}).reduce((a,c)=>a+Object.keys(c).length,0);
 }
 
 function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
@@ -1097,12 +1113,27 @@ function applyAccent(a,d){
 }
 
 function doExportFn(){const code=b64e(data);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(code).then(()=>alert('Copied!'));else prompt('Copy:',code);$('importArea').value=code;}
-function doImportFn(){const txt=$('importArea').value.trim();if(!txt)return alert('Paste code first');try{const p=b64d(txt);if(p?.profiles){Object.assign(data,p);save();buildCats();buildGrid();refreshPS();refreshPD();alert('Imported!');}else alert('Invalid code');}catch(e){alert('Import failed');}}
+function doImportFn(){
+  const txt=$('importArea').value.trim();if(!txt)return alert('Paste code first');
+  try{
+    const p=b64d(txt);
+    if(p?.profiles){
+      Object.assign(data,p);
+      migrateData(); // Force migration in case they import legacy global JSON
+      save();buildCats();buildGrid();refreshPS();refreshPD();alert('Imported!');
+    }else alert('Invalid code');
+  }catch(e){alert('Import failed');}
+}
 if($('doExport')) $('doExport').onclick=doExportFn;
 if($('doImport')) $('doImport').onclick=doImportFn;
 
-// Added Profile to Portal Actions
-if($('addProfileBtn')) $('addProfileBtn').onclick=()=>{const n=prompt('Profile name:');if(!n)return;data.profiles[n]={};data.currentProfile=n;save();refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();refreshPD();};
+// ── FIXED: When creating a profile, explicitly add containers ──
+if($('addProfileBtn')) $('addProfileBtn').onclick=()=>{
+  const n=prompt('Profile name:');if(!n)return;
+  data.profiles[n] = { wordPack: 'essential', customWords: {}, removedWords: {} };
+  data.currentProfile = n;
+  save();refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();refreshPD();
+};
 
 function showStep(id){document.querySelectorAll('.modal-step').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');}
 function wGoStep2(role){wizardRole=role;showStep('wStep2');}
@@ -1124,15 +1155,14 @@ function kickPregen(){
   if((data.ttsEngine||'system')==='kokoro'&&kokoroTTS)pregenerateVoice(data.kokoroVoice||'af_heart');
 }
 
-// UPDATE: Async setup finish function
 async function wFinish(){
   const p1=$('pw1').value,p2=$('pw2').value;
   if(!p1||p1!==p2){$('pwErr').classList.add('show');return;}
   $('pwErr').classList.remove('show');
   
-  data.portalHash = await secureHash(p1); // Use secure Web Crypto API
-  
-  data.wordPack=wizardPack;
+  data.portalHash = await secureHash(p1);
+  if (!data.profiles[data.currentProfile]) data.profiles[data.currentProfile] = {};
+  data.profiles[data.currentProfile].wordPack = wizardPack;
   data.setup=true;
   save();
   $('wizardOverlay').classList.remove('open');
@@ -1140,7 +1170,8 @@ async function wFinish(){
 }
 
 function wFinishChild(){
-  data.wordPack=wizardPack;
+  if (!data.profiles[data.currentProfile]) data.profiles[data.currentProfile] = {};
+  data.profiles[data.currentProfile].wordPack = wizardPack;
   data.setup=true;
   save();
   $('wizardOverlay').classList.remove('open');
@@ -1158,11 +1189,8 @@ function openPortalPrompt(){
 }
 function closePortalPrompt(){$('portalPromptOverlay').classList.remove('open');}
 
-// UPDATE: Async login verification 
 async function checkPortalPw(){
   const val=$('portalPwInput').value;
-  
-  // Backwards compatibility check: Upgrade simple hashes smoothly
   if (data.portalHash && !data.portalHash.includes(':')) {
     if(simpleHash(val) === data.portalHash){
       data.portalHash = await secureHash(val); 
@@ -1174,7 +1202,6 @@ async function checkPortalPw(){
     return;
   }
   
-  // Secure hash checking
   const storedParts = (data.portalHash || '').split(':');
   const salt = storedParts[0];
   const testHash = await secureHash(val, salt);
@@ -1210,7 +1237,13 @@ function portalDelProfile(){
   const target=sel?sel.value:data.currentProfile;
   if(!target||!confirm('Delete profile "'+target+'"? This cannot be undone.'))return;
   delete data.profiles[target];
-  if(data.currentProfile===target)data.currentProfile=Object.keys(data.profiles)[0]||null;
+  
+  // Make sure we never delete the very last profile entirely without making a new one
+  if(Object.keys(data.profiles).length === 0){
+    data.profiles['Default'] = { wordPack: 'essential', customWords: {}, removedWords: {} };
+  }
+  if(data.currentProfile===target) data.currentProfile = Object.keys(data.profiles)[0];
+  
   save();
   refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();refreshPD();
 }
@@ -1258,20 +1291,26 @@ function showDictResult(word,def){
   $('dictResult').classList.add('show');
 }
 
+// ── FIXED: Populate categories from the current profile ──
 function populateCatPicker(){
   const sel=$('addWordCat');sel.innerHTML='';
-  const allCats=[...Object.keys(PACKS[data.wordPack||'essential']),...Object.keys(data.customWords||{}),'Custom'];
+  const p = data.profiles[data.currentProfile] || {};
+  const allCats=[...Object.keys(PACKS[p.wordPack||'essential']),...Object.keys(p.customWords||{}),'Custom'];
   [...new Set(allCats)].forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
 }
 
+// ── FIXED: Add word to the current profile only ──
 function confirmAddWord(){
   if(!dictWord&&!$('dictInput').value.trim()){alert('Look up a word first.');return;}
   const word=$('dictWordTitle').textContent||$('dictInput').value.trim();
   const cat=$('addWordCat').value||'Custom';
-  if(!data.customWords)data.customWords={};
-  if(!data.customWords[cat])data.customWords={};
-  data.customWords[cat][word]=selectedEmoji;
-  if(data.removedWords){delete data.removedWords[cat+'::'+word];}
+  
+  const p = data.profiles[data.currentProfile];
+  if(!p.customWords) p.customWords={};
+  if(!p.customWords[cat]) p.customWords[cat]={};
+  p.customWords[cat][word]=selectedEmoji;
+  if(p.removedWords){delete p.removedWords[cat+'::'+word];}
+  
   save();
   buildCats();buildGrid();refreshPD();kickPregen();
   const msg=$('addWordMsg');
@@ -1303,14 +1342,16 @@ function buildWordTable(){
   if(!rows.length){body.innerHTML='<tr><td colspan="4" style="padding:12px;color:#999;text-align:center">No words found</td></tr>';}
 }
 
+// ── FIXED: Remove word from the current profile only ──
 function removeWord(cat,word){
   if(!confirm('Remove "'+word+'" from '+cat+'?'))return;
-  if(data.customWords?.[cat]?.[word]!==undefined){
-    delete data.customWords[cat][word];
-    if(!Object.keys(data.customWords[cat]).length)delete data.customWords[cat];
+  const p = data.profiles[data.currentProfile];
+  if(p.customWords?.[cat]?.[word]!==undefined){
+    delete p.customWords[cat][word];
+    if(!Object.keys(p.customWords[cat]).length)delete p.customWords[cat];
   } else {
-    if(!data.removedWords)data.removedWords={};
-    data.removedWords[cat+'::'+word]=true;
+    if(!p.removedWords) p.removedWords={};
+    p.removedWords[cat+'::'+word]=true;
   }
   save();
   buildWordTable();
@@ -1318,27 +1359,28 @@ function removeWord(cat,word){
 }
 
 function updatePackLabel(){
-  $('currentPackLabel').textContent=capitalize(data.wordPack||'essential');
+  const p = data.profiles[data.currentProfile] || {};
+  $('currentPackLabel').textContent=capitalize(p.wordPack||'essential');
   document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
-    c.classList.toggle('sel',c.dataset.pack===data.wordPack);
+    c.classList.toggle('sel',c.dataset.pack===(p.wordPack||'essential'));
   });
 }
 function selectPortalPack(el){
   document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
-  data.wordPack=el.dataset.pack;
+  if (!data.profiles[data.currentProfile]) data.profiles[data.currentProfile] = {};
+  data.profiles[data.currentProfile].wordPack = el.dataset.pack;
   save();
   updatePackLabel();
   buildCats();buildGrid();refreshPD();kickPregen();
 }
 
-// UPDATE: Async password change
 async function changePassword(){
   const p1=$('newPw1').value,p2=$('newPw2').value;
   if(!p1||p1!==p2){$('changePwErr').classList.add('show');return;}
   $('changePwErr').classList.remove('show');
   
-  data.portalHash = await secureHash(p1); // Use secure Web Crypto API
+  data.portalHash = await secureHash(p1);
   
   save();
   $('newPw1').value='';$('newPw2').value='';
@@ -1350,8 +1392,17 @@ document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
 });
 
 function init(){
-  if(!Object.keys(data.profiles).length){data.profiles={Default:{}};data.currentProfile='Default';save();}
-  if(!data.currentProfile)data.currentProfile=Object.keys(data.profiles)[0];
+  // If brand new, make sure we have a solid default
+  if(!data.profiles || !Object.keys(data.profiles).length){
+    data.profiles={Default:{}};
+    data.currentProfile='Default';
+  }
+  if(!data.currentProfile) data.currentProfile=Object.keys(data.profiles)[0];
+  
+  // Run the migration cleanup to put everything strictly where it belongs
+  migrateData();
+  save();
+
   if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
   if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
   if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
