@@ -174,7 +174,7 @@ select,button,input,textarea{font-family:inherit}
   </div>
   <div class="hdr-right">
     <span id="syncBadge">☁️</span>
-    <button class="icon-btn" id="authBtn" onclick="toggleAuth()">👤 Sign in with Google</button>
+    <button class="icon-btn" id="authBtn" onclick="toggleAuth()">👤 Sign In</button>
     <button class="icon-btn" onclick="openSettings()">⚙️ Settings</button>
   </div>
 </header>
@@ -222,6 +222,30 @@ select,button,input,textarea{font-family:inherit}
     </div>
   </div>
 </main>
+
+<!-- Authentication Modal -->
+<div class="modal-overlay" id="authOverlay">
+  <div class="modal-box">
+    <h2>👤 Sign In / Sign Up</h2>
+    <p>Sync your profile and custom words securely across all your devices.</p>
+    
+    <button class="btn" style="width:100%;margin-bottom:16px;background:#ea4335" onclick="loginGoogle()">Sign in with Google</button>
+    
+    <div style="text-align:center;margin-bottom:16px;font-size:12px;color:#888;font-weight:700">OR EMAIL</div>
+    
+    <div class="modal-err" id="authErr"></div>
+    <input class="modal-input" type="email" id="authEmail" placeholder="Email address"/>
+    <input class="modal-input" type="password" id="authPassword" placeholder="Password (for email sign-in)"/>
+    
+    <div class="modal-btn-row" style="flex-wrap:wrap; gap:8px">
+      <button class="btn ghost" style="flex:1" onclick="loginEmail()">Sign In</button>
+      <button class="btn ghost" style="flex:1" onclick="signupEmail()">Sign Up</button>
+      <button class="btn ghost" style="flex-basis:100%" onclick="sendEmailLink()">Send Magic Link (No Password)</button>
+    </div>
+    
+    <button class="btn ghost" style="width:100%;margin-top:16px;border:none;color:#888" onclick="closeAuthModal()">Cancel</button>
+  </div>
+</div>
 
 <div id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
   <div id="settingsPanel">
@@ -275,7 +299,7 @@ select,button,input,textarea{font-family:inherit}
     <div class="s-section">
       <div class="s-label">☁️ Cloud Sync</div>
       <p style="font-size:13px;color:#666;margin-bottom:8px" id="cloudStatus">Sign in to sync across devices.</p>
-      <button class="btn" id="cloudAuthBtn" onclick="toggleAuth()" style="width:100%">👤 Sign in with Google</button>
+      <button class="btn" id="cloudAuthBtn" onclick="toggleAuth()" style="width:100%">👤 Sign In</button>
     </div>
     <button class="btn" style="width:100%;padding:13px;font-size:15px" onclick="closeSettings()">Done ✓</button>
   </div>
@@ -524,8 +548,6 @@ function save(){
   syncToCloud();
 }
 
-// ── Migration Helper ──
-// Safely moves any leftover global words from older versions into the current profile 
 function migrateData() {
   if (!data.currentProfile) data.currentProfile = Object.keys(data.profiles)[0] || 'Default';
   if (!data.profiles[data.currentProfile]) data.profiles[data.currentProfile] = {};
@@ -538,7 +560,7 @@ function migrateData() {
   }
 }
 
-// ── Firebase Auth (Google) + Firestore Cloud Sync ──
+// ── Firebase Auth (Google + Email) + Firestore Cloud Sync ──
 
 const FIREBASE_CONFIG={
   apiKey: "AIzaSyB79mC7YqkZeNvdowRFkbBfu53PV2Qo7pk",
@@ -565,6 +587,23 @@ function ensureFirebase(){
     _fireAuth=firebase.auth();
     _fireDb=firebase.firestore();
     _fireAuth.onAuthStateChanged(handleAuth);
+    
+    // Check if returning from a magic email link
+    if (_fireAuth.isSignInWithEmailLink(window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        email = window.prompt('Please provide your email for confirmation');
+      }
+      if (email) {
+        _fireAuth.signInWithEmailLink(email, window.location.href)
+          .then(() => {
+            window.localStorage.removeItem('emailForSignIn');
+            window.history.replaceState(null, '', window.location.pathname);
+          })
+          .catch(e => alert(e.message));
+      }
+    }
+    
     _fireInitDone=true;
     return true;
   }catch(e){
@@ -588,22 +627,71 @@ async function toggleAuth(){
     updateAuthUI();
     hideSyncBadge();
   }else{
-    await loginGoogle();
+    openAuthModal();
   }
 }
 window.toggleAuth=toggleAuth;
 
-async function loginGoogle(){
+function openAuthModal() {
   if(!ensureFirebase()){
-    alert('Google sign-in not available. Check adblocker or network.');
+    alert('Authentication not available. Check network or adblocker.');
     return;
   }
+  $('authErr').classList.remove('show');
+  $('authOverlay').classList.add('open');
+}
+function closeAuthModal() {
+  $('authOverlay').classList.remove('open');
+}
+
+function showAuthErr(msg) {
+  const e = $('authErr');
+  e.textContent = msg;
+  e.classList.add('show');
+}
+
+async function loginGoogle(){
   try{
     const prov=new firebase.auth.GoogleAuthProvider();
     await _fireAuth.signInWithPopup(prov);
+    closeAuthModal();
   }catch(e){
-    if(e.code==='auth/popup-blocked')alert('Popup blocked! Allow popups then try again.');
-    else if(e.code!=='auth/popup-closed-by-user')console.warn('Sign-in:',e);
+    if(e.code==='auth/popup-blocked') showAuthErr('Popup blocked! Allow popups then try again.');
+    else if(e.code!=='auth/popup-closed-by-user') showAuthErr(e.message);
+  }
+}
+
+async function loginEmail() {
+  const e = $('authEmail').value, p = $('authPassword').value;
+  if(!e || !p) return showAuthErr('Email and password required.');
+  try {
+    await _fireAuth.signInWithEmailAndPassword(e, p);
+    closeAuthModal();
+  } catch(err) { showAuthErr(err.message); }
+}
+
+async function signupEmail() {
+  const e = $('authEmail').value, p = $('authPassword').value;
+  if(!e || !p) return showAuthErr('Email and password required.');
+  try {
+    await _fireAuth.createUserWithEmailAndPassword(e, p);
+    closeAuthModal();
+  } catch(err) { showAuthErr(err.message); }
+}
+
+async function sendEmailLink() {
+  const e = $('authEmail').value;
+  if(!e) return showAuthErr('Email required for magic link.');
+  const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+  try {
+    await _fireAuth.sendSignInLinkToEmail(e, actionCodeSettings);
+    window.localStorage.setItem('emailForSignIn', e);
+    showAuthErr('Link sent! Check your email to sign in.');
+    $('authErr').style.color = '#059669'; 
+    setTimeout(closeAuthModal, 4000);
+  } catch(err) { 
+    $('authErr').style.color = '#dc2626'; 
+    showAuthErr(err.message); 
   }
 }
 
@@ -619,9 +707,9 @@ function updateAuthUI(){
     if(cStatus)cStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>. Data syncs to cloud.';
     showSyncBadge('☁️ Synced',false);
   }else{
-    btn.innerHTML='👤 Sign&nbsp;in&nbsp;with&nbsp;Google';
-    if(cBtn)cBtn.innerHTML='👤 Sign&nbsp;in&nbsp;with&nbsp;Google';
-    if(cStatus)cStatus.innerHTML='Sign in with Google to sync across devices.';
+    btn.innerHTML='👤 Sign&nbsp;In';
+    if(cBtn)cBtn.innerHTML='👤 Sign&nbsp;In';
+    if(cStatus)cStatus.innerHTML='Sign in to sync across devices.';
     hideSyncBadge();
   }
 }
@@ -652,7 +740,7 @@ function loadFromCloud(){
             data[k]=remote[k];
           }
         });
-        migrateData(); // Make sure fetched data matches new structure
+        migrateData(); 
         localStorage.setItem(KEY,JSON.stringify(data));
       }
       showSyncBadge('☁️ Synced',false);
@@ -694,10 +782,10 @@ ensureFirebase();
 function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
 function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
 
-// Fallback legacy hash (for unsecure HTTP context or backward compatibility)
+// Fallback legacy hash 
 function simpleHash(s){let h=0;for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;return h.toString(36);}
 
-// Secure Salted Hash using native Web Crypto API
+// Secure Salted Hash 
 async function secureHash(password, saltHex) {
   try {
     if (!window.crypto || !window.crypto.subtle) throw new Error("No Web Crypto API available");
@@ -752,7 +840,6 @@ function speakSystem(text){
   speechSynthesis.speak(u);
 }
 
-// ── Instant neural audio cache (IndexedDB) ──
 const CACHE_DB_NAME='haloTTSCache';
 const CACHE_STORE='audio';
 let _cacheDB=null;
@@ -889,7 +976,6 @@ stopBtn.onclick=()=>{
 
 rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';};
 
-// ── FIXED: Reads words ONLY from the current profile ──
 function getActiveWords(){
   const p = data.profiles[data.currentProfile] || {};
   const packName = p.wordPack || 'essential';
@@ -1005,8 +1091,6 @@ function selectEngine(eng){
 document.querySelectorAll('#engineGrid .engine-card').forEach(card=>{
   card.onclick=()=>selectEngine(card.dataset.eng);
 });
-
-// ── Kokoro neural voice engine ──
 
 const KOKORO_VOICES=[
   {id:'af_heart',name:'Heart',lang:'EN-US · Female'},
@@ -1124,7 +1208,6 @@ function doImportFn(){
 if($('doExport')) $('doExport').onclick=doExportFn;
 if($('doImport')) $('doImport').onclick=doImportFn;
 
-// ── FIXED: Profile Creation ensures strict containers ──
 function createProfile() {
   const n=prompt('Profile name:');if(!n)return;
   data.profiles[n] = { wordPack: 'essential', customWords: {}, removedWords: {} };
@@ -1235,7 +1318,6 @@ function refreshPortalProfileSelect(){
   if(data.currentProfile)sel.value=data.currentProfile;
 }
 
-// ── FIXED: Portal Profile Selector listener so it ACTUALLY switches profiles inside the portal ──
 if($('portalProfileSelect')) {
   $('portalProfileSelect').onchange = e => {
     data.currentProfile = e.target.value;
@@ -1309,7 +1391,6 @@ function showDictResult(word,def){
   $('dictResult').classList.add('show');
 }
 
-// ── FIXED: Populates categories specifically for the selected profile ──
 function populateCatPicker(){
   const sel=$('addWordCat');sel.innerHTML='';
   const p = data.profiles[data.currentProfile] || {};
@@ -1317,7 +1398,6 @@ function populateCatPicker(){
   [...new Set(allCats)].forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
 }
 
-// ── FIXED: Adds words directly to the specific profile you have selected ──
 function confirmAddWord(){
   if(!dictWord&&!$('dictInput').value.trim()){alert('Look up a word first.');return;}
   const word=$('dictWordTitle').textContent||$('dictInput').value.trim();
@@ -1360,7 +1440,6 @@ function buildWordTable(){
   if(!rows.length){body.innerHTML='<tr><td colspan="4" style="padding:12px;color:#999;text-align:center">No words found</td></tr>';}
 }
 
-// ── FIXED: Removes words ONLY from the selected profile ──
 function removeWord(cat,word){
   if(!confirm('Remove "'+word+'" from '+cat+'?'))return;
   const p = data.profiles[data.currentProfile];
