@@ -95,6 +95,9 @@ select,button,input,textarea{font-family:inherit}
 #profileData{font-size:13px;color:#555;line-height:1.8;margin-top:6px}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex}
+/* Fix: Make the Auth modal stack over the parent portal */
+#authOverlay { z-index: 600; }
+
 .modal-box{background:#fff;border-radius:20px;width:100%;max-width:440px;padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto}
 .modal-box h2{font-size:20px;font-weight:800;margin-bottom:6px;color:#111}
 .modal-box p{font-size:14px;color:#555;line-height:1.6;margin-bottom:16px}
@@ -136,8 +139,6 @@ select,button,input,textarea{font-family:inherit}
 .emoji-pick-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .emoji-opt{font-size:22px;padding:4px 6px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .1s}
 .emoji-opt.sel{border-color:var(--accent);background:var(--accent-light)}
-.cat-pick{padding:8px 10px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;width:100%;margin-bottom:10px}
-.cat-pick:focus{outline:none;border-color:var(--accent)}
 #syncBadge{display:none;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:11px;font-weight:600;cursor:default;padding:4px 8px;border-radius:6px;white-space:nowrap;align-items:center}
 #syncBadge.show{display:inline-flex}
 #syncBadge.syncing{animation:syncPulse .8s infinite}
@@ -182,6 +183,7 @@ select,button,input,textarea{font-family:inherit}
 <main>
   <div class="profile-row">
     <select id="profileSelect"></select>
+    <button class="btn ghost" id="addProfileBtn">+ Profile</button>
   </div>
 
   <div id="catWrap"></div>
@@ -228,7 +230,7 @@ select,button,input,textarea{font-family:inherit}
     <h2>👤 Sign In / Sign Up</h2>
     <p>Choose how you would like to sign in to sync your profile across devices.</p>
     
-    <button class="btn" style="width:100%;margin-bottom:20px;background:#ea4335" onclick="loginGoogle()">Sign in with Google</button>
+    <button class="btn" style="width:100%;margin-bottom:20px;" onclick="loginGoogle()">Sign in with Google</button>
     
     <div style="text-align:center;margin-bottom:16px;font-size:12px;color:#aaa;font-weight:700;letter-spacing:1px">OR EMAIL & PASSWORD</div>
     
@@ -236,9 +238,10 @@ select,button,input,textarea{font-family:inherit}
     <input class="modal-input" type="email" id="authEmail" placeholder="Email address"/>
     <input class="modal-input" type="password" id="authPassword" placeholder="Password"/>
     
-    <div class="modal-btn-row">
-      <button class="btn ghost" onclick="loginEmail()">Sign In</button>
-      <button class="btn ghost" onclick="signupEmail()">Sign Up</button>
+    <div class="modal-btn-row" style="flex-wrap:wrap; gap:8px">
+      <button class="btn ghost" style="flex:1" onclick="loginEmail()">Sign In</button>
+      <button class="btn ghost" style="flex:1" onclick="signupEmail()">Sign Up</button>
+      <button class="btn ghost" style="flex-basis:100%" onclick="sendEmailLink()">Send Magic Link (No Password)</button>
     </div>
     
     <button class="btn ghost" style="width:100%;margin-top:16px;border:none;color:#888" onclick="closeAuthModal()">Cancel</button>
@@ -402,7 +405,11 @@ select,button,input,textarea{font-family:inherit}
         <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pick an emoji</div>
         <div class="emoji-pick-row" id="emojiPickRow"></div>
         <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:4px">Category</div>
-        <select class="cat-pick" id="addWordCat"></select>
+        
+        <!-- Fix: Datalist allows selecting existing or typing a new category -->
+        <input type="text" id="addWordCat" class="modal-input" list="catDatalist" placeholder="Select or type new category..." style="margin-bottom:10px;">
+        <datalist id="catDatalist"></datalist>
+
         <button class="btn" style="width:100%" onclick="confirmAddWord()">Add Word ✓</button>
       </div>
       <div id="addWordMsg" style="font-size:13px;color:var(--accent);margin-top:8px;display:none"></div>
@@ -584,6 +591,24 @@ function ensureFirebase(){
     _fireAuth=firebase.auth();
     _fireDb=firebase.firestore();
     _fireAuth.onAuthStateChanged(handleAuth);
+    
+    // Check if returning from a magic email link
+    if (_fireAuth.isSignInWithEmailLink(window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        email = window.prompt('Please provide your email to confirm sign-in');
+      }
+      if (email) {
+        _fireAuth.signInWithEmailLink(email, window.location.href)
+          .then(() => {
+            window.localStorage.removeItem('emailForSignIn');
+            window.history.replaceState(null, '', window.location.pathname);
+            alert("Successfully signed in with Magic Link!");
+          })
+          .catch(e => alert("Magic Link Error: " + e.message));
+      }
+    }
+    
     _fireInitDone=true;
     return true;
   }catch(e){
@@ -647,7 +672,18 @@ async function loginEmail() {
   try {
     await _fireAuth.signInWithEmailAndPassword(e, p);
     closeAuthModal();
-  } catch(err) { showAuthErr(err.message); }
+  } catch(err) { 
+    // Detect if they originally used Google to sign up, but are trying email/password now
+    if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+      try {
+        const methods = await _fireAuth.fetchSignInMethodsForEmail(e);
+        if (methods.includes('google.com')) {
+          return showAuthErr('This email uses Google Sign-In. Please click the Google button above.');
+        }
+      } catch (methodErr) { /* ignore secondary error */ }
+    }
+    showAuthErr(err.message); 
+  }
 }
 
 async function signupEmail() {
@@ -656,7 +692,33 @@ async function signupEmail() {
   try {
     await _fireAuth.createUserWithEmailAndPassword(e, p);
     closeAuthModal();
-  } catch(err) { showAuthErr(err.message); }
+  } catch(err) { 
+    if (err.code === 'auth/email-already-in-use') {
+      try {
+        const methods = await _fireAuth.fetchSignInMethodsForEmail(e);
+        if (methods.includes('google.com')) {
+          return showAuthErr('This email uses Google Sign-In. Please click the Google button above.');
+        }
+      } catch (methodErr) { /* ignore */ }
+    }
+    showAuthErr(err.message); 
+  }
+}
+
+async function sendEmailLink() {
+  const e = $('authEmail').value;
+  if(!e) return showAuthErr('Email required for magic link. Please type it above.');
+  const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+  try {
+    await _fireAuth.sendSignInLinkToEmail(e, actionCodeSettings);
+    window.localStorage.setItem('emailForSignIn', e);
+    showAuthErr('Link sent! Check your email inbox to sign in.');
+    $('authErr').style.color = '#059669'; 
+    setTimeout(closeAuthModal, 4000);
+  } catch(err) { 
+    $('authErr').style.color = '#dc2626'; 
+    showAuthErr(err.message); 
+  }
 }
 
 function updateAuthUI(){
@@ -1359,17 +1421,28 @@ function showDictResult(word,def){
   $('dictResult').classList.add('show');
 }
 
+// ── FIX: Now uses a datalist so users can freely type new categories ──
 function populateCatPicker(){
-  const sel=$('addWordCat');sel.innerHTML='';
+  const sel=$('catDatalist');
+  if(!sel) return;
+  sel.innerHTML='';
   const p = data.profiles[data.currentProfile] || {};
   const allCats=[...Object.keys(PACKS[p.wordPack||'essential']),...Object.keys(p.customWords||{}),'Custom'];
-  [...new Set(allCats)].forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  [...new Set(allCats)].forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c;
+    sel.appendChild(o);
+  });
 }
 
 function confirmAddWord(){
   if(!dictWord&&!$('dictInput').value.trim()){alert('Look up a word first.');return;}
   const word=$('dictWordTitle').textContent||$('dictInput').value.trim();
-  const cat=$('addWordCat').value||'Custom';
+  
+  // ── FIX: Read from the text input and capitalize it ──
+  let cat=$('addWordCat').value.trim();
+  if(!cat) cat = 'Custom';
+  cat = cat.charAt(0).toUpperCase() + cat.slice(1);
   
   const p = data.profiles[data.currentProfile];
   if(!p.customWords) p.customWords={};
@@ -1386,6 +1459,9 @@ function confirmAddWord(){
   $('dictResult').classList.remove('show');
   $('dictInput').value='';
   dictWord='';
+  
+  // Clear category input for next time
+  $('addWordCat').value = '';
 }
 
 function buildWordTable(){
