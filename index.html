@@ -182,7 +182,6 @@ select,button,input,textarea{font-family:inherit}
 <main>
   <div class="profile-row">
     <select id="profileSelect"></select>
-    <button class="btn ghost" id="addProfileBtn">+ Profile</button>
   </div>
 
   <div id="catWrap"></div>
@@ -227,20 +226,19 @@ select,button,input,textarea{font-family:inherit}
 <div class="modal-overlay" id="authOverlay">
   <div class="modal-box">
     <h2>👤 Sign In / Sign Up</h2>
-    <p>Sync your profile and custom words securely across all your devices.</p>
+    <p>Choose how you would like to sign in to sync your profile across devices.</p>
     
-    <button class="btn" style="width:100%;margin-bottom:16px;background:#ea4335" onclick="loginGoogle()">Sign in with Google</button>
+    <button class="btn" style="width:100%;margin-bottom:20px;background:#ea4335" onclick="loginGoogle()">Sign in with Google</button>
     
-    <div style="text-align:center;margin-bottom:16px;font-size:12px;color:#888;font-weight:700">OR EMAIL</div>
+    <div style="text-align:center;margin-bottom:16px;font-size:12px;color:#aaa;font-weight:700;letter-spacing:1px">OR EMAIL & PASSWORD</div>
     
     <div class="modal-err" id="authErr"></div>
     <input class="modal-input" type="email" id="authEmail" placeholder="Email address"/>
-    <input class="modal-input" type="password" id="authPassword" placeholder="Password (for email sign-in)"/>
+    <input class="modal-input" type="password" id="authPassword" placeholder="Password"/>
     
-    <div class="modal-btn-row" style="flex-wrap:wrap; gap:8px">
-      <button class="btn ghost" style="flex:1" onclick="loginEmail()">Sign In</button>
-      <button class="btn ghost" style="flex:1" onclick="signupEmail()">Sign Up</button>
-      <button class="btn ghost" style="flex-basis:100%" onclick="sendEmailLink()">Send Magic Link (No Password)</button>
+    <div class="modal-btn-row">
+      <button class="btn ghost" onclick="loginEmail()">Sign In</button>
+      <button class="btn ghost" onclick="signupEmail()">Sign Up</button>
     </div>
     
     <button class="btn ghost" style="width:100%;margin-top:16px;border:none;color:#888" onclick="closeAuthModal()">Cancel</button>
@@ -295,11 +293,6 @@ select,button,input,textarea{font-family:inherit}
         <label><input type="color" id="bgPicker" value="#f0f2f5"> Background</label>
         <label><input type="color" id="accentPicker" value="#2c7be5"> Custom accent</label>
       </div>
-    </div>
-    <div class="s-section">
-      <div class="s-label">☁️ Cloud Sync</div>
-      <p style="font-size:13px;color:#666;margin-bottom:8px" id="cloudStatus">Sign in to sync across devices.</p>
-      <button class="btn" id="cloudAuthBtn" onclick="toggleAuth()" style="width:100%">👤 Sign In</button>
     </div>
     <button class="btn" style="width:100%;padding:13px;font-size:15px" onclick="closeSettings()">Done ✓</button>
   </div>
@@ -425,7 +418,11 @@ select,button,input,textarea{font-family:inherit}
       </div>
     </div>
     <div class="ptab-panel" id="tabSettings">
-      <p style="font-size:13px;color:#666;margin-bottom:12px">Change your parent password or reset the word pack.</p>
+      
+      <div class="s-label">☁️ Cloud Sync & Account</div>
+      <p style="font-size:13px;color:#666;margin-bottom:8px" id="portalCloudStatus">Sign in to sync across devices.</p>
+      <button class="btn" id="portalAuthBtn" onclick="toggleAuth()" style="width:100%;margin-bottom:16px">👤 Sign In / Sign Up</button>
+      
       <div class="s-label">Change Password</div>
       <input class="modal-input" type="password" id="newPw1" placeholder="New password"/>
       <input class="modal-input" type="password" id="newPw2" placeholder="Confirm new password"/>
@@ -560,7 +557,7 @@ function migrateData() {
   }
 }
 
-// ── Firebase Auth (Google + Email) + Firestore Cloud Sync ──
+// ── Firebase Auth ──
 
 const FIREBASE_CONFIG={
   apiKey: "AIzaSyB79mC7YqkZeNvdowRFkbBfu53PV2Qo7pk",
@@ -587,23 +584,6 @@ function ensureFirebase(){
     _fireAuth=firebase.auth();
     _fireDb=firebase.firestore();
     _fireAuth.onAuthStateChanged(handleAuth);
-    
-    // Check if returning from a magic email link
-    if (_fireAuth.isSignInWithEmailLink(window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn');
-      if (!email) {
-        email = window.prompt('Please provide your email for confirmation');
-      }
-      if (email) {
-        _fireAuth.signInWithEmailLink(email, window.location.href)
-          .then(() => {
-            window.localStorage.removeItem('emailForSignIn');
-            window.history.replaceState(null, '', window.location.pathname);
-          })
-          .catch(e => alert(e.message));
-      }
-    }
-    
     _fireInitDone=true;
     return true;
   }catch(e){
@@ -679,37 +659,27 @@ async function signupEmail() {
   } catch(err) { showAuthErr(err.message); }
 }
 
-async function sendEmailLink() {
-  const e = $('authEmail').value;
-  if(!e) return showAuthErr('Email required for magic link.');
-  const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
-  try {
-    await _fireAuth.sendSignInLinkToEmail(e, actionCodeSettings);
-    window.localStorage.setItem('emailForSignIn', e);
-    showAuthErr('Link sent! Check your email to sign in.');
-    $('authErr').style.color = '#059669'; 
-    setTimeout(closeAuthModal, 4000);
-  } catch(err) { 
-    $('authErr').style.color = '#dc2626'; 
-    showAuthErr(err.message); 
-  }
-}
-
 function updateAuthUI(){
   const btn=document.getElementById('authBtn');
-  if(!btn)return;
-  const cBtn=document.getElementById('cloudAuthBtn');
+  const cBtn=document.getElementById('cloudAuthBtn'); // This is the button inside the general Settings menu
+  const pBtn=document.getElementById('portalAuthBtn'); // This is the button inside the Parent Portal
   const cStatus=document.getElementById('cloudStatus');
+  const pStatus=document.getElementById('portalCloudStatus');
+  
   if(_fireUser){
     const name=_fireUser.displayName||_fireUser.email||'User';
-    btn.innerHTML='👤 '+name+' Sign&nbsp;out';
-    if(cBtn)cBtn.innerHTML='Sign out';
-    if(cStatus)cStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>. Data syncs to cloud.';
+    if(btn) btn.innerHTML='👤 '+name+' Sign&nbsp;out';
+    if(cBtn) cBtn.innerHTML='Sign out';
+    if(pBtn) pBtn.innerHTML='Sign out';
+    if(cStatus) cStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>. Data syncs to cloud.';
+    if(pStatus) pStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>.';
     showSyncBadge('☁️ Synced',false);
   }else{
-    btn.innerHTML='👤 Sign&nbsp;In';
-    if(cBtn)cBtn.innerHTML='👤 Sign&nbsp;In';
-    if(cStatus)cStatus.innerHTML='Sign in to sync across devices.';
+    if(btn) btn.innerHTML='👤 Sign&nbsp;In';
+    if(cBtn) cBtn.innerHTML='👤 Sign&nbsp;In';
+    if(pBtn) pBtn.innerHTML='👤 Sign&nbsp;In / Sign Up';
+    if(cStatus) cStatus.innerHTML='Sign in to sync across devices.';
+    if(pStatus) pStatus.innerHTML='Sign in to sync across devices.';
     hideSyncBadge();
   }
 }
@@ -782,10 +752,8 @@ ensureFirebase();
 function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
 function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
 
-// Fallback legacy hash 
 function simpleHash(s){let h=0;for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;return h.toString(36);}
 
-// Secure Salted Hash 
 async function secureHash(password, saltHex) {
   try {
     if (!window.crypto || !window.crypto.subtle) throw new Error("No Web Crypto API available");
