@@ -45,7 +45,7 @@ select,button,input,textarea{font-family:inherit}
 #ttsBar{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--accent-light);border:1px solid #b8d0f7;margin:8px 0;font-size:12px;color:var(--accent)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
 .dot.on{animation:pulse .7s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.55)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25;transform:scale(.55)}}
 .speak-row{display:flex;gap:6px;margin-bottom:8px}
 .speak-row .btn{flex:1;font-size:14px;padding:11px 8px}
 .rate-wrap{display:flex;align-items:center;gap:8px}
@@ -57,6 +57,10 @@ select,button,input,textarea{font-family:inherit}
 .word-btn:active{transform:scale(.93);border-color:var(--accent);background:var(--accent-light)}
 .word-emoji{font-size:22px;display:block;margin-bottom:4px;line-height:1}
 .word-text{font-size:12px;font-weight:600;text-align:center;line-height:1.2;word-break:break-word}
+body.visual-mode #wordGrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+body.visual-mode .word-btn{height:120px;padding:10px 6px}
+body.visual-mode .word-emoji{font-size:52px;margin-bottom:0}
+body.visual-mode .word-text{display:none}
 #wordSearch{padding:7px 12px;border-radius:999px;border:1.5px solid #ddd;font-size:13px;width:100%;display:block;margin-bottom:9px}
 #wordSearch:focus{outline:none;border-color:var(--accent)}
 #settingsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end;justify-content:center}
@@ -92,12 +96,9 @@ select,button,input,textarea{font-family:inherit}
 #importArea{width:100%;padding:9px;border-radius:8px;border:1.5px solid #ddd;font-size:12px;min-height:65px;resize:none;margin-top:8px}
 .two-btn{display:flex;gap:8px}
 .two-btn .btn{flex:1;padding:10px}
-#profileData{font-size:13px;color:#555;line-height:1.8;margin-top:6px}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.open{display:flex}
-/* Fix: Make the Auth modal stack over the parent portal */
 #authOverlay { z-index: 600; }
-
 .modal-box{background:#fff;border-radius:20px;width:100%;max-width:440px;padding:28px 24px;box-shadow:0 8px 40px rgba(0,0,0,.18);max-height:90vh;overflow-y:auto}
 .modal-box h2{font-size:20px;font-weight:800;margin-bottom:6px;color:#111}
 .modal-box p{font-size:14px;color:#555;line-height:1.6;margin-bottom:16px}
@@ -175,6 +176,7 @@ select,button,input,textarea{font-family:inherit}
   </div>
   <div class="hdr-right">
     <span id="syncBadge">☁️</span>
+    <button class="icon-btn" id="visualModeBtn" onclick="toggleVisualMode()">👁️ Visual Mode</button>
     <button class="icon-btn" id="authBtn" onclick="toggleAuth()">👤 Sign In</button>
     <button class="icon-btn" onclick="openSettings()">⚙️ Settings</button>
   </div>
@@ -205,10 +207,6 @@ select,button,input,textarea{font-family:inherit}
           <span class="val" id="rateVal">1.1×</span>
         </div>
       </div>
-      <div class="card">
-        <strong>Profile Info</strong>
-        <div id="profileData">No profile</div>
-      </div>
     </div>
 
     <div class="right">
@@ -224,7 +222,6 @@ select,button,input,textarea{font-family:inherit}
   </div>
 </main>
 
-<!-- Authentication Modal -->
 <div class="modal-overlay" id="authOverlay">
   <div class="modal-box">
     <h2>👤 Sign In / Sign Up</h2>
@@ -396,7 +393,7 @@ select,button,input,textarea{font-family:inherit}
     <div class="ptab-panel active" id="tabAdd">
       <p style="font-size:13px;color:#666;margin-bottom:12px">Look up a word using the dictionary, choose an emoji, then add it.</p>
       <div class="dict-lookup">
-        <input type="text" id="dictInput" placeholder="Type a word…" onkeydown="if(event.key==='Enter')lookupWord()"/>
+        <input type="text" id="dictInput" placeholder="Type a word…" oninput="autoSuggestEmoji(this.value)" onkeydown="if(event.key==='Enter')lookupWord()"/>
         <button class="btn" onclick="lookupWord()">Look up</button>
       </div>
       <div class="dict-result" id="dictResult">
@@ -405,11 +402,8 @@ select,button,input,textarea{font-family:inherit}
         <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pick an emoji</div>
         <div class="emoji-pick-row" id="emojiPickRow"></div>
         <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:4px">Category</div>
-        
-        <!-- Fix: Datalist allows selecting existing or typing a new category -->
         <input type="text" id="addWordCat" class="modal-input" list="catDatalist" placeholder="Select or type new category..." style="margin-bottom:10px;">
         <datalist id="catDatalist"></datalist>
-
         <button class="btn" style="width:100%" onclick="confirmAddWord()">Add Word ✓</button>
       </div>
       <div id="addWordMsg" style="font-size:13px;color:var(--accent);margin-top:8px;display:none"></div>
@@ -425,7 +419,6 @@ select,button,input,textarea{font-family:inherit}
       </div>
     </div>
     <div class="ptab-panel" id="tabSettings">
-      
       <div class="s-label">☁️ Cloud Sync & Account</div>
       <p style="font-size:13px;color:#666;margin-bottom:8px" id="portalCloudStatus">Sign in to sync across devices.</p>
       <button class="btn" id="portalAuthBtn" onclick="toggleAuth()" style="width:100%;margin-bottom:16px">👤 Sign In / Sign Up</button>
@@ -464,7 +457,6 @@ select,button,input,textarea{font-family:inherit}
       <div class="s-label" style="margin-top:16px">📧 Contact Support</div>
       <p style="font-size:13px;color:#666;margin-bottom:8px">Need help or have questions? Email us at:</p>
       <a href="mailto:haloaccommodationssupport@proton.me" class="btn ghost" style="display:block;text-align:center;text-decoration:none;width:100%">haloaccommodationssupport@proton.me</a>
-
     </div>
   </div>
 </div>
@@ -513,26 +505,25 @@ const PACKS={
 };
 
 const EMOJI_MAP={
-  happy:"😊",sad:"😢",angry:"😡",love:"❤️",food:"🍽️",water:"💧",home:"🏠",
-  school:"🏫",play:"🎮",sleep:"😴",run:"🏃",walk:"🚶",eat:"🍽️",drink:"🥤",
-  help:"🆘",yes:"✅",no:"❌",please:"🙏",sorry:"😔",hello:"👋",bye:"👋",
-  dog:"🐶",cat:"🐱",bird:"🐦",book:"📚",ball:"⚽",car:"🚗",bus:"🚌",
-  bathroom:"🚽",bed:"🛏️",doctor:"🩺",medicine:"💊",music:"🎵",art:"🎨",
-  friend:"🧑‍🤝‍🧑",family:"👨‍👩‍👧",mom:"👩‍🦰",dad:"👨‍🦰",baby:"👶",teacher:"🧑‍🫁",
-  hurt:"💢",sick:"🤒",scared:"😱",excited:"🤩",tired:"😴",bored:"😑",
-  hot:"🔥",cold:"❄️",sun:"☀️",rain:"🌧️",snow:"❄️",tree:"🌳",flower:"🌸",
-  phone:"📱",computer:"💻",money:"💵",time:"⏰",stop:"✋",go:"🏃",more:"➕",
-  want:"✋",need:"🆘",wait:"⏳",done:"✅",good:"👍",bad:"👎",big:"🔝",
-  small:"🔽",fast:"⚡",slow:"🐢"
+  apple:"🍎",dog:"🐶",cat:"🐱",bird:"🐦",eat:"🍽️",drink:"🥤",food:"🍽️",water:"💧",
+  happy:"😊",sad:"😢",angry:"😡",love:"❤️",home:"🏠",school:"🏫",play:"🎮",
+  sleep:"😴",run:"🏃",walk:"🚶",help:"🆘",yes:"✅",no:"❌",please:"🙏",sorry:"😔",
+  hello:"👋",bye:"👋",book:"📚",ball:"⚽",car:"🚗",bus:"🚌",bathroom:"🚽",
+  bed:"🛏️",doctor:"🩺",medicine:"💊",music:"🎵",art:"🎨",friend:"🧑‍🤝‍🧑",
+  family:"👨‍👩‍👧",mom:"👩‍🦰",dad:"👨‍🦰",baby:"👶",teacher:"🧑‍🫁",hurt:"💢",sick:"🤒",
+  scared:"😱",excited:"🤩",tired:"😴",bored:"😑",hot:"🔥",cold:"❄️",sun:"☀️",
+  rain:"🌧️",snow:"❄️",tree:"🌳",flower:"🌸",phone:"📱",computer:"💻",money:"💵",
+  time:"⏰",stop:"✋",go:"🏃",more:"➕",want:"✋",need:"🆘",wait:"⏳",done:"✅",
+  good:"👍",bad:"👎",big:"🔝",small:"🔽",fast:"⚡",slow:"🐢"
 };
 
 const KEY='halo_aac_v2';
-const SYNC_KEYS=['profiles','currentProfile','sysVoice','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice'];
+const SYNC_KEYS=['profiles','currentProfile','sysVoice','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice','visualMode'];
 const DEFAULTS={
   profiles:{},currentProfile:null,sysVoice:null,
   accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5',
   setup:false,portalHash:null,
-  ttsEngine:'system',kokoroVoice:'af_heart'
+  ttsEngine:'system',kokoroVoice:'af_heart',visualMode:false
 };
 
 let data=(()=>{
@@ -564,8 +555,6 @@ function migrateData() {
   }
 }
 
-// ── Firebase Auth ──
-
 const FIREBASE_CONFIG={
   apiKey: "AIzaSyB79mC7YqkZeNvdowRFkbBfu53PV2Qo7pk",
   authDomain: "halo-add.firebaseapp.com",
@@ -592,7 +581,6 @@ function ensureFirebase(){
     _fireDb=firebase.firestore();
     _fireAuth.onAuthStateChanged(handleAuth);
     
-    // Check if returning from a magic email link
     if (_fireAuth.isSignInWithEmailLink(window.location.href)) {
       let email = window.localStorage.getItem('emailForSignIn');
       if (!email) {
@@ -673,14 +661,13 @@ async function loginEmail() {
     await _fireAuth.signInWithEmailAndPassword(e, p);
     closeAuthModal();
   } catch(err) { 
-    // Detect if they originally used Google to sign up, but are trying email/password now
     if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
       try {
         const methods = await _fireAuth.fetchSignInMethodsForEmail(e);
         if (methods.includes('google.com')) {
           return showAuthErr('This email uses Google Sign-In. Please click the Google button above.');
         }
-      } catch (methodErr) { /* ignore secondary error */ }
+      } catch (methodErr) { }
     }
     showAuthErr(err.message); 
   }
@@ -699,7 +686,7 @@ async function signupEmail() {
         if (methods.includes('google.com')) {
           return showAuthErr('This email uses Google Sign-In. Please click the Google button above.');
         }
-      } catch (methodErr) { /* ignore */ }
+      } catch (methodErr) { }
     }
     showAuthErr(err.message); 
   }
@@ -723,24 +710,18 @@ async function sendEmailLink() {
 
 function updateAuthUI(){
   const btn=document.getElementById('authBtn');
-  const cBtn=document.getElementById('cloudAuthBtn'); // This is the button inside the general Settings menu
-  const pBtn=document.getElementById('portalAuthBtn'); // This is the button inside the Parent Portal
-  const cStatus=document.getElementById('cloudStatus');
+  const pBtn=document.getElementById('portalAuthBtn');
   const pStatus=document.getElementById('portalCloudStatus');
   
   if(_fireUser){
     const name=_fireUser.displayName||_fireUser.email||'User';
     if(btn) btn.innerHTML='👤 '+name+' Sign&nbsp;out';
-    if(cBtn) cBtn.innerHTML='Sign out';
     if(pBtn) pBtn.innerHTML='Sign out';
-    if(cStatus) cStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>. Data syncs to cloud.';
     if(pStatus) pStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>.';
     showSyncBadge('☁️ Synced',false);
   }else{
     if(btn) btn.innerHTML='👤 Sign&nbsp;In';
-    if(cBtn) cBtn.innerHTML='👤 Sign&nbsp;In';
     if(pBtn) pBtn.innerHTML='👤 Sign&nbsp;In / Sign Up';
-    if(cStatus) cStatus.innerHTML='Sign in to sync across devices.';
     if(pStatus) pStatus.innerHTML='Sign in to sync across devices.';
     hideSyncBadge();
   }
@@ -779,7 +760,8 @@ function loadFromCloud(){
       if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
       if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
       if(data.accent)$('accentPicker').value=data.accent;
-      buildCats();buildGrid(document.getElementById('wordSearch').value);refreshPS();refreshPD();
+      applyVisualModeUI();
+      buildCats();buildGrid(document.getElementById('wordSearch').value);refreshPS();
     }catch(e){
       console.warn('Cloud load:',e);
       showSyncBadge('☁️ Sync error',false);
@@ -808,8 +790,6 @@ function syncToCloud(){
 }
 
 ensureFirebase();
-
-// ── Rest of app ──
 
 function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
 function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
@@ -851,7 +831,19 @@ const msgBox=$('message'),predictions=$('predictions'),speakBtn=$('speakBtn'),
       rateSlider=$('rateSlider'),rateVal=$('rateVal'),
       dot=$('dot'),ttsStatus=$('ttsStatus'),
       wordGrid=$('wordGrid'),gridTitle=$('gridTitle'),wordSearch=$('wordSearch'),
-      catWrap=$('catWrap'),profileSel=$('profileSelect'),profileData=$('profileData');
+      catWrap=$('catWrap'),profileSel=$('profileSelect');
+
+function toggleVisualMode(){
+  data.visualMode = !data.visualMode;
+  save();
+  applyVisualModeUI();
+}
+
+function applyVisualModeUI(){
+  document.body.classList.toggle('visual-mode', !!data.visualMode);
+  const btn = $('visualModeBtn');
+  if(btn) btn.textContent = data.visualMode ? '🔤 Text Mode' : '👁️ Visual Mode';
+}
 
 function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
 function stripEmoji(s){return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d\uFE0F]/gu,'').replace(/\s+/g,' ').trim();}
@@ -1085,20 +1077,11 @@ function refreshPS(){
   profileSel.innerHTML='';
   Object.keys(data.profiles).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;profileSel.appendChild(o);});
   if(data.currentProfile)profileSel.value=data.currentProfile;
-  refreshPD();
-}
-
-function refreshPD(){
-  if(!data.currentProfile){profileData.textContent='No profile';return;}
-  const p = data.profiles[data.currentProfile] || {};
-  const words=getActiveWords();
-  const total=Object.values(words).reduce((a,c)=>a+Object.keys(c).length,0);
-  profileData.innerHTML='<b>'+data.currentProfile+'</b><br>Pack: '+capitalize(p.wordPack||'essential')+'<br>Visible words: '+total+'<br>Custom added: '+Object.values(p.customWords||{}).reduce((a,c)=>a+Object.keys(c).length,0);
 }
 
 function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
-profileSel.onchange=e=>{data.currentProfile=e.target.value;save();buildCats();buildGrid();refreshPD();};
+profileSel.onchange=e=>{data.currentProfile=e.target.value;save();buildCats();buildGrid();};
 
 function openSettings(){
   $('settingsOverlay').classList.add('open');
@@ -1231,7 +1214,7 @@ function doImportFn(){
     if(p?.profiles){
       Object.assign(data,p);
       migrateData(); 
-      save();buildCats();buildGrid();refreshPS();refreshPD();alert('Imported!');
+      save();buildCats();buildGrid();refreshPS();alert('Imported!');
     }else alert('Invalid code');
   }catch(e){alert('Import failed');}
 }
@@ -1242,7 +1225,7 @@ function createProfile() {
   const n=prompt('Profile name:');if(!n)return;
   data.profiles[n] = { wordPack: 'essential', customWords: {}, removedWords: {} };
   data.currentProfile = n;
-  save();refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();refreshPD();
+  save();refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();
   updatePackLabel(); buildWordTable(); populateCatPicker();
 }
 if($('addProfileBtn')) $('addProfileBtn').onclick=createProfile;
@@ -1280,7 +1263,7 @@ async function wFinish(){
   data.setup=true;
   save();
   $('wizardOverlay').classList.remove('open');
-  buildCats();buildGrid();refreshPD();kickPregen();
+  buildCats();buildGrid();kickPregen();
 }
 
 function wFinishChild(){
@@ -1289,7 +1272,7 @@ function wFinishChild(){
   data.setup=true;
   save();
   $('wizardOverlay').classList.remove('open');
-  buildCats();buildGrid();refreshPD();kickPregen();
+  buildCats();buildGrid();kickPregen();
 }
 
 function openPortalPrompt(){
@@ -1358,7 +1341,6 @@ if($('portalProfileSelect')) {
     refreshPS(); 
     buildCats();
     buildGrid();
-    refreshPD();
   };
 }
 
@@ -1374,7 +1356,7 @@ function portalDelProfile(){
   if(data.currentProfile===target) data.currentProfile = Object.keys(data.profiles)[0];
   
   save();
-  refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();refreshPD();
+  refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();
   updatePackLabel(); buildWordTable(); populateCatPicker();
 }
 
@@ -1385,6 +1367,13 @@ function switchTab(el,panelId){
   $(panelId).classList.add('active');
   if(panelId==='tabManage')buildWordTable();
   if(panelId==='tabSettings'){updatePackLabel();refreshPortalProfileSelect();}
+}
+
+function autoSuggestEmoji(text){
+  const w = text.trim().toLowerCase();
+  if(!w) return;
+  dictWord = w;
+  showDictResult(w, 'Suggested emoji for "' + w + '"');
 }
 
 async function lookupWord(){
@@ -1407,7 +1396,10 @@ function showDictResult(word,def){
   const row=$('emojiPickRow');row.innerHTML='';
   const lower=word.toLowerCase();
   const suggestions=[];
-  Object.entries(EMOJI_MAP).forEach(([k,e])=>{if(lower.includes(k)||k.includes(lower))suggestions.push(e);});
+  if (EMOJI_MAP[lower]) suggestions.push(EMOJI_MAP[lower]);
+  Object.entries(EMOJI_MAP).forEach(([k,e])=>{
+    if(k!==lower && (lower.includes(k)||k.includes(lower))) suggestions.push(e);
+  });
   ['❓','🔤','💬','⭐','🌟','🎯'].forEach(e=>{if(!suggestions.includes(e))suggestions.push(e);});
   const shown=[...new Set(suggestions)].slice(0,10);
   selectedEmoji=shown[0]||'❓';
@@ -1421,7 +1413,6 @@ function showDictResult(word,def){
   $('dictResult').classList.add('show');
 }
 
-// ── FIX: Now uses a datalist so users can freely type new categories ──
 function populateCatPicker(){
   const sel=$('catDatalist');
   if(!sel) return;
@@ -1439,7 +1430,6 @@ function confirmAddWord(){
   if(!dictWord&&!$('dictInput').value.trim()){alert('Look up a word first.');return;}
   const word=$('dictWordTitle').textContent||$('dictInput').value.trim();
   
-  // ── FIX: Read from the text input and capitalize it ──
   let cat=$('addWordCat').value.trim();
   if(!cat) cat = 'Custom';
   cat = cat.charAt(0).toUpperCase() + cat.slice(1);
@@ -1451,7 +1441,7 @@ function confirmAddWord(){
   if(p.removedWords){delete p.removedWords[cat+'::'+word];}
   
   save();
-  buildCats();buildGrid();refreshPD();kickPregen();
+  buildCats();buildGrid();kickPregen();
   const msg=$('addWordMsg');
   msg.textContent='✓ "'+word+'" added to '+cat+'!';
   msg.style.display='block';
@@ -1459,8 +1449,6 @@ function confirmAddWord(){
   $('dictResult').classList.remove('show');
   $('dictInput').value='';
   dictWord='';
-  
-  // Clear category input for next time
   $('addWordCat').value = '';
 }
 
@@ -1496,7 +1484,7 @@ function removeWord(cat,word){
   }
   save();
   buildWordTable();
-  buildCats();buildGrid();refreshPD();
+  buildCats();buildGrid();
 }
 
 function updatePackLabel(){
@@ -1513,7 +1501,7 @@ function selectPortalPack(el){
   data.profiles[data.currentProfile].wordPack = el.dataset.pack;
   save();
   updatePackLabel();
-  buildCats();buildGrid();refreshPD();kickPregen();
+  buildCats();buildGrid();kickPregen();
 }
 
 async function changePassword(){
@@ -1545,7 +1533,8 @@ function init(){
   if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
   if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
   if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
-  refreshPS();buildCats();buildGrid();refreshPD();
+  applyVisualModeUI();
+  refreshPS();buildCats();buildGrid();
   $('bsBtn').onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr.pop();msgBox.value=arr.join(' ');updatePredictions();};
   if(!data.setup){
     $('wizardOverlay').classList.add('open');
