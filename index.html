@@ -37,8 +37,9 @@ select,button,input,textarea{font-family:inherit}
 .left{flex:0 0 290px;display:flex;flex-direction:column;gap:10px}
 .right{flex:1;min-width:0}
 .card{background:var(--card);border-radius:var(--radius);padding:12px;box-shadow:0 1px 8px rgba(0,0,0,.06)}
-#message{width:100%;padding:10px;border-radius:8px;border:1.5px solid #ddd;font-size:16px;min-height:58px;resize:none;background:#f8f9fb;line-height:1.5;display:block}
-#message:focus{outline:none;border-color:var(--accent)}
+#messageWrap{width:100%;padding:10px;border-radius:8px;border:1.5px solid #ddd;min-height:58px;background:#f8f9fb;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.msg-chip{display:inline-flex;align-items:center;gap:4px;background:#fff;border:1px solid #ddd;padding:4px 8px;border-radius:6px;font-size:14px;font-weight:600}
+.msg-img{width:22px;height:22px;object-fit:cover;border-radius:4px}
 #predictions{list-style:none;max-height:100px;overflow-y:auto;border-radius:6px;margin-top:5px}
 #predictions li{padding:7px 10px;border-bottom:1px solid #f0f0f0;cursor:pointer;font-size:13px}
 #predictions li:hover{background:var(--accent-light)}
@@ -56,11 +57,14 @@ select,button,input,textarea{font-family:inherit}
 .word-btn{background:#fff;border:1.5px solid #eee;padding:6px 4px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;height:80px;transition:all .12s}
 .word-btn:active{transform:scale(.93);border-color:var(--accent);background:var(--accent-light)}
 .word-emoji{font-size:22px;display:block;margin-bottom:4px;line-height:1}
+.word-custom-img{width:28px;height:28px;object-fit:cover;border-radius:4px;margin-bottom:4px;display:block}
 .word-text{font-size:12px;font-weight:600;text-align:center;line-height:1.2;word-break:break-word}
-body.visual-mode #wordGrid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
-body.visual-mode .word-btn{height:120px;padding:10px 6px}
-body.visual-mode .word-emoji{font-size:52px;margin-bottom:0}
-body.visual-mode .word-text{display:none}
+body.icons-only-mode #wordGrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+body.icons-only-mode .word-btn{height:110px;padding:8px 6px}
+body.icons-only-mode .word-emoji{font-size:48px;margin-bottom:0}
+body.icons-only-mode .word-custom-img{width:56px;height:56px;margin-bottom:0}
+body.icons-only-mode .word-text{display:none}
+body.icons-only-mode .msg-text{display:none}
 #wordSearch{padding:7px 12px;border-radius:999px;border:1.5px solid #ddd;font-size:13px;width:100%;display:block;margin-bottom:9px}
 #wordSearch:focus{outline:none;border-color:var(--accent)}
 #settingsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end;justify-content:center}
@@ -137,7 +141,7 @@ body.visual-mode .word-text{display:none}
 .dict-result.show{display:block}
 .dict-word{font-size:16px;font-weight:800;margin-bottom:4px}
 .dict-def{font-size:12px;color:#666;line-height:1.5;margin-bottom:10px}
-.emoji-pick-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.emoji-pick-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
 .emoji-opt{font-size:22px;padding:4px 6px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .1s}
 .emoji-opt.sel{border-color:var(--accent);background:var(--accent-light)}
 #syncBadge{display:none;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:11px;font-weight:600;cursor:default;padding:4px 8px;border-radius:6px;white-space:nowrap;align-items:center}
@@ -176,7 +180,6 @@ body.visual-mode .word-text{display:none}
   </div>
   <div class="hdr-right">
     <span id="syncBadge">☁️</span>
-    <button class="icon-btn" id="visualModeBtn" onclick="toggleVisualMode()">👁️ Visual Mode</button>
     <button class="icon-btn" id="authBtn" onclick="toggleAuth()">👤 Sign In</button>
     <button class="icon-btn" onclick="openSettings()">⚙️ Settings</button>
   </div>
@@ -193,7 +196,7 @@ body.visual-mode .word-text{display:none}
   <div class="panel">
     <div class="left">
       <div class="card">
-        <textarea id="message" readonly placeholder="Tap words to build message…"></textarea>
+        <div id="messageWrap"></div>
         <ul id="predictions"></ul>
         <div id="ttsBar"><div class="dot" id="dot"></div><span id="ttsStatus">Ready</span></div>
         <div class="speak-row">
@@ -214,7 +217,7 @@ body.visual-mode .word-text{display:none}
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <strong id="gridTitle">Words</strong>
-          <span style="font-size:12px;color:var(--muted)">Tap to add</span>
+          <span style="font-size:12px;color:var(--muted)">Tap or drag to add</span>
         </div>
         <div id="wordGrid"></div>
       </div>
@@ -254,6 +257,10 @@ body.visual-mode .word-text{display:none}
       <button class="btn" style="width:100%" onclick="openPortalPrompt()">🔒 Open Parent Portal</button>
     </div>
     <div class="s-section">
+      <div class="s-label">🖼️ Display Mode</div>
+      <button class="btn ghost" id="settingsVisualModeBtn" style="width:100%" onclick="toggleVisualMode()">Toggle Icons Instead of Words</button>
+    </div>
+    <div class="s-section">
       <div class="s-label">🎙️ Voice Engine</div>
       <div class="engine-grid" id="engineGrid">
         <div class="engine-card active" data-eng="system">
@@ -267,7 +274,7 @@ body.visual-mode .word-text{display:none}
           <div class="e-sub">Human-like · ~80MB first load</div>
         </div>
       </div>
-      <div id="sysPickerWrap">
+      <div id="sysPickerWrap,#kokoroPickerWrap">
         <div class="s-label" style="margin-top:10px;margin-bottom:4px">System Voice</div>
         <div id="sysVoiceList"></div>
       </div>
@@ -344,6 +351,44 @@ body.visual-mode .word-text{display:none}
         <button class="btn" onclick="wStep2Next()">Continue →</button>
       </div>
     </div>
+    <div class="modal-step" id="wStepDisplay">
+      <h2>🖼️ Word or Icon Mode</h2>
+      <p>Would you like to display icons instead of words?</p>
+      <div class="big-choice">
+        <button class="choice-btn" onclick="chooseDisplayMode(true)">
+          🖼️ Use icons instead of words
+          <span class="sub">Display only large icons and show icons in the message box</span>
+        </button>
+        <button class="choice-btn" onclick="chooseDisplayMode(false)">
+          🔤 Use words with icons
+          <span class="sub">Standard view with word labels</span>
+        </button>
+      </div>
+      <div class="modal-btn-row">
+        <button class="btn ghost" onclick="showStep('wStep2')">← Back</button>
+      </div>
+    </div>
+    <div class="modal-step" id="wStepAuthPrompt">
+      <h2>☁️ Sign In / Cloud Sync</h2>
+      <p>Would you like to sign in to sync your data across devices?</p>
+      <div class="big-choice">
+        <button class="choice-btn" onclick="triggerWizardAuth('google')">
+          🌐 Sign in with Google
+          <span class="sub">Fast one-click sign in with Google</span>
+        </button>
+        <button class="choice-btn" onclick="triggerWizardAuth('all')">
+          👤 Sign in / Sign Up with Email
+          <span class="sub">Use email, password, or magic link</span>
+        </button>
+        <button class="choice-btn" onclick="skipWizardAuth()">
+          ⏭️ Skip for now
+          <span class="sub">Continue using local storage only</span>
+        </button>
+      </div>
+      <div class="modal-btn-row">
+        <button class="btn ghost" onclick="showStep('wStepDisplay')">← Back</button>
+      </div>
+    </div>
     <div class="modal-step" id="wStep3">
       <h2>🔒 Create a Parent Password</h2>
       <p>This password protects the Parent Portal where you can add or remove words.</p>
@@ -351,7 +396,7 @@ body.visual-mode .word-text{display:none}
       <input class="modal-input" type="password" id="pw1" placeholder="Choose a password" autocomplete="new-password"/>
       <input class="modal-input" type="password" id="pw2" placeholder="Confirm password" autocomplete="new-password"/>
       <div class="modal-btn-row">
-        <button class="btn ghost" onclick="wBack()">← Back</button>
+        <button class="btn ghost" onclick="showStep('wStepAuthPrompt')">← Back</button>
         <button class="btn" onclick="wFinish()">Finish Setup ✓</button>
       </div>
     </div>
@@ -391,7 +436,7 @@ body.visual-mode .word-text{display:none}
       <div class="ptab" onclick="switchTab(this,'tabSettings')">⚙️ Portal Settings</div>
     </div>
     <div class="ptab-panel active" id="tabAdd">
-      <p style="font-size:13px;color:#666;margin-bottom:12px">Look up a word using the dictionary, choose an emoji, then add it.</p>
+      <p style="font-size:13px;color:#666;margin-bottom:12px">Look up a word, choose an emoji, or upload a custom picture.</p>
       <div class="dict-lookup">
         <input type="text" id="dictInput" placeholder="Type a word…" oninput="autoSuggestEmoji(this.value)" onkeydown="if(event.key==='Enter')lookupWord()"/>
         <button class="btn" onclick="lookupWord()">Look up</button>
@@ -399,8 +444,19 @@ body.visual-mode .word-text{display:none}
       <div class="dict-result" id="dictResult">
         <div class="dict-word" id="dictWordTitle"></div>
         <div class="dict-def" id="dictDef"></div>
-        <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pick an emoji</div>
+        
+        <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pick an emoji or upload image</div>
         <div class="emoji-pick-row" id="emojiPickRow"></div>
+
+        <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
+          <input type="file" id="picUploadInput" accept="image/*" style="display:none" onchange="handlePicUpload(event)">
+          <button type="button" class="btn ghost" style="font-size:12px;padding:6px 10px" onclick="$('picUploadInput').click()">📷 Upload Picture</button>
+          <span id="uploadPreviewWrap" style="display:none;align-items:center;gap:6px">
+            <img id="uploadPreviewImg" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid #ddd">
+            <span style="font-size:11px;color:#059669;font-weight:700">Image selected ✓</span>
+          </span>
+        </div>
+
         <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:4px">Category</div>
         <input type="text" id="addWordCat" class="modal-input" list="catDatalist" placeholder="Select or type new category..." style="margin-bottom:10px;">
         <datalist id="catDatalist"></datalist>
@@ -413,7 +469,7 @@ body.visual-mode .word-text{display:none}
       <input type="search" id="portalSearch" placeholder="🔍 Filter words…" style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;margin-bottom:10px" />
       <div style="max-height:320px;overflow-y:auto">
         <table class="word-table" id="wordTable">
-          <thead><tr><th>Emoji</th><th>Word</th><th>Category</th><th></th></tr></thead>
+          <thead><tr><th>Icon</th><th>Word</th><th>Category</th><th></th></tr></thead>
           <tbody id="wordTableBody"></tbody>
         </table>
       </div>
@@ -824,25 +880,64 @@ let wizardRole='parent';
 let wizardPack='essential';
 let selectedEmoji='❓';
 let dictWord='';
+let messageTokens=[];
 
 const $=id=>document.getElementById(id);
-const msgBox=$('message'),predictions=$('predictions'),speakBtn=$('speakBtn'),
+const msgWrap=$('messageWrap'),predictions=$('predictions'),speakBtn=$('speakBtn'),
       stopBtn=$('stopBtn'),bsBtn=$('bsBtn'),
       rateSlider=$('rateSlider'),rateVal=$('rateVal'),
       dot=$('dot'),ttsStatus=$('ttsStatus'),
       wordGrid=$('wordGrid'),gridTitle=$('gridTitle'),wordSearch=$('wordSearch'),
       catWrap=$('catWrap'),profileSel=$('profileSelect');
 
+msgWrap.ondragover = e => e.preventDefault();
+msgWrap.ondrop = e => {
+  e.preventDefault();
+  const w = e.dataTransfer.getData('text/plain');
+  const em = e.dataTransfer.getData('text/emoji');
+  if(w){
+    appendWordToMsg(w, em);
+    speakWord(w);
+  }
+};
+
+function renderMessage(){
+  msgWrap.innerHTML='';
+  if(!messageTokens.length){
+    msgWrap.innerHTML='<span style="color:#888;font-size:14px">Tap or drag words to build message…</span>';
+    return;
+  }
+  messageTokens.forEach(t=>{
+    const chip=document.createElement('div');
+    chip.className='msg-chip';
+    if(t.em && t.em.startsWith('data:image/')){
+      chip.innerHTML='<img class="msg-img" src="'+t.em+'"><span class="msg-text">'+t.w+'</span>';
+    } else {
+      chip.innerHTML=(t.em ? '<span>'+t.em+'</span>' : '') + '<span class="msg-text">'+t.w+'</span>';
+    }
+    msgWrap.appendChild(chip);
+  });
+}
+
+function appendWordToMsg(w, em){
+  messageTokens.push({w, em: em || ''});
+  renderMessage();
+  updatePredictions();
+}
+
 function toggleVisualMode(){
   data.visualMode = !data.visualMode;
   save();
   applyVisualModeUI();
+  buildCats();
+  buildGrid();
+  renderMessage();
 }
 
 function applyVisualModeUI(){
-  document.body.classList.toggle('visual-mode', !!data.visualMode);
-  const btn = $('visualModeBtn');
-  if(btn) btn.textContent = data.visualMode ? '🔤 Text Mode' : '👁️ Visual Mode';
+  document.body.classList.toggle('icons-only-mode', !!data.visualMode);
+  const btn = $('settingsVisualModeBtn');
+  if(btn) btn.textContent = data.visualMode ? 'Switch to Words & Icons' : 'Switch to Icons Only';
 }
 
 function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
@@ -970,6 +1065,7 @@ function playSequence(blobs){
 }
 
 async function speak(text){
+  if(!text) return;
   const eng=data.ttsEngine||'system';
   if(eng!=='kokoro'){speakSystem(text);return;}
   const voice=data.kokoroVoice||'af_heart';
@@ -984,9 +1080,9 @@ async function speak(text){
 }
 
 speakBtn.onclick=()=>{
-  const raw=msgBox.value.trim();
-  if(!raw){setStatus('Nothing to say');return;}
-  speak(stripEmoji(raw)||raw);
+  if(!messageTokens.length){setStatus('Nothing to say');return;}
+  const spokenText=messageTokens.map(t=>t.w).join(' ');
+  speak(spokenText);
 };
 
 stopBtn.onclick=()=>{
@@ -994,6 +1090,12 @@ stopBtn.onclick=()=>{
   _stopSequence=true;
   if(_kokoroAudioEl){_kokoroAudioEl.pause();_kokoroAudioEl.currentTime=0;}
   setStatus('Stopped');
+};
+
+bsBtn.onclick=()=>{
+  messageTokens.pop();
+  renderMessage();
+  updatePredictions();
 };
 
 rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed(1)+'×';};
@@ -1029,8 +1131,17 @@ function buildGrid(filter=''){
     .forEach(([w,e])=>{
       const btn=document.createElement('button');
       btn.className='word-btn';btn.type='button';
-      btn.innerHTML='<span class="word-emoji">'+(e||'❓')+'</span><span class="word-text">'+w+'</span>';
-      btn.onclick=()=>{msgBox.value=msgBox.value?(msgBox.value.trimEnd()+' '+w):w;updatePredictions();speakWord(w);};
+      btn.draggable = true;
+      btn.ondragstart = ev => {
+        ev.dataTransfer.setData('text/plain', w);
+        ev.dataTransfer.setData('text/emoji', e || '');
+      };
+      if(e && e.startsWith('data:image/')){
+        btn.innerHTML='<img class="word-custom-img" src="'+e+'"><span class="word-text">'+w+'</span>';
+      } else {
+        btn.innerHTML='<span class="word-emoji">'+(e||'❓')+'</span><span class="word-text">'+w+'</span>';
+      }
+      btn.onclick=()=>{appendWordToMsg(w, e);speakWord(w);};
       wordGrid.appendChild(btn);
     });
 }
@@ -1061,17 +1172,22 @@ function allWords(){
 
 function updatePredictions(){
   predictions.innerHTML='';
-  const last=msgBox.value.trim().split(/\s+/).pop().toLowerCase();
-  if(!last)return;
+  if(!messageTokens.length) return;
+  const last = messageTokens[messageTokens.length - 1].w.toLowerCase();
   allWords().filter(w=>w.toLowerCase().startsWith(last)&&w.toLowerCase()!==last).slice(0,6)
     .forEach(m=>{
       const li=document.createElement('li');li.textContent=m;
-      li.onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr[arr.length-1]=m;msgBox.value=arr.join(' ');predictions.innerHTML='';};
+      li.onclick=()=>{
+        const words=getActiveWords();
+        let foundEm = '';
+        Object.values(words).forEach(c=>{ if(c[m]) foundEm = c[m]; });
+        messageTokens[messageTokens.length - 1] = {w: m, em: foundEm};
+        renderMessage();
+        predictions.innerHTML='';
+      };
       predictions.appendChild(li);
     });
 }
-
-msgBox.addEventListener('input',updatePredictions);
 
 function refreshPS(){
   profileSel.innerHTML='';
@@ -1236,7 +1352,9 @@ function wGoStep2(role){wizardRole=role;showStep('wStep2');}
 function wBack(){
   const active=document.querySelector('.modal-step.active');
   if(active.id==='wStep2')showStep('wStep1');
-  else if(active.id==='wStep3')showStep('wStep2');
+  else if(active.id==='wStepDisplay')showStep('wStep2');
+  else if(active.id==='wStepAuthPrompt')showStep('wStepDisplay');
+  else if(active.id==='wStep3')showStep('wStepAuthPrompt');
 }
 function selectPack(el){
   document.querySelectorAll('.pack-card').forEach(c=>c.classList.remove('sel'));
@@ -1244,6 +1362,24 @@ function selectPack(el){
   wizardPack=el.dataset.pack;
 }
 function wStep2Next(){
+  showStep('wStepDisplay');
+}
+function chooseDisplayMode(iconsOnly){
+  data.visualMode = iconsOnly;
+  showStep('wStepAuthPrompt');
+}
+function triggerWizardAuth(mode){
+  if(mode === 'google'){
+    loginGoogle().then(() => proceedAfterWizardAuth());
+  } else {
+    openAuthModal();
+    proceedAfterWizardAuth();
+  }
+}
+function skipWizardAuth(){
+  proceedAfterWizardAuth();
+}
+function proceedAfterWizardAuth(){
   if(wizardRole==='parent') showStep('wStep3');
   else showStep('wStep3b');
 }
@@ -1262,8 +1398,9 @@ async function wFinish(){
   data.profiles[data.currentProfile].wordPack = wizardPack;
   data.setup=true;
   save();
+  applyVisualModeUI();
   $('wizardOverlay').classList.remove('open');
-  buildCats();buildGrid();kickPregen();
+  buildCats();buildGrid();renderMessage();kickPregen();
 }
 
 function wFinishChild(){
@@ -1271,8 +1408,9 @@ function wFinishChild(){
   data.profiles[data.currentProfile].wordPack = wizardPack;
   data.setup=true;
   save();
+  applyVisualModeUI();
   $('wizardOverlay').classList.remove('open');
-  buildCats();buildGrid();kickPregen();
+  buildCats();buildGrid();renderMessage();kickPregen();
 }
 
 function openPortalPrompt(){
@@ -1402,15 +1540,51 @@ function showDictResult(word,def){
   });
   ['❓','🔤','💬','⭐','🌟','🎯'].forEach(e=>{if(!suggestions.includes(e))suggestions.push(e);});
   const shown=[...new Set(suggestions)].slice(0,10);
-  selectedEmoji=shown[0]||'❓';
-  shown.forEach((e,i)=>{
+  
+  if(!selectedEmoji || !selectedEmoji.startsWith('data:image/')){
+    selectedEmoji=shown[0]||'❓';
+  }
+
+  shown.forEach((e)=>{
     const span=document.createElement('span');
-    span.className='emoji-opt'+(i===0?' sel':'');
+    span.className='emoji-opt'+(selectedEmoji===e?' sel':'');
     span.textContent=e;
-    span.onclick=()=>{selectedEmoji=e;row.querySelectorAll('.emoji-opt').forEach(s=>s.classList.remove('sel'));span.classList.add('sel');};
+    span.onclick=()=>{
+      selectedEmoji=e;
+      $('uploadPreviewWrap').style.display='none';
+      row.querySelectorAll('.emoji-opt').forEach(s=>s.classList.remove('sel'));
+      span.classList.add('sel');
+    };
     row.appendChild(span);
   });
   $('dictResult').classList.add('show');
+}
+
+function handlePicUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      const maxDim = 96;
+      let w = img.width, h = img.height;
+      if (w > h) { if (w > maxDim) { h *= maxDim / w; w = maxDim; } }
+      else { if (h > maxDim) { w *= maxDim / h; h = maxDim; } }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      
+      selectedEmoji = dataUrl;
+      $('uploadPreviewImg').src = dataUrl;
+      $('uploadPreviewWrap').style.display = 'inline-flex';
+      $('emojiPickRow').querySelectorAll('.emoji-opt').forEach(s=>s.classList.remove('sel'));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
 }
 
 function populateCatPicker(){
@@ -1448,6 +1622,8 @@ function confirmAddWord(){
   setTimeout(()=>msg.style.display='none',2500);
   $('dictResult').classList.remove('show');
   $('dictInput').value='';
+  $('uploadPreviewWrap').style.display='none';
+  $('picUploadInput').value='';
   dictWord='';
   $('addWordCat').value = '';
 }
@@ -1465,7 +1641,10 @@ function buildWordTable(){
   rows.sort((a,b)=>a.w.localeCompare(b.w));
   rows.forEach(({cat,w,e})=>{
     const tr=document.createElement('tr');
-    tr.innerHTML='<td>'+e+'</td><td>'+w+'</td><td style="color:#999;font-size:12px">'+cat+'</td><td><button class="del-word-btn" title="Remove">🗑️</button></td>';
+    const iconHtml = (e && e.startsWith('data:image/')) 
+      ? '<img src="'+e+'" style="width:24px;height:24px;object-fit:cover;border-radius:4px">'
+      : e;
+    tr.innerHTML='<td>'+iconHtml+'</td><td>'+w+'</td><td style="color:#999;font-size:12px">'+cat+'</td><td><button class="del-word-btn" title="Remove">🗑️</button></td>';
     tr.querySelector('.del-word-btn').onclick=()=>removeWord(cat,w);
     body.appendChild(tr);
   });
@@ -1534,8 +1713,7 @@ function init(){
   if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
   if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
   applyVisualModeUI();
-  refreshPS();buildCats();buildGrid();
-  $('bsBtn').onclick=()=>{const arr=msgBox.value.trim().split(/\s+/);arr.pop();msgBox.value=arr.join(' ');updatePredictions();};
+  refreshPS();buildCats();buildGrid();renderMessage();
   if(!data.setup){
     $('wizardOverlay').classList.add('open');
   }
