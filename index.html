@@ -14,7 +14,8 @@
 body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
 header{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:54px;background:linear-gradient(90deg,var(--accent-dark),var(--accent));color:#fff;position:sticky;top:0;}
 header h1{font-size:17px;font-weight:700;white-space:nowrap}
-.subtitle{font-size:10px;opacity:.8;margin-top:1px}
+.credits-link{font-size:10px;opacity:.9;margin-top:2px;cursor:pointer;text-decoration:underline;background:none;border:none;color:#fff;padding:0;font-family:inherit}
+.credits-link:hover{opacity:1}
 .hdr-right{display:flex;gap:6px;align-items:center}
 .icon-btn{background:rgba(255,255,255,.18);border:0;color:#fff;font-size:13px;font-weight:700;cursor:pointer;padding:7px 10px;border-radius:8px;line-height:1;transition:background .12s;white-space:nowrap}
 .icon-btn:active{background:rgba(255,255,255,.35)}
@@ -46,7 +47,7 @@ select,button,input,textarea{font-family:inherit}
 #ttsBar{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--accent-light);border:1px solid #b8d0f7;margin:8px 0;font-size:12px;color:var(--accent)}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
 .dot.on{animation:pulse .7s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25;transform:scale(.55)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.25;transform:scale(.55)}}
 .speak-row{display:flex;gap:6px;margin-bottom:8px}
 .speak-row .btn{flex:1;font-size:14px;padding:11px 8px}
 .rate-wrap{display:flex;align-items:center;gap:8px}
@@ -150,7 +151,7 @@ body.icons-only-mode .msg-text{display:none}
 @keyframes syncPulse{0%,100%{opacity:1}50%{opacity:.4}}
 @media(max-width:640px){
   header h1{font-size:15px}
-  .subtitle{display:none}
+  .credits-link{font-size:9px}
   main{padding:8px}
   .panel{flex-direction:column}
   .left{flex:none;width:100%;order:1}
@@ -176,7 +177,7 @@ body.icons-only-mode .msg-text{display:none}
 <header>
   <div>
     <h1>Halo AAC</h1>
-    <div class="subtitle">Thanks Kaelynn Partlow · Ivan's build</div>
+    <button class="credits-link" onclick="openCreditsModal()">Credits</button>
   </div>
   <div class="hdr-right">
     <span id="syncBadge">☁️</span>
@@ -224,6 +225,19 @@ body.icons-only-mode .msg-text{display:none}
     </div>
   </div>
 </main>
+
+<!-- Credits Modal -->
+<div class="modal-overlay" id="creditsOverlay" onclick="if(event.target===this)closeCreditsModal()">
+  <div class="modal-box">
+    <h2>Credits</h2>
+    <p>Halo AAC would not exist without the work and inspiration of these creators:</p>
+    <ul style="margin-left:20px;font-size:14px;color:#555;line-height:1.8;margin-bottom:20px">
+      <li><strong>Kaelynn Partlow</strong> — The inspiration behind Halo AAC</li>
+      <li><strong>@Real Autism Mom</strong> — Inspired me to add the ability to sign in with Google so you never lose your progress</li>
+    </ul>
+    <button class="btn" style="width:100%" onclick="closeCreditsModal()">Close</button>
+  </div>
+</div>
 
 <div class="modal-overlay" id="authOverlay">
   <div class="modal-box">
@@ -274,7 +288,7 @@ body.icons-only-mode .msg-text{display:none}
           <div class="e-sub">Human-like · ~80MB first load</div>
         </div>
       </div>
-      <div id="sysPickerWrap,#kokoroPickerWrap">
+      <div id="sysPickerWrap">
         <div class="s-label" style="margin-top:10px;margin-bottom:4px">System Voice</div>
         <div id="sysVoiceList"></div>
       </div>
@@ -911,9 +925,9 @@ function renderMessage(){
     const chip=document.createElement('div');
     chip.className='msg-chip';
     if(t.em && t.em.startsWith('data:image/')){
-      chip.innerHTML='<img class="msg-img" src="'+t.em+'"><span class="msg-text">'+t.w+'</span>';
+      chip.innerHTML='<img class="msg-img" src="'+t.em+'">'+(!data.visualMode ? '<span class="msg-text">'+t.w+'</span>' : '');
     } else {
-      chip.innerHTML=(t.em ? '<span>'+t.em+'</span>' : '') + '<span class="msg-text">'+t.w+'</span>';
+      chip.innerHTML=(t.em ? '<span>'+t.em+'</span>' : '') + (!data.visualMode ? '<span class="msg-text">'+t.w+'</span>' : '');
     }
     msgWrap.appendChild(chip);
   });
@@ -1698,6 +1712,13 @@ async function changePassword(){
 document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
   c.onclick=()=>selectPortalPack(c);
 });
+
+function openCreditsModal(){
+  $('creditsOverlay').classList.add('open');
+}
+function closeCreditsModal(){
+  $('creditsOverlay').classList.remove('open');
+}
 
 function init(){
   if(!data.profiles || !Object.keys(data.profiles).length){
