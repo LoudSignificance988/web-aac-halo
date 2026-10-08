@@ -35,8 +35,7 @@ No installation or build process is required.
 Halo AAC would not exist without the work and inspiration of these creators:
 
 - **Kaelynn Partlow** — The inspiration behind Halo AAC 
-- **@Real Autism Mom** — Inspired the implementation of **Google Sign-In**, making it possible to securely sync user data across devices.
-
+- **@Real Autism Mom** —inspired me to add the ability to sign in with Google so you never lose your progress 
 ## Acknowledgements
 
 Halo AAC was created by LoudSignificance988 with the assistance of AI tools.
