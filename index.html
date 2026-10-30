@@ -17,7 +17,7 @@ header h1{font-size:17px;font-weight:700;white-space:nowrap}
 .credits-link{font-size:10px;opacity:.9;margin-top:2px;cursor:pointer;text-decoration:underline;background:none;border:none;color:#fff;padding:0;font-family:inherit}
 .credits-link:hover{opacity:1}
 .hdr-right{display:flex;gap:6px;align-items:center}
-.icon-btn{background:rgba(2ee55,255,255,.18);border:0;color:#fff;font-size:13px;font-weight:700;cursor:pointer;padding:7px 10px;border-radius:8px;line-height:1;transition:background .12s;white-space:nowrap}
+.icon-btn{background:rgba(255,255,255,.18);border:0;color:#fff;font-size:13px;font-weight:700;cursor:pointer;padding:7px 10px;border-radius:8px;line-height:1;transition:background .12s;white-space:nowrap}
 .icon-btn:active{background:rgba(255,255,255,.35)}
 main{padding:10px;max-width:1100px;margin:0 auto}
 select,button,input,textarea{font-family:inherit}
@@ -112,6 +112,7 @@ body.icons-only-mode .msg-text{display:none}
 .big-choice{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
 .choice-btn{border:2px solid #e8e8e8;border-radius:12px;padding:14px 16px;cursor:pointer;text-align:left;background:#fafafa;transition:all .13s;font-size:15px;font-weight:600}
 .choice-btn:hover{border-color:var(--accent);background:var(--accent-light)}
+.choice-btn .sub { display:block; font-size:12px; color:#666; font-weight:400; margin-top:4px; }
 .pack-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
 .pack-card{border:2px solid #e8e8e8;border-radius:12px;padding:14px 12px;cursor:pointer;text-align:center;background:#fafafa;transition:all .13s}
 .pack-card:hover,.pack-card.sel{border-color:var(--accent);background:var(--accent-light)}
@@ -217,7 +218,10 @@ body.icons-only-mode .msg-text{display:none}
       <input type="search" id="wordSearch" placeholder="🔍 Search words…">
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <strong id="gridTitle">Words</strong>
+          <div>
+             <button id="backToFoldersBtn" class="btn ghost" style="display:none; padding:4px 8px; font-size:12px; margin-right:8px">← Back</button>
+             <strong id="gridTitle">Words</strong>
+          </div>
           <span style="font-size:12px;color:var(--muted)">Tap or drag to add</span>
         </div>
         <div id="wordGrid"></div>
@@ -229,11 +233,11 @@ body.icons-only-mode .msg-text{display:none}
 <!-- Credits Modal -->
 <div class="modal-overlay" id="creditsOverlay" onclick="if(event.target===this)closeCreditsModal()">
   <div class="modal-box">
-    <h2>Credits</h2>
+    <h2>Clredits</h2>
     <p>Halo AAC would not exist without the work and inspiration of these creators:</p>
     <ul style="margin-left:20px;font-size:14px;color:#555;line-height:1.8;margin-bottom:20px">
-      <li><a href="https://www.tiktok.com/@kaelynn_vp?is_from_webapp=1&sender_device=pc" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Kaelynn Partlow</a> — The inspiration behind Halo AAC</li>
-      <li><a href="https://www.tiktok.com/realautismmom?is_from_webapp=1&sender_device=pc" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">@Real Autism Mom</a> — Inspired me to add the ability to sign in with Google so you never lose your progress</li>
+      <li><a href="https://www.tiktok.com/@kaelynn_vp" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Kaelynn Partlow</a> — The inspiration behind Halo AAC</li>
+      <li><a href="https://www.tiktok.com/@realautismmom" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">@Real Autism Mom</a> — Inspired me to add the ability to sign in with Google so you never lose your progress</li>
     </ul>
     <button class="btn" style="width:100%" onclick="closeCreditsModal()">Close</button>
   </div>
@@ -269,6 +273,10 @@ body.icons-only-mode .msg-text{display:none}
     <div class="s-section">
       <div class="s-label">👨‍👩‍👧 Parental Center</div>
       <button class="btn" style="width:100%" onclick="openPortalPrompt()">🔒 Open Parent Portal</button>
+    </div>
+    <div class="s-section">
+      <div class="s-label">🗂️ Menu Layout</div>
+      <button class="btn ghost" id="settingsLayoutModeBtn" style="width:100%" onclick="toggleLayoutMode()">Switch to Folder View</button>
     </div>
     <div class="s-section">
       <div class="s-label">🖼️ Display Mode</div>
@@ -382,6 +390,23 @@ body.icons-only-mode .msg-text{display:none}
         <button class="btn ghost" onclick="showStep('wStep2')">← Back</button>
       </div>
     </div>
+    <div class="modal-step" id="wStepLayout">
+      <h2>🗂️ Menu Layout</h2>
+      <p>How would you like to organize the words?</p>
+      <div class="big-choice">
+        <button class="choice-btn" onclick="chooseLayoutMode('folder')">
+          📁 Folders (Home Screen)
+          <span class="sub">Tap a category folder to see its words</span>
+        </button>
+        <button class="choice-btn" onclick="chooseLayoutMode('bar')">
+          📊 Category Bar
+          <span class="sub">Swipe through categories at the top of the screen</span>
+        </button>
+      </div>
+      <div class="modal-btn-row">
+        <button class="btn ghost" onclick="showStep('wStepDisplay')">← Back</button>
+      </div>
+    </div>
     <div class="modal-step" id="wStepAuthPrompt">
       <h2>☁️ Sign In / Cloud Sync</h2>
       <p>Would you like to sign in to sync your data across devices?</p>
@@ -400,7 +425,7 @@ body.icons-only-mode .msg-text{display:none}
         </button>
       </div>
       <div class="modal-btn-row">
-        <button class="btn ghost" onclick="showStep('wStepDisplay')">← Back</button>
+        <button class="btn ghost" onclick="showStep('wStepLayout')">← Back</button>
       </div>
     </div>
     <div class="modal-step" id="wStep3">
@@ -587,13 +612,21 @@ const EMOJI_MAP={
   good:"👍",bad:"👎",big:"🔝",small:"🔽",fast:"⚡",slow:"🐢"
 };
 
+const CAT_EMOJIS = {
+  "Basics": "⭐", "Feelings": "😊", "Needs": "🚽", "Social": "👋", "People": "👤",
+  "School": "🏫", "Home": "🏠", "Food & Drink": "🍎", "Places": "🏞️",
+  "Actions": "🏃", "Animals": "🐶", "Things": "🧸", "Questions": "❓",
+  "Time": "⏰", "Transport": "🚗", "Weather": "☀️", "Health": "🩺",
+  "Custom": "📁"
+};
+
 const KEY='halo_aac_v2';
-const SYNC_KEYS=['profiles','currentProfile','sysVoice','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice','visualMode'];
+const SYNC_KEYS=['profiles','currentProfile','sysVoice','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice','visualMode', 'layoutMode'];
 const DEFAULTS={
   profiles:{},currentProfile:null,sysVoice:null,
   accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5',
   setup:false,portalHash:null,
-  ttsEngine:'system',kokoroVoice:'af_heart',visualMode:false
+  ttsEngine:'system',kokoroVoice:'af_heart',visualMode:false, layoutMode:'bar'
 };
 
 let data=(()=>{
@@ -831,6 +864,7 @@ function loadFromCloud(){
       if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
       if(data.accent)$('accentPicker').value=data.accent;
       applyVisualModeUI();
+      applyLayoutModeUI();
       buildCats();buildGrid(document.getElementById('wordSearch').value);refreshPS();
     }catch(e){
       console.warn('Cloud load:',e);
@@ -895,6 +929,7 @@ let wizardPack='essential';
 let selectedEmoji='❓';
 let dictWord='';
 let messageTokens=[];
+let folderViewActive = true;
 
 const $=id=>document.getElementById(id);
 const msgWrap=$('messageWrap'),predictions=$('predictions'),speakBtn=$('speakBtn'),
@@ -952,6 +987,21 @@ function applyVisualModeUI(){
   document.body.classList.toggle('icons-only-mode', !!data.visualMode);
   const btn = $('settingsVisualModeBtn');
   if(btn) btn.textContent = data.visualMode ? 'Switch to Words & Icons' : 'Switch to Icons Only';
+}
+
+function toggleLayoutMode() {
+  data.layoutMode = data.layoutMode === 'folder' ? 'bar' : 'folder';
+  folderViewActive = true; 
+  save();
+  applyLayoutModeUI();
+  buildCats();
+  buildGrid();
+}
+
+function applyLayoutModeUI() {
+  $('catWrap').style.display = data.layoutMode === 'folder' ? 'none' : 'flex';
+  const btn = $('settingsLayoutModeBtn');
+  if(btn) btn.textContent = data.layoutMode === 'folder' ? 'Switch to Category Bar' : 'Switch to Folder View';
 }
 
 function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
@@ -1137,32 +1187,93 @@ function getActiveWords(){
 
 function buildGrid(filter=''){
   const words=getActiveWords();
+  wordGrid.innerHTML='';
+  
+  const backBtn = $('backToFoldersBtn');
+  
+  if (filter) {
+    gridTitle.textContent = 'Search Results';
+    backBtn.style.display = 'none';
+    
+    let allMatched = [];
+    Object.entries(words).forEach(([cat, catWords])=>{
+       Object.entries(catWords).forEach(([w, e])=>{
+          if(w.toLowerCase().includes(filter.toLowerCase())) {
+             allMatched.push({w, e});
+          }
+       });
+    });
+    
+    allMatched.forEach(({w, e}) => {
+      wordGrid.appendChild(createWordBtn(w, e));
+    });
+    return;
+  }
+  
+  if (data.layoutMode === 'folder' && folderViewActive) {
+    gridTitle.textContent = 'Categories';
+    backBtn.style.display = 'none';
+    
+    Object.keys(words).filter(c=>Object.keys(words[c]).length>0).forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'word-btn';
+        const catEmoji = CAT_EMOJIS[cat] || '📁';
+        btn.innerHTML = `<span class="word-emoji">${catEmoji}</span><span class="word-text">${cat}</span>`;
+        btn.onclick = () => {
+            curCat = cat;
+            folderViewActive = false;
+            buildGrid();
+        };
+        wordGrid.appendChild(btn);
+    });
+    return;
+  }
+
   const catWords=words[curCat]||{};
   gridTitle.textContent=curCat||'Words';
-  wordGrid.innerHTML='';
+  
+  if (data.layoutMode === 'folder') {
+     backBtn.style.display = 'inline-block';
+     backBtn.onclick = () => {
+         folderViewActive = true;
+         buildGrid();
+     };
+  } else {
+     backBtn.style.display = 'none';
+  }
+  
   Object.entries(catWords)
-    .filter(([w])=>!filter||w.toLowerCase().includes(filter.toLowerCase()))
     .forEach(([w,e])=>{
-      const btn=document.createElement('button');
-      btn.className='word-btn';btn.type='button';
-      btn.draggable = true;
-      btn.ondragstart = ev => {
-        ev.dataTransfer.setData('text/plain', w);
-        ev.dataTransfer.setData('text/emoji', e || '');
-      };
-      if(e && e.startsWith('data:image/')){
-        btn.innerHTML='<img class="word-custom-img" src="'+e+'"><span class="word-text">'+w+'</span>';
-      } else {
-        btn.innerHTML='<span class="word-emoji">'+(e||'❓')+'</span><span class="word-text">'+w+'</span>';
-      }
-      btn.onclick=()=>{appendWordToMsg(w, e);speakWord(w);};
-      wordGrid.appendChild(btn);
+      wordGrid.appendChild(createWordBtn(w, e));
     });
+}
+
+function createWordBtn(w, e) {
+  const btn=document.createElement('button');
+  btn.className='word-btn';btn.type='button';
+  btn.draggable = true;
+  btn.ondragstart = ev => {
+    ev.dataTransfer.setData('text/plain', w);
+    ev.dataTransfer.setData('text/emoji', e || '');
+  };
+  if(e && e.startsWith('data:image/')){
+    btn.innerHTML='<img class="word-custom-img" src="'+e+'"><span class="word-text">'+w+'</span>';
+  } else {
+    btn.innerHTML='<span class="word-emoji">'+(e||'❓')+'</span><span class="word-text">'+w+'</span>';
+  }
+  btn.onclick=()=>{appendWordToMsg(w, e);speakWord(w);};
+  return btn;
 }
 
 wordSearch.addEventListener('input',e=>buildGrid(e.target.value));
 
 function buildCats(){
+  if (data.layoutMode === 'folder') {
+    catWrap.style.display = 'none';
+    return;
+  }
+  catWrap.style.display = 'flex';
+  
   const words=getActiveWords();
   const cats=Object.keys(words).filter(c=>Object.keys(words[c]).length>0);
   catWrap.innerHTML='';
@@ -1211,7 +1322,7 @@ function refreshPS(){
 
 function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
-profileSel.onchange=e=>{data.currentProfile=e.target.value;save();buildCats();buildGrid();};
+profileSel.onchange=e=>{data.currentProfile=e.target.value;save();folderViewActive=true;buildCats();buildGrid();};
 
 function openSettings(){
   $('settingsOverlay').classList.add('open');
@@ -1344,7 +1455,7 @@ function doImportFn(){
     if(p?.profiles){
       Object.assign(data,p);
       migrateData(); 
-      save();buildCats();buildGrid();refreshPS();alert('Imported!');
+      save();folderViewActive=true;buildCats();buildGrid();refreshPS();alert('Imported!');
     }else alert('Invalid code');
   }catch(e){alert('Import failed');}
 }
@@ -1355,6 +1466,7 @@ function createProfile() {
   const n=prompt('Profile name:');if(!n)return;
   data.profiles[n] = { wordPack: 'essential', customWords: {}, removedWords: {} };
   data.currentProfile = n;
+  folderViewActive = true;
   save();refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();
   updatePackLabel(); buildWordTable(); populateCatPicker();
 }
@@ -1367,7 +1479,8 @@ function wBack(){
   const active=document.querySelector('.modal-step.active');
   if(active.id==='wStep2')showStep('wStep1');
   else if(active.id==='wStepDisplay')showStep('wStep2');
-  else if(active.id==='wStepAuthPrompt')showStep('wStepDisplay');
+  else if(active.id==='wStepLayout')showStep('wStepDisplay');
+  else if(active.id==='wStepAuthPrompt')showStep('wStepLayout');
   else if(active.id==='wStep3')showStep('wStepAuthPrompt');
 }
 function selectPack(el){
@@ -1380,6 +1493,10 @@ function wStep2Next(){
 }
 function chooseDisplayMode(iconsOnly){
   data.visualMode = iconsOnly;
+  showStep('wStepLayout');
+}
+function chooseLayoutMode(mode){
+  data.layoutMode = mode;
   showStep('wStepAuthPrompt');
 }
 function triggerWizardAuth(mode){
@@ -1413,6 +1530,7 @@ async function wFinish(){
   data.setup=true;
   save();
   applyVisualModeUI();
+  applyLayoutModeUI();
   $('wizardOverlay').classList.remove('open');
   buildCats();buildGrid();renderMessage();kickPregen();
 }
@@ -1423,6 +1541,7 @@ function wFinishChild(){
   data.setup=true;
   save();
   applyVisualModeUI();
+  applyLayoutModeUI();
   $('wizardOverlay').classList.remove('open');
   buildCats();buildGrid();renderMessage();kickPregen();
 }
@@ -1491,6 +1610,7 @@ if($('portalProfileSelect')) {
     buildWordTable();
     populateCatPicker();
     refreshPS(); 
+    folderViewActive=true;
     buildCats();
     buildGrid();
   };
@@ -1508,7 +1628,7 @@ function portalDelProfile(){
   if(data.currentProfile===target) data.currentProfile = Object.keys(data.profiles)[0];
   
   save();
-  refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();
+  refreshPS();refreshPortalProfileSelect();folderViewActive=true;buildCats();buildGrid();
   updatePackLabel(); buildWordTable(); populateCatPicker();
 }
 
@@ -1629,6 +1749,7 @@ function confirmAddWord(){
   if(p.removedWords){delete p.removedWords[cat+'::'+word];}
   
   save();
+  folderViewActive=true;
   buildCats();buildGrid();kickPregen();
   const msg=$('addWordMsg');
   msg.textContent='✓ "'+word+'" added to '+cat+'!';
@@ -1677,6 +1798,7 @@ function removeWord(cat,word){
   }
   save();
   buildWordTable();
+  folderViewActive=true;
   buildCats();buildGrid();
 }
 
@@ -1694,6 +1816,7 @@ function selectPortalPack(el){
   data.profiles[data.currentProfile].wordPack = el.dataset.pack;
   save();
   updatePackLabel();
+  folderViewActive=true;
   buildCats();buildGrid();kickPregen();
 }
 
@@ -1734,6 +1857,7 @@ function init(){
   if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
   if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
   applyVisualModeUI();
+  applyLayoutModeUI();
   refreshPS();buildCats();buildGrid();renderMessage();
   if(!data.setup){
     $('wizardOverlay').classList.add('open');
