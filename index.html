@@ -2,15 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Halo AAC</title>
-<link rel="icon" href="data:,"/>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Halo AAC – Free Picture Communication App</title>
+<meta name="description" content="Halo AAC is a free, browser-based AAC app. Tap picture cards to build sentences and speak them aloud. Works offline, with profiles, custom words and cloud sync."/>
+<meta name="theme-color" content="#0b63d6"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"/>
+<link rel="apple-touch-icon" href="apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Halo AAC"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta property="og:title" content="Halo AAC"/>
+<meta property="og:description" content="Free picture-based communication app that runs in your browser – works offline."/>
+<meta property="og:image" content="https://loudsignificance988.github.io/web-aac-halo/icon-512.png"/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin/>
+<!-- Firebase is only needed for sign-in/sync, so it loads in the background and never blocks the board from appearing. -->
+<script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 :root{--accent:#2c7be5;--accent-dark:#0b63d6;--accent-light:#deeaff;--bg:#f0f2f5;--card:#fff;--muted:#777;--radius:12px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+button,.word-btn,.cat-btn,.choice-btn,.pack-card,.engine-card,.v-row,.swatch{touch-action:manipulation}
+.word-btn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#wordGrid{contain:content}
 body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
 header{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:54px;background:linear-gradient(90deg,var(--accent-dark),var(--accent));color:#fff;position:sticky;top:0;}
 header h1{font-size:17px;font-weight:700;white-space:nowrap}
@@ -640,6 +657,7 @@ let data=(()=>{
 
 let _fireUser=null;
 let _cloudTimer=null;
+let _cloudUnsub=null;
 
 function save(){
   localStorage.setItem(KEY,JSON.stringify(data));
@@ -710,6 +728,7 @@ function ensureFirebase(){
 
 async function handleAuth(user){
   _fireUser=user;
+  if(!user&&_cloudUnsub){_cloudUnsub();_cloudUnsub=null;}
   updateAuthUI();
   if(user){
     await loadFromCloud();
@@ -730,7 +749,7 @@ window.toggleAuth=toggleAuth;
 
 function openAuthModal() {
   if(!ensureFirebase()){
-    alert('Authentication not available. Check network or adblocker.');
+    alert(navigator.onLine===false?'Sign-in needs an internet connection. Everything else still works offline.':'Sign-in is still loading or was blocked. Check your network or ad blocker and try again.');
     return;
   }
   $('authErr').classList.remove('show');
@@ -818,9 +837,9 @@ function updateAuthUI(){
   
   if(_fireUser){
     const name=_fireUser.displayName||_fireUser.email||'User';
-    if(btn) btn.innerHTML='👤 '+name+' Sign&nbsp;out';
+    if(btn) btn.innerHTML='👤 '+esc(name)+' Sign&nbsp;out';
     if(pBtn) pBtn.innerHTML='Sign out';
-    if(pStatus) pStatus.innerHTML='☁️ Signed in as <strong>'+name+'</strong>.';
+    if(pStatus) pStatus.innerHTML='☁️ Signed in as <strong>'+esc(name)+'</strong>.';
     showSyncBadge('☁️ Synced',false);
   }else{
     if(btn) btn.innerHTML='👤 Sign&nbsp;In';
@@ -846,8 +865,11 @@ function hideSyncBadge(){
 
 function loadFromCloud(){
   if(!_fireUser||!_fireDb)return;
+  if(_cloudUnsub){_cloudUnsub();_cloudUnsub=null;}
   showSyncBadge('☁️ Loading…',true);
-  _fireDb.collection('users').doc(_fireUser.uid).onSnapshot(snap=>{
+  _cloudUnsub=_fireDb.collection('users').doc(_fireUser.uid).onSnapshot(snap=>{
+    // Skip echoes of our own writes, and don't clobber edits still waiting to upload.
+    if(snap.metadata.hasPendingWrites||_cloudTimer)return;
     try{
       if(snap.exists){
         const remote=snap.data();
@@ -858,6 +880,8 @@ function loadFromCloud(){
         });
         migrateData(); 
         localStorage.setItem(KEY,JSON.stringify(data));
+      }else{
+        syncToCloud(); // first sign-in on this account: upload what's on this device
       }
       showSyncBadge('☁️ Synced',false);
       if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
@@ -870,13 +894,14 @@ function loadFromCloud(){
       console.warn('Cloud load:',e);
       showSyncBadge('☁️ Sync error',false);
     }
-  });
+  },err=>{console.warn('Cloud listen:',err);showSyncBadge('☁️ Sync error',false);});
 }
 
 function syncToCloud(){
   if(!_fireUser||!_fireDb)return;
   if(_cloudTimer)clearTimeout(_cloudTimer);
   _cloudTimer=setTimeout(async()=>{
+    _cloudTimer=null;
     _syncing=true;
     showSyncBadge('☁️ Saving…',true);
     try{
@@ -893,7 +918,9 @@ function syncToCloud(){
   },500);
 }
 
-ensureFirebase();
+// Firebase SDKs are deferred, so start it once they've run (DOMContentLoaded fires after deferred scripts).
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureFirebase);
+else ensureFirebase();
 
 function b64e(o){return btoa(unescape(encodeURIComponent(JSON.stringify(o))));}
 function b64d(s){return JSON.parse(decodeURIComponent(escape(atob(s))));}
@@ -932,6 +959,9 @@ let messageTokens=[];
 let folderViewActive = true;
 
 const $=id=>document.getElementById(id);
+// Escape text before putting it into innerHTML (custom words, import codes and cloud data are user-controlled).
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isImg=e=>typeof e==='string'&&/^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(e);
 const msgWrap=$('messageWrap'),predictions=$('predictions'),speakBtn=$('speakBtn'),
       stopBtn=$('stopBtn'),bsBtn=$('bsBtn'),
       rateSlider=$('rateSlider'),rateVal=$('rateVal'),
@@ -959,10 +989,11 @@ function renderMessage(){
   messageTokens.forEach(t=>{
     const chip=document.createElement('div');
     chip.className='msg-chip';
-    if(t.em && t.em.startsWith('data:image/')){
-      chip.innerHTML='<img class="msg-img" src="'+t.em+'">'+(!data.visualMode ? '<span class="msg-text">'+t.w+'</span>' : '');
+    chip.setAttribute('aria-label',t.w);
+    if(isImg(t.em)){
+      chip.innerHTML='<img class="msg-img" alt="" src="'+t.em+'">'+(!data.visualMode ? '<span class="msg-text">'+esc(t.w)+'</span>' : '');
     } else {
-      chip.innerHTML=(t.em ? '<span>'+t.em+'</span>' : '') + (!data.visualMode ? '<span class="msg-text">'+t.w+'</span>' : '');
+      chip.innerHTML=(t.em ? '<span aria-hidden="true">'+esc(t.em)+'</span>' : '') + (!data.visualMode ? '<span class="msg-text">'+esc(t.w)+'</span>' : '');
     }
     msgWrap.appendChild(chip);
   });
@@ -1218,7 +1249,9 @@ function buildGrid(filter=''){
         const btn = document.createElement('button');
         btn.className = 'word-btn';
         const catEmoji = CAT_EMOJIS[cat] || '📁';
-        btn.innerHTML = `<span class="word-emoji">${catEmoji}</span><span class="word-text">${cat}</span>`;
+        btn.type = 'button';
+        btn.setAttribute('aria-label', cat);
+        btn.innerHTML = `<span class="word-emoji" aria-hidden="true">${esc(catEmoji)}</span><span class="word-text">${esc(cat)}</span>`;
         btn.onclick = () => {
             curCat = cat;
             folderViewActive = false;
@@ -1256,10 +1289,11 @@ function createWordBtn(w, e) {
     ev.dataTransfer.setData('text/plain', w);
     ev.dataTransfer.setData('text/emoji', e || '');
   };
-  if(e && e.startsWith('data:image/')){
-    btn.innerHTML='<img class="word-custom-img" src="'+e+'"><span class="word-text">'+w+'</span>';
+  btn.setAttribute('aria-label', w);
+  if(isImg(e)){
+    btn.innerHTML='<img class="word-custom-img" alt="" loading="lazy" decoding="async" src="'+e+'"><span class="word-text">'+esc(w)+'</span>';
   } else {
-    btn.innerHTML='<span class="word-emoji">'+(e||'❓')+'</span><span class="word-text">'+w+'</span>';
+    btn.innerHTML='<span class="word-emoji" aria-hidden="true">'+esc(e||'❓')+'</span><span class="word-text">'+esc(w)+'</span>';
   }
   btn.onclick=()=>{appendWordToMsg(w, e);speakWord(w);};
   return btn;
@@ -1362,7 +1396,7 @@ async function ensureKokoro(){
   const statusEl=$('kokoroStatus');
   if(statusEl)statusEl.textContent='⏳ Downloading neural voice model (~80MB, first time only)…';
   try{
-    const mod=await import('https://cdn.jsdelivr.net/npm/kokoro-js/+esm');
+    const mod=await import('https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm');
     kokoroTTS=await mod.KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-v1.0-ONNX',{dtype:'q8',device:'wasm'});
     buildKokoroVoiceList();
     pregenerateVoice(data.kokoroVoice||'af_heart');
@@ -1383,7 +1417,7 @@ function buildKokoroVoiceList(){
   vl.innerHTML='';
   KOKORO_VOICES.forEach(v=>{
     const row=document.createElement('div');row.className='v-row'+(v.id===(data.kokoroVoice||'af_heart')?' sel':'');
-    row.innerHTML='<span class="v-name">'+v.name+'</span><span class="v-lang">'+v.lang+'</span><button class="v-play">▶</button>';
+    row.innerHTML='<span class="v-name">'+esc(v.name)+'</span><span class="v-lang">'+esc(v.lang)+'</span><button class="v-play" type="button" aria-label="Preview voice">▶</button>';
     row.querySelector('.v-play').onclick=e=>{e.stopPropagation();playKokoro('Hello, I am '+v.name+'.',v.id);};
     row.onclick=()=>{data.kokoroVoice=v.id;save();vl.querySelectorAll('.v-row').forEach(r=>r.classList.remove('sel'));row.classList.add('sel');pregenerateVoice(v.id);};
     vl.appendChild(row);
@@ -1421,7 +1455,7 @@ function buildSysVoiceList(){
   if(!voices.length){vl.innerHTML='<div style="padding:10px;color:#999;font-size:13px">No voices found</div>';return;}
   voices.forEach(v=>{
     const row=document.createElement('div');row.className='v-row'+(v.name===curSysVoice?' sel':'');
-    row.innerHTML='<span class="v-name">'+v.name+'</span><span class="v-lang">'+v.lang+'</span><button class="v-play">▶</button>';
+    row.innerHTML='<span class="v-name">'+esc(v.name)+'</span><span class="v-lang">'+esc(v.lang)+'</span><button class="v-play" type="button" aria-label="Preview voice">▶</button>';
     row.querySelector('.v-play').onclick=e=>{e.stopPropagation();speechSynthesis.cancel();const u=new SpeechSynthesisUtterance('Hello, I am '+v.name);u.voice=v;speechSynthesis.speak(u);};
     row.onclick=()=>{curSysVoice=v.name;data.sysVoice=v.name;save();vl.querySelectorAll('.v-row').forEach(r=>r.classList.remove('sel'));row.classList.add('sel');};
     vl.appendChild(row);
@@ -1776,10 +1810,10 @@ function buildWordTable(){
   rows.sort((a,b)=>a.w.localeCompare(b.w));
   rows.forEach(({cat,w,e})=>{
     const tr=document.createElement('tr');
-    const iconHtml = (e && e.startsWith('data:image/')) 
-      ? '<img src="'+e+'" style="width:24px;height:24px;object-fit:cover;border-radius:4px">'
-      : e;
-    tr.innerHTML='<td>'+iconHtml+'</td><td>'+w+'</td><td style="color:#999;font-size:12px">'+cat+'</td><td><button class="del-word-btn" title="Remove">🗑️</button></td>';
+    const iconHtml = isImg(e)
+      ? '<img alt="" loading="lazy" src="'+e+'" style="width:24px;height:24px;object-fit:cover;border-radius:4px">'
+      : esc(e);
+    tr.innerHTML='<td>'+iconHtml+'</td><td>'+esc(w)+'</td><td style="color:#999;font-size:12px">'+esc(cat)+'</td><td><button class="del-word-btn" title="Remove">🗑️</button></td>';
     tr.querySelector('.del-word-btn').onclick=()=>removeWord(cat,w);
     body.appendChild(tr);
   });
@@ -1865,6 +1899,11 @@ function init(){
 }
 
 init();
+
+// Offline support: cache the app so it opens with no internet connection.
+if('serviceWorker' in navigator && window.isSecureContext){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW:',e));});
+}
 </script>
 </body>
 </html>
