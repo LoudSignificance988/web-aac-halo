@@ -28,6 +28,8 @@
 button,.word-btn,.cat-btn,.choice-btn,.pack-card,.engine-card,.v-row,.swatch{touch-action:manipulation}
 .word-btn{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #wordGrid{contain:content}
+.lang-select{width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid #ddd;font-size:15px;background:#fff}
+.lang-row{display:flex;align-items:center;gap:8px;margin:4px 0 14px;font-size:18px}
 body{font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:#111;-webkit-font-smoothing:antialiased}
 header{display:flex;align-items:center;justify-content:space-between;padding:0 14px;height:54px;background:linear-gradient(90deg,var(--accent-dark),var(--accent));color:#fff;position:sticky;top:0;}
 header h1{font-size:17px;font-weight:700;white-space:nowrap}
@@ -250,7 +252,7 @@ body.icons-only-mode .msg-text{display:none}
 <!-- Credits Modal -->
 <div class="modal-overlay" id="creditsOverlay" onclick="if(event.target===this)closeCreditsModal()">
   <div class="modal-box">
-    <h2>Clredits</h2>
+    <h2>Credits</h2>
     <p>Halo AAC would not exist without the work and inspiration of these creators:</p>
     <ul style="margin-left:20px;font-size:14px;color:#555;line-height:1.8;margin-bottom:20px">
       <li><a href="https://www.tiktok.com/@kaelynn_vp" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Kaelynn Partlow</a> — The inspiration behind Halo AAC</li>
@@ -288,6 +290,10 @@ body.icons-only-mode .msg-text{display:none}
     <div class="drag-handle"></div>
     <div class="s-title">⚙️ Settings</div>
     <div class="s-section">
+      <div class="s-label">🌐 Language</div>
+      <select id="langSelectSettings" class="lang-select" aria-label="Language" onchange="setLanguage(this.value)"></select>
+    </div>
+    <div class="s-section">
       <div class="s-label">👨‍👩‍👧 Parental Center</div>
       <button class="btn" style="width:100%" onclick="openPortalPrompt()">🔒 Open Parent Portal</button>
     </div>
@@ -313,6 +319,7 @@ body.icons-only-mode .msg-text{display:none}
           <div class="e-sub">Human-like · ~80MB first load</div>
         </div>
       </div>
+      <div id="langVoiceNote" style="display:none;font-size:12px;color:#666;margin-top:8px">Neural voices speak English only. Other languages use your device's voices.</div>
       <div id="sysPickerWrap">
         <div class="s-label" style="margin-top:10px;margin-bottom:4px">System Voice</div>
         <div id="sysVoiceList"></div>
@@ -348,6 +355,7 @@ body.icons-only-mode .msg-text{display:none}
   <div class="modal-box">
     <div class="modal-step active" id="wStep1">
       <h2>👋 Welcome to Halo AAC</h2>
+      <label class="lang-row">🌐 <select id="langSelectWizard" class="lang-select" aria-label="Language" onchange="setLanguage(this.value)"></select></label>
       <p>Before we start, who is setting up this device?</p>
       <div class="big-choice">
         <button class="choice-btn" onclick="wGoStep2('parent')">
@@ -573,6 +581,7 @@ body.icons-only-mode .msg-text{display:none}
   </div>
 </div>
 
+<script src="i18n.js"></script>
 <script>
 const PACKS={
   essential:{
@@ -638,7 +647,7 @@ const CAT_EMOJIS = {
 };
 
 const KEY='halo_aac_v2';
-const SYNC_KEYS=['profiles','currentProfile','sysVoice','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice','visualMode', 'layoutMode'];
+const SYNC_KEYS=['profiles','currentProfile','sysVoice','sysVoices','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice','visualMode', 'layoutMode'];
 const DEFAULTS={
   profiles:{},currentProfile:null,sysVoice:null,
   accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5',
@@ -837,14 +846,14 @@ function updateAuthUI(){
   
   if(_fireUser){
     const name=_fireUser.displayName||_fireUser.email||'User';
-    if(btn) btn.innerHTML='👤 '+esc(name)+' Sign&nbsp;out';
-    if(pBtn) pBtn.innerHTML='Sign out';
-    if(pStatus) pStatus.innerHTML='☁️ Signed in as <strong>'+esc(name)+'</strong>.';
+    if(btn) btn.innerHTML='👤 '+esc(name)+' · '+esc(t('Sign out'));
+    if(pBtn) pBtn.textContent=t('Sign out');
+    if(pStatus) pStatus.innerHTML='☁️ '+esc(t('Signed in as'))+' <strong>'+esc(name)+'</strong>.';
     showSyncBadge('☁️ Synced',false);
   }else{
-    if(btn) btn.innerHTML='👤 Sign&nbsp;In';
-    if(pBtn) pBtn.innerHTML='👤 Sign&nbsp;In / Sign Up';
-    if(pStatus) pStatus.innerHTML='Sign in to sync across devices.';
+    if(btn) btn.textContent=t('👤 Sign In');
+    if(pBtn) pBtn.textContent=t('👤 Sign In / Sign Up');
+    if(pStatus) pStatus.textContent=t('Sign in to sync across devices.');
     hideSyncBadge();
   }
 }
@@ -887,9 +896,7 @@ function loadFromCloud(){
       if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
       if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
       if(data.accent)$('accentPicker').value=data.accent;
-      applyVisualModeUI();
-      applyLayoutModeUI();
-      buildCats();buildGrid(document.getElementById('wordSearch').value);refreshPS();
+      refreshPS();applyLanguage();
     }catch(e){
       console.warn('Cloud load:',e);
       showSyncBadge('☁️ Sync error',false);
@@ -961,6 +968,50 @@ let folderViewActive = true;
 const $=id=>document.getElementById(id);
 // Escape text before putting it into innerHTML (custom words, import codes and cloud data are user-controlled).
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// ---- Languages ----
+const I18N=window.HALO_I18N||{LANGS:{en:{name:'English',speech:'en'}},CATS:{},WORDS:{},UI:{}};
+function curLang(){const p=data.profiles&&data.profiles[data.currentProfile];const l=p&&p.lang;return (l&&I18N.LANGS[l])?l:'en';}
+function t(s){const L=curLang();return (L!=='en'&&I18N.UI[L]&&I18N.UI[L][s])||s;}
+function tw(w){const L=curLang();return (L!=='en'&&I18N.WORDS[L]&&I18N.WORDS[L][w])||w;}
+function tc(c){const L=curLang();return (L!=='en'&&I18N.CATS[L]&&I18N.CATS[L][c])||c;}
+const _origText=new WeakMap();
+const I18N_SKIP='#wordGrid,#messageWrap,#catWrap,#predictions,#profileSelect,#portalProfileSelect,#wordTableBody,#sysVoiceList,#kokoroVoiceList,#dictWordTitle,#dictDef,#emojiPickRow,#ttsStatus,#gridTitle,#syncBadge,#authBtn,#currentPackLabel,select,script,style';
+function translateStatic(){
+  const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>n.parentElement&&n.parentElement.closest(I18N_SKIP)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  let n;while((n=w.nextNode())){
+    if(!_origText.has(n))_origText.set(n,n.nodeValue);
+    const o=_origText.get(n),key=o.replace(/\s+/g,' ').trim();if(!key)continue;
+    const tr=t(key);n.nodeValue=tr===key?o:o.replace(/^(\s*)[\s\S]*?(\s*)$/,(m,a,b)=>a+tr+b);
+  }
+  document.querySelectorAll('[placeholder],[aria-label],[title]').forEach(el=>{
+    if(el.closest('#wordGrid,#messageWrap,#catWrap,#wordTableBody'))return;
+    ['placeholder','aria-label','title'].forEach(a=>{
+      if(!el.hasAttribute(a))return;const k='i18n'+a.replace('-','');
+      if(!(k in el.dataset))el.dataset[k]=el.getAttribute(a);
+      el.setAttribute(a,t(el.dataset[k]));
+    });
+  });
+}
+function fillLangSelects(){
+  ['langSelectSettings','langSelectWizard'].forEach(id=>{const sel=$(id);if(!sel)return;
+    if(!sel.options.length)Object.entries(I18N.LANGS).forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=v.name;sel.appendChild(o);});
+    sel.value=curLang();});
+}
+function applyLanguage(){
+  document.documentElement.lang=curLang();
+  fillLangSelects();translateStatic();
+  applyVisualModeUI();applyLayoutModeUI();updateAuthUI();
+  setStatus(t('Ready'));
+  buildCats();buildGrid(wordSearch.value);renderMessage();updatePredictions();
+  buildSysVoiceList();
+  if($('portalOverlay')&&$('portalOverlay').classList.contains('open')){buildWordTable();}
+}
+function setLanguage(l){
+  if(!I18N.LANGS[l])return;
+  if(!data.profiles[data.currentProfile])data.profiles[data.currentProfile]={};
+  data.profiles[data.currentProfile].lang=l;save();applyLanguage();
+}
+window.setLanguage=setLanguage;
 const isImg=e=>typeof e==='string'&&/^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(e);
 const msgWrap=$('messageWrap'),predictions=$('predictions'),speakBtn=$('speakBtn'),
       stopBtn=$('stopBtn'),bsBtn=$('bsBtn'),
@@ -976,17 +1027,17 @@ msgWrap.ondrop = e => {
   const em = e.dataTransfer.getData('text/emoji');
   if(w){
     appendWordToMsg(w, em);
-    speakWord(w);
+    speakWord(tw(w));
   }
 };
 
 function renderMessage(){
   msgWrap.innerHTML='';
   if(!messageTokens.length){
-    msgWrap.innerHTML='<span style="color:#888;font-size:14px">Tap or drag words to build message…</span>';
+    msgWrap.innerHTML='<span style="color:#888;font-size:14px">'+esc(t('Tap or drag words to build message…'))+'</span>';
     return;
   }
-  messageTokens.forEach(t=>{
+  messageTokens.forEach(tok=>{const t={w:tw(tok.w),em:tok.em};
     const chip=document.createElement('div');
     chip.className='msg-chip';
     chip.setAttribute('aria-label',t.w);
@@ -1017,7 +1068,7 @@ function toggleVisualMode(){
 function applyVisualModeUI(){
   document.body.classList.toggle('icons-only-mode', !!data.visualMode);
   const btn = $('settingsVisualModeBtn');
-  if(btn) btn.textContent = data.visualMode ? 'Switch to Words & Icons' : 'Switch to Icons Only';
+  if(btn) btn.textContent = t(data.visualMode ? 'Switch to Words & Icons' : 'Switch to Icons Only');
 }
 
 function toggleLayoutMode() {
@@ -1032,22 +1083,31 @@ function toggleLayoutMode() {
 function applyLayoutModeUI() {
   $('catWrap').style.display = data.layoutMode === 'folder' ? 'none' : 'flex';
   const btn = $('settingsLayoutModeBtn');
-  if(btn) btn.textContent = data.layoutMode === 'folder' ? 'Switch to Category Bar' : 'Switch to Folder View';
+  if(btn) btn.textContent = t(data.layoutMode === 'folder' ? 'Switch to Category Bar' : 'Switch to Folder View');
 }
 
 function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
 function stripEmoji(s){return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d\uFE0F]/gu,'').replace(/\s+/g,' ').trim();}
+function speechCode(){return (I18N.LANGS[curLang()]||{}).speech||'en';}
+function voiceMatchesLang(v){return v.lang.toLowerCase().replace('_','-').startsWith(speechCode());}
+function pickVoice(){
+  const voices=speechSynthesis.getVoices(),L=curLang();
+  const saved=(data.sysVoices||{})[L]||(L==='en'?curSysVoice:null);
+  const pref=saved?voices.find(v=>v.name===saved&&voiceMatchesLang(v)):null;
+  if(pref)return pref;
+  if(L==='en')return voices.find(v=>v.lang.startsWith('en-US'))||voices.find(voiceMatchesLang)||voices[0]||null;
+  return voices.find(v=>voiceMatchesLang(v)&&v.localService)||voices.find(voiceMatchesLang)||null;
+}
 function speakSystem(text){
   speechSynthesis.cancel();
-  const voices=speechSynthesis.getVoices();
   const u=new SpeechSynthesisUtterance(text);
-  const pref=curSysVoice?voices.find(v=>v.name===curSysVoice):null;
-  const eng=voices.find(v=>v.lang.startsWith('en-US'))||voices.find(v=>v.lang.startsWith('en'));
-  const voice=pref||eng||voices[0];
+  const voice=pickVoice();
+  u.lang=voice?voice.lang:speechCode();
   if(voice)u.voice=voice;
+  else if(speechSynthesis.getVoices().length)setStatus(t("No voice for this language is installed. Add one in your device's text-to-speech settings."));
   u.rate=parseFloat(rateSlider.value);u.pitch=1;u.volume=1;
   u.onstart=()=>setStatus('▶ '+(voice?.name||'System'),true);
-  u.onend=()=>setStatus('Done ✓');
+  u.onend=()=>setStatus(t('Done ✓'));
   u.onerror=e=>setStatus('Error: '+e.error);
   speechSynthesis.speak(u);
 }
@@ -1130,7 +1190,7 @@ function playBlob(blob,rate){
 
 async function speakWord(word){
   const eng=data.ttsEngine||'system';
-  if(eng!=='kokoro'){speakSystem(word);return;}
+  if(eng!=='kokoro'||curLang()!=='en'){speakSystem(word);return;}
   const voice=data.kokoroVoice||'af_heart';
   const blob=await cacheGet(cacheKey(voice,word));
   if(blob){playBlob(blob,parseFloat(rateSlider.value));return;}
@@ -1162,7 +1222,7 @@ function playSequence(blobs){
 async function speak(text){
   if(!text) return;
   const eng=data.ttsEngine||'system';
-  if(eng!=='kokoro'){speakSystem(text);return;}
+  if(eng!=='kokoro'||curLang()!=='en'){speakSystem(text);return;}
   const voice=data.kokoroVoice||'af_heart';
   const words=text.trim().split(/\s+/);
   const blobs=[];
@@ -1175,8 +1235,8 @@ async function speak(text){
 }
 
 speakBtn.onclick=()=>{
-  if(!messageTokens.length){setStatus('Nothing to say');return;}
-  const spokenText=messageTokens.map(t=>t.w).join(' ');
+  if(!messageTokens.length){setStatus(t('Nothing to say'));return;}
+  const spokenText=messageTokens.map(t=>tw(t.w)).join(' ');
   speak(spokenText);
 };
 
@@ -1184,7 +1244,7 @@ stopBtn.onclick=()=>{
   speechSynthesis.cancel();
   _stopSequence=true;
   if(_kokoroAudioEl){_kokoroAudioEl.pause();_kokoroAudioEl.currentTime=0;}
-  setStatus('Stopped');
+  setStatus(t('Stopped'));
 };
 
 bsBtn.onclick=()=>{
@@ -1223,13 +1283,13 @@ function buildGrid(filter=''){
   const backBtn = $('backToFoldersBtn');
   
   if (filter) {
-    gridTitle.textContent = 'Search Results';
+    gridTitle.textContent = t('Search Results');
     backBtn.style.display = 'none';
     
     let allMatched = [];
     Object.entries(words).forEach(([cat, catWords])=>{
        Object.entries(catWords).forEach(([w, e])=>{
-          if(w.toLowerCase().includes(filter.toLowerCase())) {
+          if(tw(w).toLowerCase().includes(filter.toLowerCase())||w.toLowerCase().includes(filter.toLowerCase())) {
              allMatched.push({w, e});
           }
        });
@@ -1242,7 +1302,7 @@ function buildGrid(filter=''){
   }
   
   if (data.layoutMode === 'folder' && folderViewActive) {
-    gridTitle.textContent = 'Categories';
+    gridTitle.textContent = t('Categories');
     backBtn.style.display = 'none';
     
     Object.keys(words).filter(c=>Object.keys(words[c]).length>0).forEach(cat => {
@@ -1250,8 +1310,8 @@ function buildGrid(filter=''){
         btn.className = 'word-btn';
         const catEmoji = CAT_EMOJIS[cat] || '📁';
         btn.type = 'button';
-        btn.setAttribute('aria-label', cat);
-        btn.innerHTML = `<span class="word-emoji" aria-hidden="true">${esc(catEmoji)}</span><span class="word-text">${esc(cat)}</span>`;
+        btn.setAttribute('aria-label', tc(cat));
+        btn.innerHTML = `<span class="word-emoji" aria-hidden="true">${esc(catEmoji)}</span><span class="word-text">${esc(tc(cat))}</span>`;
         btn.onclick = () => {
             curCat = cat;
             folderViewActive = false;
@@ -1263,7 +1323,7 @@ function buildGrid(filter=''){
   }
 
   const catWords=words[curCat]||{};
-  gridTitle.textContent=curCat||'Words';
+  gridTitle.textContent=curCat?tc(curCat):t('Words');
   
   if (data.layoutMode === 'folder') {
      backBtn.style.display = 'inline-block';
@@ -1282,6 +1342,7 @@ function buildGrid(filter=''){
 }
 
 function createWordBtn(w, e) {
+  const label=tw(w);
   const btn=document.createElement('button');
   btn.className='word-btn';btn.type='button';
   btn.draggable = true;
@@ -1289,13 +1350,13 @@ function createWordBtn(w, e) {
     ev.dataTransfer.setData('text/plain', w);
     ev.dataTransfer.setData('text/emoji', e || '');
   };
-  btn.setAttribute('aria-label', w);
+  btn.setAttribute('aria-label', label);
   if(isImg(e)){
-    btn.innerHTML='<img class="word-custom-img" alt="" loading="lazy" decoding="async" src="'+e+'"><span class="word-text">'+esc(w)+'</span>';
+    btn.innerHTML='<img class="word-custom-img" alt="" loading="lazy" decoding="async" src="'+e+'"><span class="word-text">'+esc(label)+'</span>';
   } else {
-    btn.innerHTML='<span class="word-emoji" aria-hidden="true">'+esc(e||'❓')+'</span><span class="word-text">'+esc(w)+'</span>';
+    btn.innerHTML='<span class="word-emoji" aria-hidden="true">'+esc(e||'❓')+'</span><span class="word-text">'+esc(label)+'</span>';
   }
-  btn.onclick=()=>{appendWordToMsg(w, e);speakWord(w);};
+  btn.onclick=()=>{appendWordToMsg(w, e);speakWord(label);};
   return btn;
 }
 
@@ -1316,7 +1377,7 @@ function buildCats(){
   cats.forEach(cat=>{
     const b=document.createElement('button');
     b.className='cat-btn'+(cat===curCat?' active':'');
-    b.textContent=cat;b.type='button';
+    b.textContent=tc(cat);b.type='button';
     b.onclick=()=>{curCat=cat;buildCats();buildGrid(wordSearch.value);};
     catWrap.appendChild(b);
   });
@@ -1332,10 +1393,10 @@ function allWords(){
 function updatePredictions(){
   predictions.innerHTML='';
   if(!messageTokens.length) return;
-  const last = messageTokens[messageTokens.length - 1].w.toLowerCase();
-  allWords().filter(w=>w.toLowerCase().startsWith(last)&&w.toLowerCase()!==last).slice(0,6)
+  const last = tw(messageTokens[messageTokens.length - 1].w).toLowerCase();
+  allWords().filter(w=>{const l=tw(w).toLowerCase();return l.startsWith(last)&&l!==last;}).slice(0,6)
     .forEach(m=>{
-      const li=document.createElement('li');li.textContent=m;
+      const li=document.createElement('li');li.textContent=tw(m);
       li.onclick=()=>{
         const words=getActiveWords();
         let foundEm = '';
@@ -1356,7 +1417,7 @@ function refreshPS(){
 
 function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
-profileSel.onchange=e=>{data.currentProfile=e.target.value;save();folderViewActive=true;buildCats();buildGrid();};
+profileSel.onchange=e=>{data.currentProfile=e.target.value;save();folderViewActive=true;applyLanguage();};
 
 function openSettings(){
   $('settingsOverlay').classList.add('open');
@@ -1451,13 +1512,15 @@ async function playKokoro(text,voiceOverride){
 
 function buildSysVoiceList(){
   const vl=$('sysVoiceList');vl.innerHTML='';
-  const voices=speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
-  if(!voices.length){vl.innerHTML='<div style="padding:10px;color:#999;font-size:13px">No voices found</div>';return;}
+  const voices=speechSynthesis.getVoices().filter(voiceMatchesLang);
+  const note=$('langVoiceNote');if(note)note.style.display=curLang()==='en'?'none':'block';
+  const chosen=(pickVoice()||{}).name;
+  if(!voices.length){vl.innerHTML='<div style="padding:10px;color:#999;font-size:13px">'+esc(t('No voices found'))+'</div>';return;}
   voices.forEach(v=>{
-    const row=document.createElement('div');row.className='v-row'+(v.name===curSysVoice?' sel':'');
+    const row=document.createElement('div');row.className='v-row'+(v.name===chosen?' sel':'');
     row.innerHTML='<span class="v-name">'+esc(v.name)+'</span><span class="v-lang">'+esc(v.lang)+'</span><button class="v-play" type="button" aria-label="Preview voice">▶</button>';
-    row.querySelector('.v-play').onclick=e=>{e.stopPropagation();speechSynthesis.cancel();const u=new SpeechSynthesisUtterance('Hello, I am '+v.name);u.voice=v;speechSynthesis.speak(u);};
-    row.onclick=()=>{curSysVoice=v.name;data.sysVoice=v.name;save();vl.querySelectorAll('.v-row').forEach(r=>r.classList.remove('sel'));row.classList.add('sel');};
+    row.querySelector('.v-play').onclick=e=>{e.stopPropagation();speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(tw('Hello')+', '+v.name);u.voice=v;u.lang=v.lang;speechSynthesis.speak(u);};
+    row.onclick=()=>{data.sysVoices=Object.assign({},data.sysVoices,{[curLang()]:v.name});if(curLang()==='en'){curSysVoice=v.name;data.sysVoice=v.name;}save();vl.querySelectorAll('.v-row').forEach(r=>r.classList.remove('sel'));row.classList.add('sel');};
     vl.appendChild(row);
   });
 }
@@ -1481,27 +1544,27 @@ function applyAccent(a,d){
   document.documentElement.style.setProperty('--accent-light',a+'28');
 }
 
-function doExportFn(){const code=b64e(data);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(code).then(()=>alert('Copied!'));else prompt('Copy:',code);$('importArea').value=code;}
+function doExportFn(){const code=b64e(data);if(navigator.clipboard?.writeText)navigator.clipboard.writeText(code).then(()=>alert(t('Copied!')));else prompt('Copy:',code);$('importArea').value=code;}
 function doImportFn(){
-  const txt=$('importArea').value.trim();if(!txt)return alert('Paste code first');
+  const txt=$('importArea').value.trim();if(!txt)return alert(t('Paste code first'));
   try{
     const p=b64d(txt);
     if(p?.profiles){
       Object.assign(data,p);
       migrateData(); 
-      save();folderViewActive=true;buildCats();buildGrid();refreshPS();alert('Imported!');
-    }else alert('Invalid code');
-  }catch(e){alert('Import failed');}
+      save();folderViewActive=true;buildCats();buildGrid();refreshPS();alert(t('Imported!'));
+    }else alert(t('Invalid code'));
+  }catch(e){alert(t('Import failed'));}
 }
 if($('doExport')) $('doExport').onclick=doExportFn;
 if($('doImport')) $('doImport').onclick=doImportFn;
 
 function createProfile() {
-  const n=prompt('Profile name:');if(!n)return;
-  data.profiles[n] = { wordPack: 'essential', customWords: {}, removedWords: {} };
+  const n=prompt(t('Profile name:'));if(!n)return;
+  data.profiles[n] = { wordPack: 'essential', customWords: {}, removedWords: {}, lang: curLang() };
   data.currentProfile = n;
   folderViewActive = true;
-  save();refreshPS();refreshPortalProfileSelect();buildCats();buildGrid();
+  save();refreshPS();refreshPortalProfileSelect();applyLanguage();
   updatePackLabel(); buildWordTable(); populateCatPicker();
 }
 if($('addProfileBtn')) $('addProfileBtn').onclick=createProfile;
@@ -1645,8 +1708,7 @@ if($('portalProfileSelect')) {
     populateCatPicker();
     refreshPS(); 
     folderViewActive=true;
-    buildCats();
-    buildGrid();
+    applyLanguage();
   };
 }
 
@@ -1662,7 +1724,7 @@ function portalDelProfile(){
   if(data.currentProfile===target) data.currentProfile = Object.keys(data.profiles)[0];
   
   save();
-  refreshPS();refreshPortalProfileSelect();folderViewActive=true;buildCats();buildGrid();
+  refreshPS();refreshPortalProfileSelect();folderViewActive=true;applyLanguage();
   updatePackLabel(); buildWordTable(); populateCatPicker();
 }
 
@@ -1769,7 +1831,7 @@ function populateCatPicker(){
 }
 
 function confirmAddWord(){
-  if(!dictWord&&!$('dictInput').value.trim()){alert('Look up a word first.');return;}
+  if(!dictWord&&!$('dictInput').value.trim()){alert(t('Look up a word first.'));return;}
   const word=$('dictWordTitle').textContent||$('dictInput').value.trim();
   
   let cat=$('addWordCat').value.trim();
@@ -1804,20 +1866,20 @@ function buildWordTable(){
   const rows=[];
   Object.entries(words).forEach(([cat,catWords])=>{
     Object.entries(catWords).forEach(([w,e])=>{
-      if(!filter||w.toLowerCase().includes(filter))rows.push({cat,w,e});
+      if(!filter||w.toLowerCase().includes(filter)||tw(w).toLowerCase().includes(filter))rows.push({cat,w,e});
     });
   });
-  rows.sort((a,b)=>a.w.localeCompare(b.w));
+  rows.sort((a,b)=>tw(a.w).localeCompare(tw(b.w),curLang()));
   rows.forEach(({cat,w,e})=>{
     const tr=document.createElement('tr');
     const iconHtml = isImg(e)
       ? '<img alt="" loading="lazy" src="'+e+'" style="width:24px;height:24px;object-fit:cover;border-radius:4px">'
       : esc(e);
-    tr.innerHTML='<td>'+iconHtml+'</td><td>'+esc(w)+'</td><td style="color:#999;font-size:12px">'+esc(cat)+'</td><td><button class="del-word-btn" title="Remove">🗑️</button></td>';
+    tr.innerHTML='<td>'+iconHtml+'</td><td>'+esc(tw(w))+'</td><td style="color:#999;font-size:12px">'+esc(tc(cat))+'</td><td><button class="del-word-btn" title="Remove">🗑️</button></td>';
     tr.querySelector('.del-word-btn').onclick=()=>removeWord(cat,w);
     body.appendChild(tr);
   });
-  if(!rows.length){body.innerHTML='<tr><td colspan="4" style="padding:12px;color:#999;text-align:center">No words found</td></tr>';}
+  if(!rows.length){body.innerHTML='<tr><td colspan="4" style="padding:12px;color:#999;text-align:center">'+esc(t('No words found'))+'</td></tr>';}
 }
 
 function removeWord(cat,word){
@@ -1863,7 +1925,7 @@ async function changePassword(){
   
   save();
   $('newPw1').value='';$('newPw2').value='';
-  alert('Password updated!');
+  alert(t('Password updated!'));
 }
 
 document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
@@ -1892,7 +1954,7 @@ function init(){
   if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
   applyVisualModeUI();
   applyLayoutModeUI();
-  refreshPS();buildCats();buildGrid();renderMessage();
+  refreshPS();applyLanguage();
   if(!data.setup){
     $('wizardOverlay').classList.add('open');
   }

@@ -11,6 +11,7 @@
 - 🔒 **Parent Portal** – Password-protected settings and vocabulary management.
 - ☁️ **Google Sign-In & Cloud Sync** – Sync your words, settings, and profiles across devices.
 - 🗣️ **Built-in Text-to-Speech** – Uses your browser's speech synthesis.
+- 🌐 **Multiple Languages** – English, Español, Français and Tiếng Việt. Words, menus and the spoken voice all switch; each profile can have its own language. Add more in `i18n.js`.
 - 🎨 **Themes** – Customize colors and backgrounds.
 - 📶 **Offline Friendly** – Core communication features work without an internet connection.
 

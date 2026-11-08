@@ -1,9 +1,10 @@
 // Halo AAC service worker – keeps the app usable with no internet connection.
 // Bump VERSION whenever you want to force every device to drop its old cache.
-const VERSION = 'halo-v1';
+const VERSION = 'halo-v2';
 const CORE = [
   './',
   './index.html',
+  './i18n.js',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
