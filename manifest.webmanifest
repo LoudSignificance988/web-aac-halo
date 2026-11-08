@@ -1,0 +1,17 @@
+{
+  "name": "Halo AAC",
+  "short_name": "Halo AAC",
+  "description": "Free picture-based communication app. Tap words to build sentences and speak them aloud.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f0f2f5",
+  "theme_color": "#0b63d6",
+  "categories": ["education", "medical", "utilities"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
