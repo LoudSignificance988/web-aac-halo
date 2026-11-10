@@ -79,12 +79,6 @@ select,button,input,textarea{font-family:inherit}
 .word-emoji{font-size:22px;display:block;margin-bottom:4px;line-height:1}
 .word-custom-img{width:28px;height:28px;object-fit:cover;border-radius:4px;margin-bottom:4px;display:block}
 .word-text{font-size:12px;font-weight:600;text-align:center;line-height:1.2;word-break:break-word}
-body.icons-only-mode #wordGrid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
-body.icons-only-mode .word-btn{height:110px;padding:8px 6px}
-body.icons-only-mode .word-emoji{font-size:48px;margin-bottom:0}
-body.icons-only-mode .word-custom-img{width:56px;height:56px;margin-bottom:0}
-body.icons-only-mode .word-text{display:none}
-body.icons-only-mode .msg-text{display:none}
 #wordSearch{padding:7px 12px;border-radius:999px;border:1.5px solid #ddd;font-size:13px;width:100%;display:block;margin-bottom:9px}
 #wordSearch:focus{outline:none;border-color:var(--accent)}
 #settingsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:flex-end;justify-content:center}
@@ -253,8 +247,9 @@ body.icons-only-mode .msg-text{display:none}
 <div class="modal-overlay" id="creditsOverlay" onclick="if(event.target===this)closeCreditsModal()">
   <div class="modal-box">
     <h2>Credits</h2>
-    <p>Halo AAC would not exist without the work and inspiration of these creators:</p>
+    <p>Halo AAC was created by Loud_Significance988 and inspired by these creators:</p>
     <ul style="margin-left:20px;font-size:14px;color:#555;line-height:1.8;margin-bottom:20px">
+      <li><a href="https://www.tiktok.com/@loud_significance988?is_from_webapp=1&sender_device=pc" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Loud_Significance988</a> — Creator and UI Designer</li>
       <li><a href="https://www.tiktok.com/@kaelynn_vp" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Kaelynn Partlow</a> — The inspiration behind Halo AAC</li>
       <li><a href="https://www.tiktok.com/@realautismmom" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">@Real Autism Mom</a> — Inspired me to add the ability to sign in with Google so you never lose your progress</li>
     </ul>
@@ -303,10 +298,6 @@ body.icons-only-mode .msg-text{display:none}
     <div class="s-section">
       <div class="s-label">🗂️ Menu Layout</div>
       <button class="btn ghost" id="settingsLayoutModeBtn" style="width:100%" onclick="toggleLayoutMode()">Switch to Folder View</button>
-    </div>
-    <div class="s-section">
-      <div class="s-label">🖼️ Display Mode</div>
-      <button class="btn ghost" id="settingsVisualModeBtn" style="width:100%" onclick="toggleVisualMode()">Toggle Icons Instead of Words</button>
     </div>
     <div class="s-section">
       <div class="s-label">🎙️ Voice Engine</div>
@@ -370,6 +361,7 @@ body.icons-only-mode .msg-text{display:none}
           <span class="sub">Jump straight in with basic words</span>
         </button>
       </div>
+      <button class="btn ghost" style="width:100%;margin-top:8px" onclick="skipSetupWizard()">Skip Setup Entirely ⏭️</button>
     </div>
     <div class="modal-step" id="wStep2">
       <h2>📦 Choose a Word Pack</h2>
@@ -400,23 +392,7 @@ body.icons-only-mode .msg-text{display:none}
         <button class="btn ghost" onclick="wBack()">← Back</button>
         <button class="btn" onclick="wStep2Next()">Continue →</button>
       </div>
-    </div>
-    <div class="modal-step" id="wStepDisplay">
-      <h2>🖼️ Word or Icon Mode</h2>
-      <p>Would you like to display icons instead of words?</p>
-      <div class="big-choice">
-        <button class="choice-btn" onclick="chooseDisplayMode(true)">
-          🖼️ Use icons instead of words
-          <span class="sub">Display only large icons and show icons in the message box</span>
-        </button>
-        <button class="choice-btn" onclick="chooseDisplayMode(false)">
-          🔤 Use words with icons
-          <span class="sub">Standard view with word labels</span>
-        </button>
-      </div>
-      <div class="modal-btn-row">
-        <button class="btn ghost" onclick="showStep('wStep2')">← Back</button>
-      </div>
+      <button class="btn ghost" style="width:100%;margin-top:8px" onclick="skipSetupWizard()">Skip Setup Entirely ⏭️</button>
     </div>
     <div class="modal-step" id="wStepLayout">
       <h2>🗂️ Menu Layout</h2>
@@ -432,8 +408,9 @@ body.icons-only-mode .msg-text{display:none}
         </button>
       </div>
       <div class="modal-btn-row">
-        <button class="btn ghost" onclick="showStep('wStepDisplay')">← Back</button>
+        <button class="btn ghost" onclick="showStep('wStep2')">← Back</button>
       </div>
+      <button class="btn ghost" style="width:100%;margin-top:8px" onclick="skipSetupWizard()">Skip Setup Entirely ⏭️</button>
     </div>
     <div class="modal-step" id="wStepAuthPrompt">
       <h2>☁️ Sign In / Cloud Sync</h2>
@@ -584,7 +561,91 @@ body.icons-only-mode .msg-text{display:none}
   </div>
 </div>
 
+<!-- Embedded I18N Fallback Script -->
+<script>
+window.HALO_I18N = {
+  LANGS: {
+    en: { name: 'English', speech: 'en-US' },
+    es: { name: 'Español', speech: 'es-ES' },
+    fr: { name: 'Français', speech: 'fr-FR' },
+    vi: { name: 'Tiếng Việt', speech: 'vi-VN' }
+  },
+  CATS: {
+    es: {"Basics":"Básicos", "Feelings":"Emociones", "Needs":"Necesidades", "Social":"Social", "People":"Personas", "School":"Escuela", "Home":"Hogar", "Food & Drink":"Comida y Bebida", "Places":"Lugares", "Actions":"Acciones", "Animals":"Animales", "Things":"Cosas", "Questions":"Preguntas", "Time":"Tiempo", "Transport":"Transporte", "Weather":"Clima", "Health":"Salud", "Custom":"Personalizado"},
+    fr: {"Basics":"Bases", "Feelings":"Émotions", "Needs":"Besoins", "Social":"Social", "People":"Personnes", "School":"École", "Home":"Maison", "Food & Drink":"Nourriture et Boisson", "Places":"Lieux", "Actions":"Actions", "Animals":"Animaux", "Things":"Choses", "Questions":"Questions", "Time":"Temps", "Transport":"Transport", "Weather":"Météo", "Health":"Santé", "Custom":"Personnalisé"},
+    vi: {"Basics":"Cơ bản", "Feelings":"Cảm xúc", "Needs":"Nhu cầu", "Social":"Xã hội", "People":"Mọi người", "School":"Trường học", "Home":"Nhà", "Food & Drink":"Đồ ăn & Thức uống", "Places":"Địa điểm", "Actions":"Hành động", "Animals":"Động vật", "Things":"Đồ vật", "Questions":"Câu hỏi", "Time":"Thời gian", "Transport":"Giao thông", "Weather":"Thời tiết", "Health":"Sức khỏe", "Custom":"Tùy chỉnh"}
+  },
+  WORDS: {
+    es: {
+      "Yes":"Sí", "No":"No", "Please":"Por favor", "Thank you":"Gracias", "Help":"Ayuda", "Stop":"Alto", "More":"Más", "Want":"Quiero", "Sorry":"Lo siento", "Okay":"Está bien",
+      "Happy":"Feliz", "Sad":"Triste", "Hungry":"Hambriento", "Thirsty":"Sediento", "Tired":"Cansado", "Hurt":"Herido", "Scared":"Asustado", "Sick":"Enfermo", "Confused":"Confundido", "Excited":"Emocionado", "Bored":"Aburrido",
+      "Bathroom":"Baño", "Water":"Agua", "Food":"Comida", "Rest":"Descansar", "Blanket":"Manta", "Quiet":"Silencio", "Medicine":"Medicina", "Charge":"Cargar", "Warm":"Caliente", "Cold":"Frío",
+      "Hello":"Hola", "Goodbye":"Adiós", "Good morning":"Buenos días", "Good night":"Buenas noches", "Wait":"Espera", "I don't know":"No sé", "Repeat":"Repetir",
+      "I":"Yo", "You":"Tú", "Mom":"Mamá", "Dad":"Papá", "Friend":"Amigo", "Teacher":"Maestro", "Brother":"Hermano", "Sister":"Hermana", "Caregiver":"Cuidador",
+      "Class":"Clase", "Homework":"Tarea", "Recess":"Recreo", "Lunch":"Almuerzo", "Book":"Libro", "Pencil":"Lápiz", "Desk":"Escritorio",
+      "Bedroom":"Habitación", "Kitchen":"Cocina", "TV":"Televisión", "Outside":"Afuera", "Car":"Coche", "Play":"Jugar", "Read":"Leer", "Write":"Escribir", "Eat":"Comer", "Drink":"Beber",
+      "House":"Casa", "Bed":"Cama", "Doctor":"Doctor", "Pain":"Dolor", "Sunny":"Soleado", "Rain":"Lluvia", "Family":"Familia", "Go":"Ir"
+    },
+    fr: {
+      "Yes":"Oui", "No":"Non", "Please":"S'il vous plaît", "Thank you":"Merci", "Help":"Aide", "Stop":"Arrête", "More":"Plus", "Want":"Je veux", "Sorry":"Désolé", "Okay":"D'accord",
+      "Happy":"Heureux", "Sad":"Triste", "Hungry":"Affamé", "Thirsty":"Soif", "Tired":"Fatigué", "Hurt":"Blessé", "Scared":"Peur", "Sick":"Malade", "Confused":"Confus", "Excited":"Excité", "Bored":"Ennuyé",
+      "Bathroom":"Toilettes", "Water":"Eau", "Food":"Nourriture", "Rest":"Repos", "Blanket":"Couverture", "Quiet":"Silence", "Medicine":"Médicament", "Charge":"Charger", "Warm":"Chaud", "Cold":"Froid",
+      "Hello":"Bonjour", "Goodbye":"Au revoir", "Good morning":"Bonjour", "Good night":"Bonne nuit", "Wait":"Attends", "I don't know":"Je ne sais pas", "Repeat":"Répéter",
+      "I":"Je", "You":"Tu", "Mom":"Maman", "Dad":"Papa", "Friend":"Ami", "Teacher":"Professeur", "Brother":"Frère", "Sister":"Sœur", "Caregiver":"Soignant",
+      "Class":"Classe", "Homework":"Devoirs", "Recess":"Récréation", "Lunch":"Déjeuner", "Book":"Livre", "Pencil":"Crayon", "Desk":"Bureau",
+      "Bedroom":"Chambre", "Kitchen":"Cuisine", "TV":"Télé", "Outside":"Dehors", "Car":"Voiture", "Play":"Jouer", "Read":"Lire", "Write":"Écrire", "Eat":"Manger", "Drink":"Boire",
+      "House":"Maison", "Bed":"Lit", "Doctor":"Docteur", "Pain":"Douleur", "Sunny":"Ensoleillé", "Rain":"Pluie", "Family":"Famille", "Go":"Aller"
+    },
+    vi: {
+      "Yes":"Có", "No":"Không", "Please":"Làm ơn", "Thank you":"Cảm ơn", "Help":"Giúp đỡ", "Stop":"Dừng lại", "More":"Thêm", "Want":"Muốn", "Sorry":"Xin lỗi", "Okay":"Đồng ý",
+      "Happy":"Vui vẻ", "Sad":"Buồn", "Hungry":"Đói", "Thirsty":"Khát", "Tired":"Mệt mỏi", "Hurt":"Đau", "Scared":"Sợ hãi", "Sick":"Ốm", "Confused":"Bối rối", "Excited":"Hào hứng", "Bored":"Chán nản",
+      "Bathroom":"Phòng tắm", "Water":"Nước", "Food":"Thức ăn", "Rest":"Nghỉ ngơi", "Blanket":"Cái chăn", "Quiet":"Im lặng", "Medicine":"Thuốc", "Charge":"Sạc", "Warm":"Ấm áp", "Cold":"Lạnh",
+      "Hello":"Xin chào", "Goodbye":"Tạm biệt", "Good morning":"Chào buổi sáng", "Good night":"Chúc ngủ ngon", "Wait":"Đợi đã", "I don't know":"Tôi không biết", "Repeat":"Lặp lại",
+      "I":"Tôi", "You":"Bạn", "Mom":"Mẹ", "Dad":"Bố", "Friend":"Bạn bè", "Teacher":"Giáo viên", "Brother":"Anh/Em trai", "Sister":"Chị/Em gái", "Caregiver":"Người chăm sóc",
+      "Class":"Lớp học", "Homework":"Bài tập", "Recess":"Giờ ra chơi", "Lunch":"Bữa trưa", "Book":"Sách", "Pencil":"Bút chì", "Desk":"Bàn học",
+      "Bedroom":"Phòng ngủ", "Kitchen":"Nhà bếp", "TV":"TV", "Outside":"Bên ngoài", "Car":"Ô tô", "Play":"Chơi", "Read":"Đọc", "Write":"Viết", "Eat":"Ăn", "Drink":"Uống",
+      "House":"Nhà", "Bed":"Giường", "Doctor":"Bác sĩ", "Pain":"Đau", "Sunny":"Nắng", "Rain":"Mưa", "Family":"Gia đình", "Go":"Đi"
+    }
+  },
+  UI: {
+    es: {
+      "Credits": "Créditos",
+      "Halo AAC was created by Ivan and inspired by these creators:": "Halo AAC fue creado por Ivan e inspirado por estos creadores:",
+      "— Creator and UI Designer": "— Creador y Diseñador de UI",
+      "— The inspiration behind Halo AAC": "— La inspiración detrás de Halo AAC",
+      "— Inspired me to add the ability to sign in with Google so you never lose your progress": "— Me inspiró a agregar la capacidad de iniciar sesión con Google para no perder el progreso",
+      "📧 Contact Support": "📧 Contactar Soporte",
+      "Need help or have questions? Email us at:": "¿Necesitas ayuda o tienes preguntas? Contáctanos en:",
+      "Close": "Cerrar",
+      "Close ✕": "Cerrar ✕"
+    },
+    fr: {
+      "Credits": "Crédits",
+      "Halo AAC was created by Ivan and inspired by these creators:": "Halo AAC a été créé par Ivan et inspiré par ces créateurs :",
+      "— Creator and UI Designer": "— Créateur et Concepteur d'UI",
+      "— The inspiration behind Halo AAC": "— L'inspiration derrière Halo AAC",
+      "— Inspired me to add the ability to sign in with Google so you never lose your progress": "— M'a inspiré à ajouter la connexion avec Google pour ne jamais perdre votre progression",
+      "📧 Contact Support": "📧 Contacter le Support",
+      "Need help or have questions? Email us at:": "Besoin d'aide ou des questions ? Envoyez-nous un e-mail à :",
+      "Close": "Fermer",
+      "Close ✕": "Fermer ✕"
+    },
+    vi: {
+      "Credits": "Tín dụng",
+      "Halo AAC was created by Ivan and inspired by these creators:": "Halo AAC được tạo bởi Ivan và lấy cảm hứng từ những người sáng tạo này:",
+      "— Creator and UI Designer": "— Người sáng tạo và Thiết kế UI",
+      "— The inspiration behind Halo AAC": "— Nguồn cảm hứng đằng sau Halo AAC",
+      "— Inspired me to add the ability to sign in with Google so you never lose tiến trình": "— Truyền cảm hứng thêm đăng nhập Google để không mất tiến trình",
+      "📧 Contact Support": "📧 Liên hệ Hỗ trợ",
+      "Need help or have questions? Email us at:": "Cần trợ giúp hoặc có câu hỏi? Gửi email cho chúng tôi tại:",
+      "Close": "Đóng",
+      "Close ✕": "Đóng ✕"
+    }
+  }
+};
+</script>
 <script src="i18n.js"></script>
+
 <script>
 const PACKS={
   essential:{
@@ -650,12 +711,12 @@ const CAT_EMOJIS = {
 };
 
 const KEY='halo_aac_v2';
-const SYNC_KEYS=['profiles','currentProfile','sysVoice','sysVoices','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice','visualMode', 'layoutMode'];
+const SYNC_KEYS=['profiles','currentProfile','sysVoice','sysVoices','accent','accentDark','bg','setup','portalHash','ttsEngine','kokoroVoice','layoutMode'];
 const DEFAULTS={
   profiles:{},currentProfile:null,sysVoice:null,
   accent:'#2c7be5',accentDark:'#0b63d6',bg:'#f0f2f5',
   setup:false,portalHash:null,
-  ttsEngine:'system',kokoroVoice:'af_heart',visualMode:false, layoutMode:'bar'
+  ttsEngine:'system',kokoroVoice:'af_heart',layoutMode:'bar'
 };
 
 let data=(()=>{
@@ -880,7 +941,6 @@ function loadFromCloud(){
   if(_cloudUnsub){_cloudUnsub();_cloudUnsub=null;}
   showSyncBadge('☁️ Loading…',true);
   _cloudUnsub=_fireDb.collection('users').doc(_fireUser.uid).onSnapshot(snap=>{
-    // Skip echoes of our own writes, and don't clobber edits still waiting to upload.
     if(snap.metadata.hasPendingWrites||_cloudTimer)return;
     try{
       if(snap.exists){
@@ -893,7 +953,7 @@ function loadFromCloud(){
         migrateData(); 
         localStorage.setItem(KEY,JSON.stringify(data));
       }else{
-        syncToCloud(); // first sign-in on this account: upload what's on this device
+        syncToCloud();
       }
       showSyncBadge('☁️ Synced',false);
       if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
@@ -928,7 +988,6 @@ function syncToCloud(){
   },500);
 }
 
-// Firebase SDKs are deferred, so start it once they've run (DOMContentLoaded fires after deferred scripts).
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureFirebase);
 else ensureFirebase();
 
@@ -969,10 +1028,8 @@ let messageTokens=[];
 let folderViewActive = true;
 
 const $=id=>document.getElementById(id);
-// Escape text before putting it into innerHTML (custom words, import codes and cloud data are user-controlled).
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// ---- Languages ----
-const I18N=window.HALO_I18N||{LANGS:{en:{name:'English',speech:'en'}},CATS:{},WORDS:{},UI:{}};
+const I18N=window.HALO_I18N||{LANGS:{en:{name:'English',speech:'en-US'}},CATS:{},WORDS:{},UI:{}};
 function curLang(){const p=data.profiles&&data.profiles[data.currentProfile];const l=p&&p.lang;return (l&&I18N.LANGS[l])?l:'en';}
 function t(s){const L=curLang();return (L!=='en'&&I18N.UI[L]&&I18N.UI[L][s])||s;}
 function tw(w){const L=curLang();return (L!=='en'&&I18N.WORDS[L]&&I18N.WORDS[L][w])||w;}
@@ -1003,7 +1060,7 @@ function fillLangSelects(){
 function applyLanguage(){
   document.documentElement.lang=curLang();
   fillLangSelects();translateStatic();
-  applyVisualModeUI();applyLayoutModeUI();updateAuthUI();
+  applyLayoutModeUI();updateAuthUI();
   setStatus(t('Ready'));
   buildCats();buildGrid(wordSearch.value);renderMessage();updatePredictions();
   buildSysVoiceList();
@@ -1045,9 +1102,9 @@ function renderMessage(){
     chip.className='msg-chip';
     chip.setAttribute('aria-label',t.w);
     if(isImg(t.em)){
-      chip.innerHTML='<img class="msg-img" alt="" src="'+t.em+'">'+(!data.visualMode ? '<span class="msg-text">'+esc(t.w)+'</span>' : '');
+      chip.innerHTML='<img class="msg-img" alt="" src="'+t.em+'"><span class="msg-text">'+esc(t.w)+'</span>';
     } else {
-      chip.innerHTML=(t.em ? '<span aria-hidden="true">'+esc(t.em)+'</span>' : '') + (!data.visualMode ? '<span class="msg-text">'+esc(t.w)+'</span>' : '');
+      chip.innerHTML=(t.em ? '<span aria-hidden="true">'+esc(t.em)+'</span>' : '') + '<span class="msg-text">'+esc(t.w)+'</span>';
     }
     msgWrap.appendChild(chip);
   });
@@ -1057,21 +1114,6 @@ function appendWordToMsg(w, em){
   messageTokens.push({w, em: em || ''});
   renderMessage();
   updatePredictions();
-}
-
-function toggleVisualMode(){
-  data.visualMode = !data.visualMode;
-  save();
-  applyVisualModeUI();
-  buildCats();
-  buildGrid();
-  renderMessage();
-}
-
-function applyVisualModeUI(){
-  document.body.classList.toggle('icons-only-mode', !!data.visualMode);
-  const btn = $('settingsVisualModeBtn');
-  if(btn) btn.textContent = t(data.visualMode ? 'Switch to Words & Icons' : 'Switch to Icons Only');
 }
 
 function toggleLayoutMode() {
@@ -1090,7 +1132,6 @@ function applyLayoutModeUI() {
 }
 
 function setStatus(msg,speaking=false){ttsStatus.textContent=msg;dot.classList.toggle('on',speaking);}
-function stripEmoji(s){return s.replace(/[\p{Extended_Pictographic}\p{Emoji_Presentation}\u200d\uFE0F]/gu,'').replace(/\s+/g,' ').trim();}
 function speechCode(){return (I18N.LANGS[curLang()]||{}).speech||'en';}
 function voiceMatchesLang(v){return v.lang.toLowerCase().replace('_','-').startsWith(speechCode());}
 function pickVoice(){
@@ -1101,15 +1142,33 @@ function pickVoice(){
   if(L==='en')return voices.find(v=>v.lang.startsWith('en-US'))||voices.find(voiceMatchesLang)||voices[0]||null;
   return voices.find(v=>voiceMatchesLang(v)&&v.localService)||voices.find(voiceMatchesLang)||null;
 }
+
+// ---- Google Cloud TTS Fallback for missing OS Voices (Windows/Mac) ----
+function playCloudTTS(text) {
+  const lang = curLang(); 
+  const url = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=' + lang + '&q=' + encodeURIComponent(text);
+  if(_kokoroAudioEl) _kokoroAudioEl.pause();
+  _kokoroAudioEl = new Audio(url);
+  _kokoroAudioEl.playbackRate = parseFloat(rateSlider.value);
+  _kokoroAudioEl.onplay = () => setStatus('▶ Cloud Voice', true);
+  _kokoroAudioEl.onended = () => setStatus(t('Done ✓'));
+  _kokoroAudioEl.onerror = () => setStatus('Cloud voice failed');
+  _kokoroAudioEl.play();
+}
+
 function speakSystem(text){
   speechSynthesis.cancel();
+  const voice = pickVoice();
+  if(!voice) {
+    // If no matching voice exists natively on Windows/Mac, fallback to Cloud automatically
+    playCloudTTS(text);
+    return;
+  }
   const u=new SpeechSynthesisUtterance(text);
-  const voice=pickVoice();
-  u.lang=voice?voice.lang:speechCode();
-  if(voice)u.voice=voice;
-  else if(speechSynthesis.getVoices().length)setStatus(t("No voice for this language is installed. Add one in your device's text-to-speech settings."));
+  u.lang=voice.lang;
+  u.voice=voice;
   u.rate=parseFloat(rateSlider.value);u.pitch=1;u.volume=1;
-  u.onstart=()=>setStatus('▶ '+(voice?.name||'System'),true);
+  u.onstart=()=>setStatus('▶ '+(voice.name||'System'),true);
   u.onend=()=>setStatus(t('Done ✓'));
   u.onerror=e=>setStatus('Error: '+e.error);
   speechSynthesis.speak(u);
@@ -1418,8 +1477,6 @@ function refreshPS(){
   if(data.currentProfile)profileSel.value=data.currentProfile;
 }
 
-function capitalize(s){return s.charAt(0).toUpperCase()+s.slice(1);}
-
 profileSel.onchange=e=>{data.currentProfile=e.target.value;save();folderViewActive=true;applyLanguage();};
 
 function openSettings(){
@@ -1578,8 +1635,7 @@ function wGoStep2(role){wizardRole=role;showStep('wStep2');}
 function wBack(){
   const active=document.querySelector('.modal-step.active');
   if(active.id==='wStep2')showStep('wStep1');
-  else if(active.id==='wStepDisplay')showStep('wStep2');
-  else if(active.id==='wStepLayout')showStep('wStepDisplay');
+  else if(active.id==='wStepLayout')showStep('wStep2');
   else if(active.id==='wStepAuthPrompt')showStep('wStepLayout');
   else if(active.id==='wStep3')showStep('wStepAuthPrompt');
 }
@@ -1589,10 +1645,6 @@ function selectPack(el){
   wizardPack=el.dataset.pack;
 }
 function wStep2Next(){
-  showStep('wStepDisplay');
-}
-function chooseDisplayMode(iconsOnly){
-  data.visualMode = iconsOnly;
   showStep('wStepLayout');
 }
 function chooseLayoutMode(mode){
@@ -1614,6 +1666,14 @@ function proceedAfterWizardAuth(){
   if(wizardRole==='parent') showStep('wStep3');
   else showStep('wStep3b');
 }
+function skipSetupWizard(){
+  if (!data.profiles[data.currentProfile]) data.profiles[data.currentProfile] = {};
+  data.setup=true;
+  save();
+  applyLayoutModeUI();
+  $('wizardOverlay').classList.remove('open');
+  buildCats();buildGrid();renderMessage();kickPregen();
+}
 function kickPregen(){
   if((data.ttsEngine||'system')==='kokoro'&&kokoroTTS)pregenerateVoice(data.kokoroVoice||'af_heart');
 }
@@ -1629,7 +1689,6 @@ async function wFinish(){
   data.profiles[data.currentProfile].wordPack = wizardPack;
   data.setup=true;
   save();
-  applyVisualModeUI();
   applyLayoutModeUI();
   $('wizardOverlay').classList.remove('open');
   buildCats();buildGrid();renderMessage();kickPregen();
@@ -1640,7 +1699,6 @@ function wFinishChild(){
   data.profiles[data.currentProfile].wordPack = wizardPack;
   data.setup=true;
   save();
-  applyVisualModeUI();
   applyLayoutModeUI();
   $('wizardOverlay').classList.remove('open');
   buildCats();buildGrid();renderMessage();kickPregen();
@@ -1955,7 +2013,6 @@ function init(){
   if(data.accent)applyAccent(data.accent,data.accentDark||data.accent);
   if(data.bg){document.body.style.background=data.bg;$('bgPicker').value=data.bg;}
   if(data.accent){$('accentPicker').value=data.accent;$('swatchRow').querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s.dataset.a===data.accent));}
-  applyVisualModeUI();
   applyLayoutModeUI();
   refreshPS();applyLanguage();
   if(!data.setup){
@@ -1965,7 +2022,6 @@ function init(){
 
 init();
 
-// Offline support: cache the app so it opens with no internet connection.
 if('serviceWorker' in navigator && window.isSecureContext){
   window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW:',e));});
 }
