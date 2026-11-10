@@ -247,9 +247,9 @@ select,button,input,textarea{font-family:inherit}
 <div class="modal-overlay" id="creditsOverlay" onclick="if(event.target===this)closeCreditsModal()">
   <div class="modal-box">
     <h2>Credits</h2>
-    <p>Halo AAC was created by Loud_Significance988 and inspired by these creators:</p>
+    <p>Halo AAC was created by Ivan and inspired by these creators:</p>
     <ul style="margin-left:20px;font-size:14px;color:#555;line-height:1.8;margin-bottom:20px">
-      <li><a href="https://www.tiktok.com/@loud_significance988?is_from_webapp=1&sender_device=pc" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Loud_Significance988</a> — Creator and UI Designer</li>
+      <li><a href="https://www.tiktok.com/@loud_significance988?is_from_webapp=1&sender_device=pc" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Ivan</a> — Creator and UI Designer</li>
       <li><a href="https://www.tiktok.com/@kaelynn_vp" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Kaelynn Partlow</a> — The inspiration behind Halo AAC</li>
       <li><a href="https://www.tiktok.com/@realautismmom" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">@Real Autism Mom</a> — Inspired me to add the ability to sign in with Google so you never lose your progress</li>
     </ul>
@@ -1143,7 +1143,6 @@ function pickVoice(){
   return voices.find(v=>voiceMatchesLang(v)&&v.localService)||voices.find(voiceMatchesLang)||null;
 }
 
-// ---- Google Cloud TTS Fallback for missing OS Voices (Windows/Mac) ----
 function playCloudTTS(text) {
   const lang = curLang(); 
   const url = 'https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=' + lang + '&q=' + encodeURIComponent(text);
@@ -1160,7 +1159,6 @@ function speakSystem(text){
   speechSynthesis.cancel();
   const voice = pickVoice();
   if(!voice) {
-    // If no matching voice exists natively on Windows/Mac, fallback to Cloud automatically
     playCloudTTS(text);
     return;
   }
@@ -1320,7 +1318,7 @@ rateSlider.oninput=()=>{rateVal.textContent=parseFloat(rateSlider.value).toFixed
 function getActiveWords(){
   const p = data.profiles[data.currentProfile] || {};
   const packName = p.wordPack || 'essential';
-  const pack = PACKS[packName];
+  const pack = PACKS[packName] || PACKS['essential'];
   const merged = {};
   Object.entries(pack).forEach(([cat,words])=>{
     merged[cat]={};
@@ -1475,6 +1473,11 @@ function refreshPS(){
   profileSel.innerHTML='';
   Object.keys(data.profiles).forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;profileSel.appendChild(o);});
   if(data.currentProfile)profileSel.value=data.currentProfile;
+}
+
+function capitalize(s) {
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 profileSel.onchange=e=>{data.currentProfile=e.target.value;save();folderViewActive=true;applyLanguage();};
@@ -1742,9 +1745,9 @@ async function checkPortalPw(){
 $('portalPwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPortalPw();});
 
 function openPortal(){
-  switchTab(document.querySelector('.ptab.active'),'tabAdd');
-  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',i===0));
-  document.querySelectorAll('.ptab-panel').forEach((p,i)=>p.classList.toggle('active',i===0));
+  const firstTab = document.querySelector('.ptab');
+  if(firstTab) switchTab(firstTab, 'tabAdd');
+  
   populateCatPicker();
   buildWordTable();
   updatePackLabel();
@@ -1883,7 +1886,8 @@ function populateCatPicker(){
   if(!sel) return;
   sel.innerHTML='';
   const p = data.profiles[data.currentProfile] || {};
-  const allCats=[...Object.keys(PACKS[p.wordPack||'essential']),...Object.keys(p.customWords||{}),'Custom'];
+  const pack = PACKS[p.wordPack || 'essential'] || PACKS['essential'];
+  const allCats=[...Object.keys(pack),...Object.keys(p.customWords||{}),'Custom'];
   [...new Set(allCats)].forEach(c=>{
     const o=document.createElement('option');
     o.value=c;
