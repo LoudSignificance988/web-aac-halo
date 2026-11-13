@@ -86,7 +86,8 @@ select,button,input,textarea{font-family:inherit}
 #settingsPanel{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;padding:16px 18px 36px}
 .drag-handle{width:40px;height:4px;background:#ddd;border-radius:2px;margin:0 auto 14px}
 .s-title{font-size:16px;font-weight:700;margin-bottom:14px}
-.s-section{margin-bottom:22px}
+.s-section{margin-bottom:22px; padding-bottom:16px; border-bottom:1px solid #f0f0f0}
+.s-section:last-child{border-bottom:none; margin-bottom:0}
 .s-label{font-size:11px;font-weight:700;color:#aaa;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
 .engine-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .engine-card{border:2px solid #e8e8e8;border-radius:10px;padding:10px 8px;cursor:pointer;text-align:center;transition:all .13s;background:#fafafa}
@@ -243,6 +244,47 @@ select,button,input,textarea{font-family:inherit}
   </div>
 </main>
 
+<!-- Unified Word Management Module (Moves dynamically based on Portal State) -->
+<div id="sharedWordMgmtUI" style="display:none;">
+  <p style="font-size:13px;color:#666;margin-bottom:12px">Look up a word, choose an emoji, or upload a custom picture to add it to your board.</p>
+  
+  <div class="dict-lookup">
+    <input type="text" id="dictInput" placeholder="Type a word…" oninput="autoSuggestEmoji(this.value)" onkeydown="if(event.key==='Enter')lookupWord()"/>
+    <button class="btn" onclick="lookupWord()">Look up</button>
+  </div>
+  <div class="dict-result" id="dictResult">
+    <div class="dict-word" id="dictWordTitle"></div>
+    <div class="dict-def" id="dictDef"></div>
+    
+    <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pick an emoji or upload image</div>
+    <div class="emoji-pick-row" id="emojiPickRow"></div>
+
+    <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
+      <input type="file" id="picUploadInput" accept="image/*" style="display:none" onchange="handlePicUpload(event)">
+      <button type="button" class="btn ghost" style="font-size:12px;padding:6px 10px" onclick="$('picUploadInput').click()">📷 Upload Picture</button>
+      <span id="uploadPreviewWrap" style="display:none;align-items:center;gap:6px">
+        <img id="uploadPreviewImg" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid #ddd">
+        <span style="font-size:11px;color:#059669;font-weight:700">Image selected ✓</span>
+      </span>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:4px">Category</div>
+    <input type="text" id="addWordCat" class="modal-input" list="catDatalist" placeholder="Select or type new category..." style="margin-bottom:10px;">
+    <datalist id="catDatalist"></datalist>
+    <button class="btn" style="width:100%" onclick="confirmAddWord()">Add Word ✓</button>
+  </div>
+  <div id="addWordMsg" style="font-size:13px;color:var(--accent);margin-top:8px;display:none"></div>
+
+  <div class="s-label" style="margin-top:24px">📋 Current Words</div>
+  <input type="search" id="portalSearch" placeholder="🔍 Filter words…" style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;margin-bottom:10px" oninput="buildWordTable()" />
+  <div style="max-height:250px;overflow-y:auto">
+    <table class="word-table" id="wordTable">
+      <thead><tr><th>Icon</th><th>Word</th><th>Category</th><th></th></tr></thead>
+      <tbody id="wordTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
 <!-- Credits Modal -->
 <div class="modal-overlay" id="creditsOverlay" onclick="if(event.target===this)closeCreditsModal()">
   <div class="modal-box">
@@ -253,9 +295,25 @@ select,button,input,textarea{font-family:inherit}
       <li><a href="https://www.tiktok.com/@kaelynn_vp" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">Kaelynn Partlow</a> — The inspiration behind Halo AAC</li>
       <li><a href="https://www.tiktok.com/@realautismmom" target="_blank" style="color:var(--accent);font-weight:700;text-decoration:none">@Real Autism Mom</a> — Inspired me to add the ability to sign in with Google so you never lose your progress</li>
     </ul>
-    <div class="s-label">📧 Contact Support</div>
-    <p style="font-size:14px;margin-bottom:8px">Need help or have questions? Email us at:</p>
-    <a href="mailto:haloaccommodationssupport@proton.me" class="btn ghost" style="display:block;text-align:center;text-decoration:none;width:100%;margin-bottom:12px;word-break:break-all">haloaccommodationssupport@proton.me</a>
+
+    <!-- Cash App Support Box -->
+    <div style="background:#f8f9fb;padding:16px;border-radius:12px;border:1.5px solid #eee;margin-bottom:16px;text-align:center">
+      <div style="font-size:24px;margin-bottom:8px">💖</div>
+      <p style="font-size:14px;color:#333;font-weight:600;margin-bottom:4px">Support the Project</p>
+      <p style="font-size:12px;color:#666;margin-bottom:12px">Help keep Halo AAC free and support our goal to purchase the <strong>halo-aac.org</strong> domain name!</p>
+      
+      <a href="https://cash.app/$loudsignificance988" target="_blank" class="btn" style="display:block;text-decoration:none;width:100%;background:#00D632;color:#fff;border-color:#00D632;font-weight:700;">Support via Cash App</a>
+    </div>
+    
+    <button class="choice-btn" style="width:100%;margin-bottom:16px;" onclick="document.getElementById('creditsSupportPanel').style.display='block';this.style.display='none'">
+      📧 Contact Support
+      <span class="sub">Need help? Tap to view our email address</span>
+    </button>
+    <div id="creditsSupportPanel" style="display:none;background:#f8f9fb;padding:12px;border-radius:12px;border:1.5px solid #eee;margin-bottom:16px;text-align:center">
+      <p style="font-size:14px;margin-bottom:8px;color:#555">Email us at:</p>
+      <a href="mailto:haloaccommodationssupport@proton.me" class="btn ghost" style="display:block;text-decoration:none;width:100%;word-break:break-all">haloaccommodationssupport@proton.me</a>
+    </div>
+
     <button class="btn" style="width:100%" onclick="closeCreditsModal()">Close</button>
   </div>
 </div>
@@ -287,18 +345,40 @@ select,button,input,textarea{font-family:inherit}
   <div id="settingsPanel">
     <div class="drag-handle"></div>
     <div class="s-title">⚙️ Settings</div>
+    
     <div class="s-section">
       <div class="s-label">🌐 Language</div>
       <select id="langSelectSettings" class="lang-select" aria-label="Language" onchange="setLanguage(this.value)"></select>
     </div>
-    <div class="s-section">
-      <div class="s-label">👨‍👩‍👧 Parental Center</div>
-      <button class="btn" style="width:100%" onclick="openPortalPrompt()">🔒 Open Parent Portal</button>
+    
+    <div class="s-section" id="parentalControlSection">
+      <div class="s-label">👨‍👩‍👧 Parental Portal</div>
+      <button class="btn" id="btnOpenPortal" style="width:100%; display:none;" onclick="openPortalPrompt()">🔒 Open Parent Portal</button>
+      <button class="btn ghost" id="btnSetupPortal" style="width:100%; display:none;" onclick="openSetupPortalModal()">🔒 Set Up Parent Portal (Lock settings)</button>
     </div>
+
+    <!-- Inline Word Management -->
+    <div class="s-section" id="settingsWordMgmtBlock" style="display:none;">
+      <div class="s-label">🔤 Add & Manage Words</div>
+      <div id="settingsWordContainer"></div>
+    </div>
+    
     <div class="s-section">
       <div class="s-label">🗂️ Menu Layout</div>
       <button class="btn ghost" id="settingsLayoutModeBtn" style="width:100%" onclick="toggleLayoutMode()">Switch to Folder View</button>
     </div>
+    
+    <div class="s-section">
+      <div class="s-label">📦 Word Pack</div>
+      <p style="font-size:13px;color:#666;margin-bottom:8px">Current pack: <strong id="currentPackLabel">—</strong></p>
+      <div class="pack-grid" id="portalPackGrid">
+        <div class="pack-card" data-pack="essential" onclick="selectPortalPack(this)"><span class="pack-icon">⭐</span><div class="pack-name">Essential</div></div>
+        <div class="pack-card" data-pack="school" onclick="selectPortalPack(this)"><span class="pack-icon">🏫</span><div class="pack-name">School</div></div>
+        <div class="pack-card" data-pack="home" onclick="selectPortalPack(this)"><span class="pack-icon">🏠</span><div class="pack-name">Home</div></div>
+        <div class="pack-card" data-pack="all" onclick="selectPortalPack(this)"><span class="pack-icon">🌐</span><div class="pack-name">Everything</div></div>
+      </div>
+    </div>
+
     <div class="s-section">
       <div class="s-label">🎙️ Voice Engine</div>
       <div class="engine-grid" id="engineGrid">
@@ -324,6 +404,7 @@ select,button,input,textarea{font-family:inherit}
         <div id="kokoroVoiceList"></div>
       </div>
     </div>
+    
     <div class="s-section">
       <div class="s-label">🎨 Theme Color</div>
       <div class="swatch-row" id="swatchRow">
@@ -341,6 +422,17 @@ select,button,input,textarea{font-family:inherit}
         <label><input type="color" id="accentPicker" value="#2c7be5"> Custom accent</label>
       </div>
     </div>
+    
+    <div class="s-section">
+      <div class="s-label">💾 Data Sync (Import / Export)</div>
+      <p style="font-size:13px;color:#666;margin-bottom:8px">Export your custom words and settings, or import them from another device.</p>
+      <div class="two-btn" style="margin-bottom:8px">
+        <button class="btn ghost" id="doExport">Export Code</button>
+        <button class="btn" id="doImport">Import Code</button>
+      </div>
+      <textarea id="importArea" placeholder="Paste export code here…" style="width:100%;padding:9px;border-radius:8px;border:1.5px solid #ddd;font-size:12px;min-height:65px;resize:none;margin-bottom:16px;"></textarea>
+    </div>
+    
     <button class="btn" style="width:100%;padding:13px;font-size:15px" onclick="closeSettings()">Done ✓</button>
   </div>
 </div>
@@ -350,22 +442,18 @@ select,button,input,textarea{font-family:inherit}
     <div class="modal-step active" id="wStep1">
       <h2>👋 Welcome to Halo AAC</h2>
       <label class="lang-row">🌐 <select id="langSelectWizard" class="lang-select" aria-label="Language" onchange="setLanguage(this.value)"></select></label>
-      <p>Before we start, who is setting up this device?</p>
+      <p>Tap below to start setting up your communication board.</p>
       <div class="big-choice">
-        <button class="choice-btn" onclick="wGoStep2('parent')">
-          👨‍👩‍👧 I'm a parent / caregiver
-          <span class="sub">Set up the app and create a password</span>
-        </button>
-        <button class="choice-btn" onclick="wGoStep2('child')">
+        <button class="choice-btn" onclick="wGoStep2()">
           🧒 I'm the person using this app
-          <span class="sub">Jump straight in with basic words</span>
+          <span class="sub">Set up your words and preferences</span>
         </button>
       </div>
       <button class="btn ghost" style="width:100%;margin-top:8px" onclick="skipSetupWizard()">Skip Setup Entirely ⏭️</button>
     </div>
     <div class="modal-step" id="wStep2">
       <h2>📦 Choose a Word Pack</h2>
-      <p>Pick the word set that best fits everyday needs. Parents can add more words later.</p>
+      <p>Pick the word set that best fits everyday needs. You can add more words later in Settings.</p>
       <div class="pack-grid" id="packGrid">
         <div class="pack-card sel" data-pack="essential" onclick="selectPack(this)">
           <span class="pack-icon">⭐</span>
@@ -385,7 +473,7 @@ select,button,input,textarea{font-family:inherit}
         <div class="pack-card" data-pack="all" onclick="selectPack(this)">
           <span class="pack-icon">🌐</span>
           <div class="pack-name">Everything</div>
-          <div class="pack-desc">All words (parent unlock)</div>
+          <div class="pack-desc">All standard words</div>
         </div>
       </div>
       <div class="modal-btn-row">
@@ -433,24 +521,27 @@ select,button,input,textarea{font-family:inherit}
         <button class="btn ghost" onclick="showStep('wStepLayout')">← Back</button>
       </div>
     </div>
-    <div class="modal-step" id="wStep3">
-      <h2>🔒 Create a Parent Password</h2>
-      <p>This password protects the Parent Portal where you can add or remove words.</p>
-      <div class="modal-err" id="pwErr">Passwords don't match. Try again.</div>
-      <input class="modal-input" type="password" id="pw1" placeholder="Choose a password" autocomplete="new-password"/>
-      <input class="modal-input" type="password" id="pw2" placeholder="Confirm password" autocomplete="new-password"/>
-      <div class="modal-btn-row">
-        <button class="btn ghost" onclick="showStep('wStepAuthPrompt')">← Back</button>
-        <button class="btn" onclick="wFinish()">Finish Setup ✓</button>
-      </div>
-    </div>
     <div class="modal-step" id="wStep3b">
       <h2>🎉 All set!</h2>
       <p>You're ready to go. Tap any word card to start building sentences.</p>
-      <p style="margin-top:8px;font-size:13px;color:#888">If a parent needs to add words later, they can tap <strong>Parent Portal</strong> in the top bar.</p>
+      <p style="margin-top:8px;font-size:13px;color:#888">You can always add your own custom words later by opening <strong>⚙️ Settings</strong>.</p>
       <div class="modal-btn-row">
-        <button class="btn" onclick="wFinishChild()">Let's go! 🚀</button>
+        <button class="btn" onclick="wFinish()">Let's go! 🚀</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="setupPortalModal">
+  <div class="modal-box">
+    <h2>🔒 Set Up Parent Portal</h2>
+    <p>Create a password to lock Word Management and advanced settings behind a Parent Portal.</p>
+    <div class="modal-err" id="setupPortalErr">Passwords don't match. Try again.</div>
+    <input class="modal-input" type="password" id="setupPortalPw1" placeholder="Choose a password" autocomplete="new-password"/>
+    <input class="modal-input" type="password" id="setupPortalPw2" placeholder="Confirm password" autocomplete="new-password"/>
+    <div class="modal-btn-row">
+      <button class="btn ghost" onclick="document.getElementById('setupPortalModal').classList.remove('open')">Cancel</button>
+      <button class="btn" onclick="confirmSetupPortal()">Save Password</button>
     </div>
   </div>
 </div>
@@ -475,49 +566,15 @@ select,button,input,textarea{font-family:inherit}
       <button class="btn ghost" style="padding:6px 10px;font-size:12px" onclick="closePortal()">Close ✕</button>
     </div>
     <div class="portal-tabs">
-      <div class="ptab active" onclick="switchTab(this,'tabAdd')">➕ Add Word</div>
-      <div class="ptab" onclick="switchTab(this,'tabManage')">📋 Manage Words</div>
-      <div class="ptab" onclick="switchTab(this,'tabSettings')">⚙️ Portal Settings</div>
+      <div class="ptab active" onclick="switchTab(this,'tabWords')">🔤 Words</div>
+      <div class="ptab" onclick="switchTab(this,'tabSettings')">⚙️ Settings</div>
     </div>
-    <div class="ptab-panel active" id="tabAdd">
-      <p style="font-size:13px;color:#666;margin-bottom:12px">Look up a word, choose an emoji, or upload a custom picture.</p>
-      <div class="dict-lookup">
-        <input type="text" id="dictInput" placeholder="Type a word…" oninput="autoSuggestEmoji(this.value)" onkeydown="if(event.key==='Enter')lookupWord()"/>
-        <button class="btn" onclick="lookupWord()">Look up</button>
-      </div>
-      <div class="dict-result" id="dictResult">
-        <div class="dict-word" id="dictWordTitle"></div>
-        <div class="dict-def" id="dictDef"></div>
-        
-        <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Pick an emoji or upload image</div>
-        <div class="emoji-pick-row" id="emojiPickRow"></div>
+    
+    <div class="ptab-panel active" id="tabWords">
+      <!-- Word Management DOM moves here when portal is opened -->
+      <div id="portalWordContainer"></div>
+    </div>
 
-        <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center">
-          <input type="file" id="picUploadInput" accept="image/*" style="display:none" onchange="handlePicUpload(event)">
-          <button type="button" class="btn ghost" style="font-size:12px;padding:6px 10px" onclick="$('picUploadInput').click()">📷 Upload Picture</button>
-          <span id="uploadPreviewWrap" style="display:none;align-items:center;gap:6px">
-            <img id="uploadPreviewImg" style="width:28px;height:28px;object-fit:cover;border-radius:4px;border:1px solid #ddd">
-            <span style="font-size:11px;color:#059669;font-weight:700">Image selected ✓</span>
-          </span>
-        </div>
-
-        <div style="font-size:12px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:4px">Category</div>
-        <input type="text" id="addWordCat" class="modal-input" list="catDatalist" placeholder="Select or type new category..." style="margin-bottom:10px;">
-        <datalist id="catDatalist"></datalist>
-        <button class="btn" style="width:100%" onclick="confirmAddWord()">Add Word ✓</button>
-      </div>
-      <div id="addWordMsg" style="font-size:13px;color:var(--accent);margin-top:8px;display:none"></div>
-    </div>
-    <div class="ptab-panel" id="tabManage">
-      <p style="font-size:13px;color:#666;margin-bottom:10px">All words currently visible. Delete to remove.</p>
-      <input type="search" id="portalSearch" placeholder="🔍 Filter words…" style="width:100%;padding:8px 12px;border-radius:8px;border:1.5px solid #ddd;font-size:13px;margin-bottom:10px" />
-      <div style="max-height:320px;overflow-y:auto">
-        <table class="word-table" id="wordTable">
-          <thead><tr><th>Icon</th><th>Word</th><th>Category</th><th></th></tr></thead>
-          <tbody id="wordTableBody"></tbody>
-        </table>
-      </div>
-    </div>
     <div class="ptab-panel" id="tabSettings">
       <div class="s-label">☁️ Cloud Sync & Account</div>
       <p style="font-size:13px;color:#666;margin-bottom:8px" id="portalCloudStatus">Sign in to sync across devices.</p>
@@ -528,15 +585,10 @@ select,button,input,textarea{font-family:inherit}
       <input class="modal-input" type="password" id="newPw2" placeholder="Confirm new password"/>
       <div class="modal-err" id="changePwErr">Passwords don't match.</div>
       <button class="btn" style="width:100%;margin-bottom:16px" onclick="changePassword()">Update Password</button>
-      
-      <div class="s-label">Word Pack</div>
-      <p style="font-size:13px;color:#666;margin-bottom:8px">Current pack: <strong id="currentPackLabel">—</strong></p>
-      <div class="pack-grid" id="portalPackGrid">
-        <div class="pack-card" data-pack="essential" onclick="selectPortalPack(this)"><span class="pack-icon">⭐</span><div class="pack-name">Essential</div></div>
-        <div class="pack-card" data-pack="school" onclick="selectPortalPack(this)"><span class="pack-icon">🏫</span><div class="pack-name">School</div></div>
-        <div class="pack-card" data-pack="home" onclick="selectPortalPack(this)"><span class="pack-icon">🏠</span><div class="pack-name">Home</div></div>
-        <div class="pack-card" data-pack="all" onclick="selectPortalPack(this)"><span class="pack-icon">🌐</span><div class="pack-name">Everything</div></div>
-      </div>
+
+      <div class="s-label">Remove Parent Portal</div>
+      <p style="font-size:13px;color:#666;margin-bottom:8px">Remove the password and move Word Management back to the regular Settings menu.</p>
+      <button class="btn ghost danger" style="width:100%;margin-bottom:16px" onclick="removeParentPortal()">Disable Parent Portal</button>
 
       <div class="s-label" style="margin-top:16px">Profiles</div>
       <p style="font-size:13px;color:#666;margin-bottom:8px">Manage profiles directly from the portal.</p>
@@ -546,17 +598,6 @@ select,button,input,textarea{font-family:inherit}
         <button class="btn ghost" style="color:#dc2626;border-color:#dc2626" onclick="portalDelProfile()">🗑️ Delete</button>
       </div>
 
-      <div class="s-label" style="margin-top:16px">💾 Data Sync (Import / Export)</div>
-      <p style="font-size:13px;color:#666;margin-bottom:8px">Export your custom words and settings, or import them from another device.</p>
-      <div class="two-btn" style="margin-bottom:8px">
-        <button class="btn ghost" id="doExport">Export Code</button>
-        <button class="btn" id="doImport">Import Code</button>
-      </div>
-      <textarea id="importArea" placeholder="Paste export code here…" style="width:100%;padding:9px;border-radius:8px;border:1.5px solid #ddd;font-size:12px;min-height:65px;resize:none;margin-bottom:16px;"></textarea>
-
-      <div class="s-label" style="margin-top:16px">📧 Contact Support</div>
-      <p style="font-size:13px;color:#666;margin-bottom:8px">Need help or have questions? Email us at:</p>
-      <a href="mailto:haloaccommodationssupport@proton.me" class="btn ghost" style="display:block;text-align:center;text-decoration:none;width:100%">haloaccommodationssupport@proton.me</a>
     </div>
   </div>
 </div>
@@ -616,8 +657,7 @@ window.HALO_I18N = {
       "— Inspired me to add the ability to sign in with Google so you never lose your progress": "— Me inspiró a agregar la capacidad de iniciar sesión con Google para no perder el progreso",
       "📧 Contact Support": "📧 Contactar Soporte",
       "Need help or have questions? Email us at:": "¿Necesitas ayuda o tienes preguntas? Contáctanos en:",
-      "Close": "Cerrar",
-      "Close ✕": "Cerrar ✕"
+      "Close": "Cerrar"
     },
     fr: {
       "Credits": "Crédits",
@@ -627,8 +667,7 @@ window.HALO_I18N = {
       "— Inspired me to add the ability to sign in with Google so you never lose your progress": "— M'a inspiré à ajouter la connexion avec Google pour ne jamais perdre votre progression",
       "📧 Contact Support": "📧 Contacter le Support",
       "Need help or have questions? Email us at:": "Besoin d'aide ou des questions ? Envoyez-nous un e-mail à :",
-      "Close": "Fermer",
-      "Close ✕": "Fermer ✕"
+      "Close": "Fermer"
     },
     vi: {
       "Credits": "Tín dụng",
@@ -638,8 +677,7 @@ window.HALO_I18N = {
       "— Inspired me to add the ability to sign in with Google so you never lose tiến trình": "— Truyền cảm hứng thêm đăng nhập Google để không mất tiến trình",
       "📧 Contact Support": "📧 Liên hệ Hỗ trợ",
       "Need help or have questions? Email us at:": "Cần trợ giúp hoặc có câu hỏi? Gửi email cho chúng tôi tại:",
-      "Close": "Đóng",
-      "Close ✕": "Đóng ✕"
+      "Close": "Đóng"
     }
   }
 };
@@ -1020,7 +1058,7 @@ let curSysVoice=data.sysVoice||null;
 let kokoroTTS=null;
 let kokoroLoading=false;
 let _kokoroAudioEl=null;
-let wizardRole='parent';
+let wizardRole='child';
 let wizardPack='essential';
 let selectedEmoji='❓';
 let dictWord='';
@@ -1064,7 +1102,8 @@ function applyLanguage(){
   setStatus(t('Ready'));
   buildCats();buildGrid(wordSearch.value);renderMessage();updatePredictions();
   buildSysVoiceList();
-  if($('portalOverlay')&&$('portalOverlay').classList.contains('open')){buildWordTable();}
+  if(data.portalHash && $('portalOverlay')&&$('portalOverlay').classList.contains('open')){buildWordTable();}
+  else if (!data.portalHash && $('settingsOverlay').classList.contains('open')) {buildWordTable();}
 }
 function setLanguage(l){
   if(!I18N.LANGS[l])return;
@@ -1336,6 +1375,18 @@ function getActiveWords(){
   return merged;
 }
 
+function openSettingsAndAdd(word) {
+  const input = document.getElementById('dictInput');
+  if (input) input.value = word;
+  
+  if (data.portalHash) {
+    openPortalPrompt();
+  } else {
+    openSettings();
+    setTimeout(() => { if (input && input.value) lookupWord(); }, 100);
+  }
+}
+
 function buildGrid(filter=''){
   const words=getActiveWords();
   wordGrid.innerHTML='';
@@ -1355,9 +1406,17 @@ function buildGrid(filter=''){
        });
     });
     
-    allMatched.forEach(({w, e}) => {
-      wordGrid.appendChild(createWordBtn(w, e));
-    });
+    if (allMatched.length > 0) {
+      allMatched.forEach(({w, e}) => {
+        wordGrid.appendChild(createWordBtn(w, e));
+      });
+    } else {
+      wordGrid.innerHTML = `<div style="grid-column: 1 / -1; padding: 40px 10px; text-align: center; color: #888;">
+        <div style="font-size: 32px; margin-bottom: 12px;">🔍</div>
+        <p style="font-size: 15px; margin-bottom: 16px;">${esc(t('No words found for'))} "<strong>${esc(filter)}</strong>"</p>
+        <button class="btn ghost" onclick="openSettingsAndAdd('${esc(filter).replace(/'/g, "\\'")}')">${esc(t('Go to Settings to Add Word'))}</button>
+      </div>`;
+    }
     return;
   }
   
@@ -1483,13 +1542,28 @@ function capitalize(s) {
 profileSel.onchange=e=>{data.currentProfile=e.target.value;save();folderViewActive=true;applyLanguage();};
 
 function openSettings(){
-  $('settingsOverlay').classList.add('open');
   const eng=data.ttsEngine||'system';
   document.querySelectorAll('#engineGrid .engine-card').forEach(c=>c.classList.toggle('active',c.dataset.eng===eng));
   $('sysPickerWrap').classList.toggle('show',eng==='system');
   $('kokoroPickerWrap').classList.toggle('show',eng==='kokoro');
   buildSysVoiceList();
   if(eng==='kokoro')ensureKokoro();
+  
+  if (data.portalHash) {
+    $('btnOpenPortal').style.display = 'block';
+    $('btnSetupPortal').style.display = 'none';
+    $('settingsWordMgmtBlock').style.display = 'none';
+  } else {
+    $('btnOpenPortal').style.display = 'none';
+    $('btnSetupPortal').style.display = 'block';
+    $('settingsWordMgmtBlock').style.display = 'block';
+    $('settingsWordContainer').appendChild($('sharedWordMgmtUI'));
+    $('sharedWordMgmtUI').style.display = 'block';
+  }
+
+  populateCatPicker();
+  buildWordTable();
+  $('settingsOverlay').classList.add('open');
 }
 function closeSettings(){$('settingsOverlay').classList.remove('open');}
 
@@ -1681,7 +1755,7 @@ function kickPregen(){
   if((data.ttsEngine||'system')==='kokoro'&&kokoroTTS)pregenerateVoice(data.kokoroVoice||'af_heart');
 }
 
-async function wFinish(){
+async function wFinishParent(){
   const p1=$('pw1').value,p2=$('pw2').value;
   if(!p1||p1!==p2){$('pwErr').classList.add('show');return;}
   $('pwErr').classList.remove('show');
@@ -1705,6 +1779,30 @@ function wFinishChild(){
   applyLayoutModeUI();
   $('wizardOverlay').classList.remove('open');
   buildCats();buildGrid();renderMessage();kickPregen();
+}
+
+function openSetupPortalModal() {
+  $('setupPortalPw1').value = '';
+  $('setupPortalPw2').value = '';
+  $('setupPortalErr').classList.remove('show');
+  $('setupPortalModal').classList.add('open');
+}
+
+async function confirmSetupPortal() {
+  const p1=$('setupPortalPw1').value, p2=$('setupPortalPw2').value;
+  if(!p1||p1!==p2){$('setupPortalErr').classList.add('show');return;}
+  data.portalHash = await secureHash(p1);
+  save();
+  $('setupPortalModal').classList.remove('open');
+  openSettings(); 
+}
+
+function removeParentPortal() {
+  if(!confirm("Are you sure you want to remove the parent portal password? Word management will be moved to the normal settings menu.")) return;
+  data.portalHash = null;
+  save();
+  closePortal();
+  openSettings();
 }
 
 function openPortalPrompt(){
@@ -1746,7 +1844,10 @@ $('portalPwInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkPortal
 
 function openPortal(){
   const firstTab = document.querySelector('.ptab');
-  if(firstTab) switchTab(firstTab, 'tabAdd');
+  if(firstTab) switchTab(firstTab, 'tabWords');
+  
+  $('portalWordContainer').appendChild($('sharedWordMgmtUI'));
+  $('sharedWordMgmtUI').style.display = 'block';
   
   populateCatPicker();
   buildWordTable();
@@ -1797,7 +1898,7 @@ function switchTab(el,panelId){
   document.querySelectorAll('.ptab-panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   $(panelId).classList.add('active');
-  if(panelId==='tabManage')buildWordTable();
+  if(panelId==='tabWords')buildWordTable();
   if(panelId==='tabSettings'){updatePackLabel();refreshPortalProfileSelect();}
 }
 
@@ -1911,6 +2012,7 @@ function confirmAddWord(){
   
   save();
   folderViewActive=true;
+  buildWordTable();
   buildCats();buildGrid();kickPregen();
   const msg=$('addWordMsg');
   msg.textContent='✓ "'+word+'" added to '+cat+'!';
@@ -1925,7 +2027,9 @@ function confirmAddWord(){
 }
 
 function buildWordTable(){
-  const body=$('wordTableBody');body.innerHTML='';
+  const body=$('wordTableBody');
+  if(!body) return;
+  body.innerHTML='';
   const filter=$('portalSearch').value.toLowerCase();
   const words=getActiveWords();
   const rows=[];
@@ -1965,11 +2069,13 @@ function removeWord(cat,word){
 
 function updatePackLabel(){
   const p = data.profiles[data.currentProfile] || {};
-  $('currentPackLabel').textContent=capitalize(p.wordPack||'essential');
+  const lbl = $('currentPackLabel');
+  if (lbl) lbl.textContent=capitalize(p.wordPack||'essential');
   document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
     c.classList.toggle('sel',c.dataset.pack===(p.wordPack||'essential'));
   });
 }
+
 function selectPortalPack(el){
   document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
@@ -1979,18 +2085,6 @@ function selectPortalPack(el){
   updatePackLabel();
   folderViewActive=true;
   buildCats();buildGrid();kickPregen();
-}
-
-async function changePassword(){
-  const p1=$('newPw1').value,p2=$('newPw2').value;
-  if(!p1||p1!==p2){$('changePwErr').classList.add('show');return;}
-  $('changePwErr').classList.remove('show');
-  
-  data.portalHash = await secureHash(p1); 
-  
-  save();
-  $('newPw1').value='';$('newPw2').value='';
-  alert(t('Password updated!'));
 }
 
 document.querySelectorAll('#portalPackGrid .pack-card').forEach(c=>{
