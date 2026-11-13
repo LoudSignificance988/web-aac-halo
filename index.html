@@ -139,12 +139,6 @@ select,button,input,textarea{font-family:inherit}
 .modal-btn-row .btn{flex:1;padding:12px}
 .modal-err{color:#dc2626;font-size:13px;margin-bottom:10px;display:none}
 .modal-err.show{display:block}
-#portalOverlay .modal-box{max-width:520px}
-.portal-tabs{display:flex;gap:0;border-bottom:2px solid #f0f0f0;margin-bottom:16px}
-.ptab{padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:#888}
-.ptab.active{border-color:var(--accent);color:var(--accent)}
-.ptab-panel{display:none}
-.ptab-panel.active{display:block}
 .word-table{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
 .word-table th{text-align:left;padding:7px 8px;background:#f8f9fb;font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.5px}
 .word-table td{padding:7px 8px;border-top:1px solid #f0f0f0;vertical-align:middle}
@@ -1014,7 +1008,11 @@ function syncToCloud(){
     showSyncBadge('☁️ Saving…',true);
     try{
       const payload={};
-      SYNC_KEYS.forEach(k=>{payload[k]=data[k];});
+      SYNC_KEYS.forEach(k=>{
+        if(data[k] !== undefined) {
+          payload[k]=data[k];
+        }
+      });
       await _fireDb.collection('users').doc(_fireUser.uid).set(payload);
       showSyncBadge('☁️ Synced',false);
       setTimeout(()=>{hideSyncBadge();_syncing=false;},2000);
